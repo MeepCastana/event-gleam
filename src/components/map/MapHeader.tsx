@@ -8,6 +8,7 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { LocationButton } from "./LocationButton"; // Added this import
 
 interface MapHeaderProps {
   menuStyle: string;
