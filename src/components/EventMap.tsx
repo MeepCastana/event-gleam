@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -278,13 +277,15 @@ const EventMap = () => {
           style={{ height: `${panelSize}vh` }}
         >
           <ResizablePanel
-            defaultSize={100}
+            defaultSize={15}
             minSize={15}
             maxSize={45}
             onResize={handlePanelResize}
-            className="animate-panel-slide transition-transform duration-300 ease-in-out"
+            className="transition-all duration-300 ease-in-out"
           >
-            <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] h-full border border-white/10`}>
+            <div 
+              className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] h-full border border-white/10 transition-all duration-300`}
+            >
               <div className="p-6">
                 <div className="w-16 h-1.5 bg-black/20 dark:bg-white/20 rounded-full mx-auto" />
               </div>
@@ -292,9 +293,15 @@ const EventMap = () => {
                 <h2 className="text-xl font-semibold mb-4">
                   Nearby Events
                 </h2>
-                <div className="space-y-4 overflow-y-auto">
+                <div className={`space-y-4 overflow-y-auto transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>
                   {[...Array(6)].map((_, i) => (
-                    <div key={i} className={`h-20 ${menuStyle} backdrop-blur-lg shadow-lg rounded-xl border border-white/10`} />
+                    <div 
+                      key={i} 
+                      className={`h-20 ${menuStyle} backdrop-blur-lg shadow-lg rounded-xl border border-white/10 transition-transform duration-300 ${
+                        isExpanded ? 'translate-y-0' : 'translate-y-4'
+                      }`}
+                      style={{ transitionDelay: `${i * 50}ms` }}
+                    />
                   ))}
                 </div>
               </div>
