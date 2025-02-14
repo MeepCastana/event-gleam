@@ -12,7 +12,6 @@ const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [isDarkMap, setIsDarkMap] = useState(() => {
-    // Initialize state from localStorage, default to false if not set
     const savedTheme = localStorage.getItem('mapTheme');
     return savedTheme === 'dark';
   });
@@ -27,7 +26,6 @@ const EventMap = () => {
   const toggleTheme = () => {
     const newTheme = !isDarkMap;
     setIsDarkMap(newTheme);
-    // Save theme preference to localStorage
     localStorage.setItem('mapTheme', newTheme ? 'dark' : 'light');
     
     if (map.current) {
@@ -42,6 +40,15 @@ const EventMap = () => {
   const initializeMap = async () => {
     if (!mapContainer.current || map.current) return;
     try {
+      // Get initial location before initializing map
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        });
+      });
+
       const { data: config, error } = await supabase
         .from('_config')
         .select('value')
@@ -74,9 +81,20 @@ const EventMap = () => {
         style: isDarkMap 
           ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
           : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
-        center: [-74.5, 40],
-        zoom: 9
+        center: [position.coords.longitude, position.coords.latitude],
+        zoom: 14
       });
+
+      // Add location control
+      const locationControl = new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showAccuracyCircle: false
+      });
+
+      map.current.addControl(locationControl, 'bottom-right');
 
       map.current.on('style.load', () => {
         setMapLoaded(true);
