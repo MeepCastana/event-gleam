@@ -6,8 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -261,9 +260,10 @@ const EventMap = () => {
       {/* Draggable Bottom Panel */}
       <ResizablePanelGroup
         direction="vertical"
-        className="fixed bottom-0 left-0 right-0 z-10 min-h-[15%] max-h-[45%]"
-        onLayout={handlePanelResize}
+        className="fixed bottom-0 left-0 right-0 z-10"
       >
+        <div className="h-[85vh]" /> {/* Spacer for map content */}
+        <ResizableHandle />
         <ResizablePanel
           defaultSize={15}
           minSize={15}
@@ -271,7 +271,7 @@ const EventMap = () => {
           className="animate-panel-slide transition-transform duration-300 ease-in-out"
         >
           <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] h-full border border-white/10`}>
-            <div className="p-6 cursor-grab active:cursor-grabbing">
+            <div className="p-6">
               <div className="w-16 h-1.5 bg-black/20 dark:bg-white/20 rounded-full mx-auto" />
             </div>
             <div className="px-6 pb-6 space-y-4">
