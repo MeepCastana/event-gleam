@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -219,16 +220,16 @@ const EventMap = () => {
     <div className="relative w-full h-screen">
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-10 flex items-center gap-3">
-        <div className="glass p-2 rounded-full">
-          <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+        <div className="glass shadow-lg p-2 rounded-full">
+          <button className="p-2 hover:bg-white/20 rounded-full transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
         </div>
-        <div className="glass px-6 py-3 rounded-2xl flex-1">
+        <div className="glass shadow-lg px-6 py-3 rounded-2xl flex-1">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              className="w-full pl-9 bg-white/10 border-none placeholder:text-muted-foreground rounded-xl"
+              className="w-full pl-9 bg-white/20 border-none placeholder:text-muted-foreground rounded-xl"
               placeholder="Search for some magic..."
             />
           </div>
@@ -245,24 +246,24 @@ const EventMap = () => {
         className="fixed bottom-0 left-0 right-0 z-10"
       >
         <CollapsibleTrigger asChild>
-          <div className={`glass rounded-t-[32px] cursor-pointer transition-all duration-300 ${isExpanded ? 'pb-4' : 'pb-2'}`}>
+          <div className={`glass shadow-lg rounded-t-[32px] cursor-pointer transition-all duration-300 ${isExpanded ? 'pb-4' : 'pb-2'}`}>
             <div className="p-4">
               <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-2" />
             </div>
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent className="slide-up">
-          <div className="glass px-6 pb-6 space-y-4 rounded-t-[32px] -mt-[32px] pt-8">
+          <div className="glass shadow-lg px-6 pb-6 space-y-4 rounded-t-[32px] -mt-[32px] pt-8">
             <h2 className="text-xl font-semibold mb-4">
               Nearby Events
             </h2>
             <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-              <div className="h-20 glass rounded-xl" />
-              <div className="h-20 glass rounded-xl" />
-              <div className="h-20 glass rounded-xl" />
-              <div className="h-20 glass rounded-xl" />
-              <div className="h-20 glass rounded-xl" />
-              <div className="h-20 glass rounded-xl" />
+              <div className="h-20 glass shadow-lg rounded-xl" />
+              <div className="h-20 glass shadow-lg rounded-xl" />
+              <div className="h-20 glass shadow-lg rounded-xl" />
+              <div className="h-20 glass shadow-lg rounded-xl" />
+              <div className="h-20 glass shadow-lg rounded-xl" />
+              <div className="h-20 glass shadow-lg rounded-xl" />
             </div>
           </div>
         </CollapsibleContent>
