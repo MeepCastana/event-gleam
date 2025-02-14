@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -29,6 +30,7 @@ const EventMap = () => {
     if (!map.current || !mapLoaded) return;
 
     try {
+      // Get real data from Supabase
       const { data: locations, error } = await supabase
         .from('user_locations')
         .select('latitude, longitude')
@@ -36,14 +38,41 @@ const EventMap = () => {
 
       if (error) throw error;
 
-      const points = locations?.map(loc => ({
-        type: "Feature" as const,
-        properties: {},
-        geometry: {
-          type: "Point" as const,
-          coordinates: [loc.longitude, loc.latitude]
+      // Get current map center for generating test points
+      const center = map.current.getCenter();
+      const baseLatitude = center.lat;
+      const baseLongitude = center.lng;
+
+      // Generate test points in a grid pattern around the center
+      const testPoints = [];
+      for (let i = -5; i <= 5; i++) {
+        for (let j = -5; j <= 5; j++) {
+          testPoints.push({
+            type: "Feature" as const,
+            properties: {},
+            geometry: {
+              type: "Point" as const,
+              coordinates: [
+                baseLongitude + (j * 0.002), // Spread points by ~200m
+                baseLatitude + (i * 0.002)
+              ]
+            }
+          });
         }
-      })) || [];
+      }
+
+      // Combine real and test data
+      const points = [
+        ...(locations?.map(loc => ({
+          type: "Feature" as const,
+          properties: {},
+          geometry: {
+            type: "Point" as const,
+            coordinates: [loc.longitude, loc.latitude]
+          }
+        })) || []),
+        ...testPoints
+      ];
 
       const source = map.current.getSource('heatmap-source') as mapboxgl.GeoJSONSource;
 
@@ -66,7 +95,13 @@ const EventMap = () => {
           type: 'heatmap',
           source: 'heatmap-source',
           paint: {
-            'heatmap-weight': 1,
+            'heatmap-weight': [
+              'interpolate',
+              ['linear'],
+              ['get', 'weight', ['properties']],
+              0, 0.6,
+              1, 1
+            ],
             'heatmap-intensity': [
               'interpolate',
               ['linear'],
@@ -89,8 +124,8 @@ const EventMap = () => {
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, 2,
-              9, 20
+              0, 4,
+              9, 30
             ],
             'heatmap-opacity': 0.8
           }
