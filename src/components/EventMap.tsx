@@ -210,14 +210,14 @@ const EventMap = () => {
         map.current.on('click', 'heatmap-layer', (e) => {
           if (!e.features?.[0]) return;
 
-          const clickedPoint = e.features[0].geometry.type === 'Point' 
-            ? e.features[0].geometry.coordinates 
+          const coords = e.features[0].geometry.type === 'Point' 
+            ? e.features[0].geometry.coordinates as [number, number]
             : undefined;
 
-          if (clickedPoint) {
+          if (coords) {
             // Center the map on the clicked point with animation
             map.current?.flyTo({
-              center: clickedPoint,
+              center: [coords[0], coords[1]], // Explicitly create a tuple
               zoom: 12,
               duration: 1500,
               essential: true
@@ -226,15 +226,15 @@ const EventMap = () => {
             // Find the nearest city to the clicked point
             const nearestCity = cities.reduce((nearest, city) => {
               const distance = Math.sqrt(
-                Math.pow(city.lng - clickedPoint[0], 2) + 
-                Math.pow(city.lat - clickedPoint[1], 2)
+                Math.pow(city.lng - coords[0], 2) + 
+                Math.pow(city.lat - coords[1], 2)
               );
               return distance < nearest.distance ? { city, distance } : nearest;
             }, { city: cities[0], distance: Infinity }).city;
 
             setSelectedHeatspot({
               cityName: nearestCity.name,
-              coordinates: [clickedPoint[0], clickedPoint[1]],
+              coordinates: coords,
               intensity: nearestCity.weight
             });
             
