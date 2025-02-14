@@ -67,12 +67,27 @@ export const MapHeader = ({
     // Get the map instance from window
     const map = (window as any).mapInstance;
     if (map) {
+      const currentCenter = map.getCenter();
+      const oldZoom = map.getZoom();
+      
+      // Store current layers and their visibility
+      const heatmapVisible = map.getLayoutProperty('heatmap-layer', 'visibility') !== 'none';
+      
       map.flyTo({
         center: [city.lng, city.lat],
         zoom: 12,
         duration: 2000,
         essential: true
       });
+
+      // After animation, ensure heatmap layer is still visible if it was before
+      if (heatmapVisible) {
+        map.once('moveend', () => {
+          if (map.getLayer('heatmap-layer')) {
+            map.setLayoutProperty('heatmap-layer', 'visibility', 'visible');
+          }
+        });
+      }
     }
   };
 
@@ -143,6 +158,7 @@ export const MapHeader = ({
                 <Input
                   value={searchQuery}
                   onChange={(e) => {
+                    e.stopPropagation();
                     setSearchQuery(e.target.value);
                     setOpen(true);
                   }}
@@ -151,6 +167,7 @@ export const MapHeader = ({
                   onFocus={() => {
                     setIsSearching(true);
                   }}
+                  onClick={(e) => e.stopPropagation()}
                 />
               </div>
             </div>
@@ -162,6 +179,7 @@ export const MapHeader = ({
               "backdrop-blur-lg border-white/10"
             )}
             align="start"
+            onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <Command>
               <CommandList>
