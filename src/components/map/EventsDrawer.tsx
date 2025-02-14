@@ -5,13 +5,14 @@ interface EventsDrawerProps {
   menuStyle: string;
   isDrawerExpanded: boolean;
   onClose: () => void;
+  isDarkMode: boolean;  // Added isDarkMode to the interface
 }
 
-export const EventsDrawer = ({ menuStyle, isDarkMode }: EventsDrawerProps) => {
+export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose, isDarkMode }: EventsDrawerProps) => {
   return (
     <BottomDrawer 
       isOpen={true} 
-      onClose={() => {}} 
+      onClose={onClose} 
       initialHeight={35} 
       maxHeight={75} 
       onExpand={() => console.log('Drawer expanded')} 
