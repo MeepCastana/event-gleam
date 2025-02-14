@@ -20,7 +20,7 @@ export function BottomDrawer({
   onClose,
   children,
   className,
-  initialHeight = 30,
+  initialHeight = 15, // Changed from 30 to 15
   maxHeight = 75,
   snapThreshold = 50,
   onExpand,
@@ -95,7 +95,7 @@ export function BottomDrawer({
         >
           {/* Drag Handle */}
           <div className="absolute top-0 left-0 right-0 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none">
-            <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full" />
+            <div className="w-12 h-1.5 bg-white/20 rounded-full" />
           </div>
           
           {/* Content Area */}
