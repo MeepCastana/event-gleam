@@ -11,6 +11,7 @@ import { useHeatmap } from '@/hooks/useHeatmap';
 import { useMapTheme } from '@/hooks/useMapTheme';
 import { useMapControls } from '@/hooks/useMapControls';
 import type { Feature, Point } from 'geojson';
+import type { MapLayerMouseEvent } from 'mapbox-gl';
 
 interface HeatspotInfo {
   cityName: string;
@@ -57,8 +58,8 @@ const EventMap = () => {
     
     const interval = setInterval(updateHeatmap, 30000);
 
-    // Add click handler for heatmap layer
-    map.current.on('click', 'heatmap-layer', (e) => {
+    // Define click handler function
+    const handleHeatmapClick = (e: MapLayerMouseEvent) => {
       if (!e.features?.[0]) return;
 
       const feature = e.features[0] as Feature<Point>;
@@ -102,7 +103,10 @@ const EventMap = () => {
       });
 
       setIsDrawerExpanded(true);
-    });
+    };
+
+    // Add click handler for heatmap layer
+    map.current.on('click', 'heatmap-layer', handleHeatmapClick);
 
     // Hide the geolocate control
     const hideGeolocateControl = () => {
@@ -121,7 +125,7 @@ const EventMap = () => {
     return () => {
       clearInterval(interval);
       if (map.current) {
-        map.current.off('click', 'heatmap-layer');
+        map.current.off('click', 'heatmap-layer', handleHeatmapClick);
         map.current.off('style.load', hideGeolocateControl);
       }
     };
