@@ -34,7 +34,7 @@ export const MapHeader = ({
                 <SheetContent side="left" className={`${isDarkMode ? 'bg-zinc-700/95 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'} backdrop-blur-lg border-white/10`}>
                   <div className="flex flex-col h-full">
                     <div className="flex items-center gap-4 p-4 border-b border-white/10">
-                      <h3 className="font-comfortaa text-2xl font-bold text-primary">HotSpot</h3>
+                      <h3 className="font-comfortaa text-2xl font-bold text-primary">Wherry</h3>
                     </div>
                     <nav className="flex-1 py-4">
                       <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">

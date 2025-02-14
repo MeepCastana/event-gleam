@@ -1,7 +1,7 @@
 
 {
-  "name": "HotSpot",
-  "short_name": "HotSpot",
+  "name": "Wherry",
+  "short_name": "Wherry",
   "description": "Find the hottest spots in your area",
   "start_url": "/",
   "display": "standalone",
