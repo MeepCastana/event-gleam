@@ -10,6 +10,9 @@ export interface BottomDrawerProps {
   className?: string;
   initialHeight?: number;
   maxHeight?: number;
+  snapThreshold?: number;
+  onExpand?: () => void;
+  onContract?: () => void;
 }
 
 export function BottomDrawer({
@@ -19,24 +22,56 @@ export function BottomDrawer({
   className,
   initialHeight = 30,
   maxHeight = 75,
+  snapThreshold = 50,
+  onExpand,
+  onContract,
 }: BottomDrawerProps) {
+  const [currentHeight, setCurrentHeight] = React.useState(initialHeight);
+  const snapPoints = React.useMemo(() => [initialHeight, maxHeight], [initialHeight, maxHeight]);
+  const lastSnapPoint = React.useRef<number>(initialHeight);
+
+  const handleDrag = React.useCallback((height: number) => {
+    const screenHeight = window.innerHeight;
+    const currentHeightPx = (height / screenHeight) * 100;
+    const midPoint = (initialHeight + maxHeight) / 2;
+
+    // Determine which snap point to use based on drag position and direction
+    const shouldSnapToMax = currentHeightPx > midPoint;
+    const targetHeight = shouldSnapToMax ? maxHeight : initialHeight;
+
+    // Only trigger callbacks if we're actually changing positions
+    if (targetHeight !== lastSnapPoint.current) {
+      if (shouldSnapToMax) {
+        onExpand?.();
+      } else {
+        onContract?.();
+      }
+      lastSnapPoint.current = targetHeight;
+    }
+
+    setCurrentHeight(targetHeight);
+  }, [initialHeight, maxHeight, onExpand, onContract]);
+
   return (
     <Drawer.Root 
       open={isOpen} 
       onOpenChange={(open) => !open && onClose()}
-      dismissible
-      modal
+      dismissible={false}
+      modal={false}
+      snapPoints={snapPoints}
+      activeSnapPoint={currentHeight}
+      setActiveSnapPoint={setCurrentHeight}
+      onDrag={handleDrag}
     >
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-40" />
         <Drawer.Content
           className={cn(
-            "bg-white dark:bg-gray-900 flex flex-col rounded-t-[20px] fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out",
+            "fixed bottom-0 left-0 right-0 z-50 rounded-t-[20px] bg-background transition-transform duration-300 ease-spring",
             className
           )}
           style={{
             height: `${maxHeight}vh`,
-            transform: `translateY(${100 - initialHeight}%)`,
+            transform: `translateY(${100 - currentHeight}%)`,
           }}
         >
           <div className="p-4 cursor-grab active:cursor-grabbing">

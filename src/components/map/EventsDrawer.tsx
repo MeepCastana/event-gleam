@@ -12,8 +12,11 @@ export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose }: EventsDra
     <BottomDrawer
       isOpen={true}
       onClose={onClose}
-      initialHeight={isDrawerExpanded ? 75 : 30}
+      initialHeight={30}
       maxHeight={75}
+      onExpand={() => console.log('Drawer expanded')}
+      onContract={() => console.log('Drawer contracted')}
+      className="bg-transparent"
     >
       <div className={`${menuStyle} h-full rounded-t-[20px]`}>
         <div className="px-6 space-y-4">
