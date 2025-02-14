@@ -189,7 +189,7 @@ const EventMap = () => {
               0.4, 'rgba(0,255,0,0.5)',      // Green
               0.6, 'rgba(255,255,0,0.6)',    // Yellow
               0.8, 'rgba(255,150,0,0.7)',    // Orange
-              1, 'rgba(255,0,0,0.8)'         // Red
+              1, 'rgba(255,0,0,0,0.8)'         // Red
             ],
             // Smaller radius
             'heatmap-radius': [
@@ -397,6 +397,9 @@ const EventMap = () => {
         center: [position.coords.longitude, position.coords.latitude],
         zoom: 14
       });
+
+      // Expose map instance globally
+      (window as any).mapInstance = map.current;
 
       // Initialize GeolocateControl and add it to the map
       locationControlRef.current = new mapboxgl.GeolocateControl({
