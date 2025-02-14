@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -280,32 +281,8 @@ const EventMap = () => {
 
   const centerOnLocation = () => {
     if (!locationControlRef.current) return;
+    // Get the user's location without animation
     locationControlRef.current.trigger();
-  };
-
-  const toggleTheme = () => {
-    const newTheme = !isDarkMap;
-    setIsDarkMap(newTheme);
-    localStorage.setItem('mapTheme', newTheme ? 'dark' : 'light');
-    
-    if (map.current) {
-      map.current.setStyle(
-        newTheme
-          ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
-          : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
-      );
-
-      // Re-add heatmap layer when style is loaded
-      map.current.once('style.load', () => {
-        console.log('Style loaded, re-adding heatmap...');
-        updateHeatmap();
-      });
-    }
-  };
-
-  const handleDrawerClose = () => {
-    setIsDrawerExpanded(false);
-    setSelectedHeatspot(undefined);
   };
 
   const initializeMap = async () => {
@@ -339,60 +316,88 @@ const EventMap = () => {
 
       mapboxgl.accessToken = mapboxToken;
 
-      // Create geolocate control first
-      locationControlRef.current = new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true,
-          timeout: 2000, // Reduced timeout for faster response
-          maximumAge: 0
+      // First, get the user's location before initializing the map
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+
+          // Create geolocate control
+          locationControlRef.current = new mapboxgl.GeolocateControl({
+            positionOptions: {
+              enableHighAccuracy: true,
+              timeout: 2000,
+              maximumAge: 0
+            },
+            trackUserLocation: true,
+            showAccuracyCircle: false,
+            showUserLocation: true,
+            fitBoundsOptions: {
+              animate: false // Disable animation when centering
+            }
+          });
+
+          // Initialize map at user's location
+          map.current = new mapboxgl.Map({
+            container: mapContainer.current!,
+            style: isDarkMap 
+              ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+              : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
+            center: [longitude, latitude],
+            zoom: 14,
+            animate: false
+          });
+
+          // Add control but hide its UI
+          map.current.addControl(locationControlRef.current);
+
+          // Completely remove the default geolocate control button
+          const removeGeolocateControl = () => {
+            const geolocateControl = document.querySelector('.mapboxgl-ctrl-geolocate');
+            if (geolocateControl && geolocateControl.parentElement) {
+              geolocateControl.parentElement.remove();
+            }
+          };
+
+          // When style loads, update heatmap and remove control
+          map.current.on('style.load', () => {
+            console.log('Style loaded, updating heatmap...');
+            setMapLoaded(true);
+            updateHeatmap();
+            removeGeolocateControl();
+          });
+
+          // When map loads, trigger location tracking without animation
+          map.current.on('load', () => {
+            console.log('Map loaded, starting location tracking...');
+            if (locationControlRef.current) {
+              locationControlRef.current.trigger();
+            }
+            removeGeolocateControl();
+          });
+
+          // Set up periodic heatmap updates
+          const updateInterval = setInterval(updateHeatmap, 30000);
+
+          return () => {
+            clearInterval(updateInterval);
+            map.current?.remove();
+          };
         },
-        trackUserLocation: true,
-        showAccuracyCircle: false,
-        showUserLocation: true
-      });
-
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: isDarkMap 
-          ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
-          : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
-        zoom: 14
-      });
-
-      // Add the control to the map immediately
-      map.current.addControl(locationControlRef.current);
-
-      // Hide the default control UI
-      const hideDefaultControl = () => {
-        const geolocateControl = document.querySelector('.mapboxgl-ctrl-geolocate');
-        if (geolocateControl) {
-          (geolocateControl as HTMLElement).style.display = 'none';
+        (error) => {
+          console.error('Error getting initial location:', error);
+          toast({
+            variant: "destructive",
+            title: "Location Error",
+            description: "Unable to get your location. Please enable location services."
+          });
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 2000,
+          maximumAge: 0
         }
-      };
-      hideDefaultControl();
+      );
 
-      // When style loads, update heatmap
-      map.current.on('style.load', () => {
-        console.log('Style loaded, updating heatmap...');
-        setMapLoaded(true);
-        updateHeatmap();
-      });
-
-      // When map loads, trigger location immediately
-      map.current.on('load', () => {
-        console.log('Map loaded, triggering location...');
-        if (locationControlRef.current) {
-          locationControlRef.current.trigger();
-        }
-      });
-
-      // Set up periodic heatmap updates
-      const updateInterval = setInterval(updateHeatmap, 30000);
-
-      return () => {
-        clearInterval(updateInterval);
-        map.current?.remove();
-      };
     } catch (error) {
       console.error('Error initializing map:', error);
       toast({
