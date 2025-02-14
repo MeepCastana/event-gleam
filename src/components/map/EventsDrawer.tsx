@@ -5,7 +5,7 @@ interface EventsDrawerProps {
   menuStyle: string;
   isDrawerExpanded: boolean;
   onClose: () => void;
-  isDarkMode: boolean;  // Added isDarkMode to the interface
+  isDarkMode: boolean;
 }
 
 export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose, isDarkMode }: EventsDrawerProps) => {
@@ -17,7 +17,7 @@ export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose, isDarkMode 
       maxHeight={75} 
       onExpand={() => console.log('Drawer expanded')} 
       onContract={() => console.log('Drawer contracted')} 
-      className={`${menuStyle} backdrop-blur-xl shadow-lg border border-white/10 ${isDarkMode ? 'bg-gray-800/95' : 'bg-gray-900/95'} text-gray-100`}
+      className={`${menuStyle} backdrop-blur-xl shadow-lg border border-white/10 ${isDarkMode ? 'bg-zinc-700/95' : 'bg-zinc-900/95'} text-zinc-100`}
     >
       <div className="h-full w-full">
         <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none">
