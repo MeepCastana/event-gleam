@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -9,6 +10,42 @@ const EventMap = () => {
   const map = useRef<mapboxgl.Map | null>(null);
   const { toast } = useToast();
   const [mapLoaded, setMapLoaded] = useState(false);
+
+  const getUserLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { longitude, latitude } = position.coords;
+          if (map.current) {
+            map.current.flyTo({
+              center: [longitude, latitude],
+              zoom: 14,
+              essential: true
+            });
+
+            // Add a marker at user's location
+            new mapboxgl.Marker({ color: "#FF0000" })
+              .setLngLat([longitude, latitude])
+              .addTo(map.current);
+          }
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          toast({
+            variant: "destructive",
+            title: "Location Error",
+            description: "Unable to get your location. Please enable location services.",
+          });
+        }
+      );
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Location Error",
+        description: "Geolocation is not supported by your browser.",
+      });
+    }
+  };
 
   const initializeMap = async () => {
     if (!mapContainer.current || map.current) return;
@@ -46,12 +83,13 @@ const EventMap = () => {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [-74.5, 40],
+        center: [-74.5, 40], // Default center before getting user location
         zoom: 9,
       });
 
       map.current.on('load', () => {
         setMapLoaded(true);
+        getUserLocation(); // Get user location once map is loaded
         toast({
           title: "Map loaded successfully",
           description: "Start exploring events in your area",
