@@ -19,7 +19,9 @@ export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose }: EventsDra
       className={`${menuStyle} backdrop-blur-lg shadow-lg border border-white/10`}
     >
       <div className="h-full w-full">
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/30 rounded-full cursor-grab active:cursor-grabbing touch-none" />
+        <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none">
+          <div className="w-12 h-1.5 bg-white/30 rounded-full" />
+        </div>
       </div>
     </BottomDrawer>
   );
