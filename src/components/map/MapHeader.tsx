@@ -49,7 +49,7 @@ export const MapHeader = ({
 
   const handleCitySelect = async (city: City) => {
     setOpen(false);
-    setSearchQuery(city.name);
+    setSearchQuery("");
     setIsSearching(false);
 
     // Get Mapbox token from config
