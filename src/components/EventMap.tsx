@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -229,9 +228,9 @@ const EventMap = () => {
     return () => cleanupLocation?.();
   }, [mapLoaded]);
 
-  const handlePanelResize = (sizes: number[]) => {
-    setPanelSize(sizes[0]);
-    setIsExpanded(sizes[0] > 15);
+  const handlePanelResize = (size: number) => {
+    setPanelSize(size);
+    setIsExpanded(size > 15);
   };
 
   return (
