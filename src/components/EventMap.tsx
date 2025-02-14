@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -282,12 +283,7 @@ const EventMap = () => {
     if (!map.current || !locationControlRef.current) return;
 
     try {
-      // Trigger the geolocate control directly
       locationControlRef.current.trigger();
-      
-      // The GeolocateControl will handle the location centering automatically
-      // and it's much more efficient as it maintains a connection to the location API
-      
     } catch (error) {
       console.error('Error in centerOnLocation:', error);
       toast({
@@ -358,7 +354,7 @@ const EventMap = () => {
         style: isDarkMap 
           ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
           : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
-        center: [26.1025, 44.4268], // Default center
+        center: [26.1025, 44.4268], // Default center, will be updated by geolocation
         zoom: 14
       });
 
@@ -366,7 +362,7 @@ const EventMap = () => {
       locationControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: {
           enableHighAccuracy: true,
-          timeout: 5000, // Reduced timeout to 5 seconds for faster response
+          timeout: 5000,
           maximumAge: 0
         },
         trackUserLocation: true,
@@ -385,9 +381,17 @@ const EventMap = () => {
         }
       }, 100);
 
-      map.current.on('style.load', () => {
+      // Center on user's location when the map loads
+      map.current.on('load', () => {
+        console.log('Map loaded, centering on user location...');
         setMapLoaded(true);
         updateHeatmap();
+        // Trigger geolocation after a small delay to ensure everything is initialized
+        setTimeout(() => {
+          if (locationControlRef.current) {
+            locationControlRef.current.trigger();
+          }
+        }, 500);
       });
 
       // Set up periodic heatmap updates
