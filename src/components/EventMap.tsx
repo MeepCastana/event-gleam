@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -7,17 +8,23 @@ import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 
+// Extend window interface to store device heading
+declare global {
+  interface Window {
+    deviceHeading?: number;
+  }
+}
+
 interface LocationMarkerProps {
   arrowColor?: string;
   dotSize?: number;
+  map: mapboxgl.Map;
 }
 
-const LocationMarker: React.FC<LocationMarkerProps> = ({
-  arrowColor = '#4287f5',
-  dotSize = 200,
-}) => {
+const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 200, map }: LocationMarkerProps) => {
   const size = dotSize;
-  const pulsingDot = {
+  
+  return {
     width: size,
     height: size,
     data: new Uint8Array(size * size * 4),
@@ -33,6 +40,8 @@ const LocationMarker: React.FC<LocationMarkerProps> = ({
       const radius = size / 2 * 0.3;
       const outerRadius = size / 2 * 0.7 * t + radius;
       const context = this.context;
+
+      if (!context) return false;
 
       // Clear the canvas
       context.clearRect(0, 0, this.width, this.height);
@@ -92,7 +101,6 @@ const LocationMarker: React.FC<LocationMarkerProps> = ({
       return true;
     }
   };
-  return pulsingDot;
 };
 
 const EventMap = () => {
@@ -107,13 +115,6 @@ const EventMap = () => {
   const menuStyle = isDarkMap
     ? "bg-white/40 text-gray-900"
     : "bg-[#1A1F2C]/90 text-gray-100";
-
-  // Extend window interface to store device heading
-  declare global {
-    interface Window {
-      deviceHeading?: number;
-    }
-  }
 
   const getUserLocation = () => {
     if ("geolocation" in navigator) {
@@ -140,9 +141,10 @@ const EventMap = () => {
 
           // Add or update the pulsing dot marker with direction
           if (!map.current.hasImage('pulsing-dot')) {
-            map.current.addImage('pulsing-dot', LocationMarker({
+            map.current.addImage('pulsing-dot', createLocationMarker({
               arrowColor: '#4287f5',
-              dotSize: 200
+              dotSize: 200,
+              map: map.current
             }), { pixelRatio: 2 });
           }
 
