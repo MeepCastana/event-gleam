@@ -24,7 +24,7 @@ export const EventsDrawer = ({
 }: EventsDrawerProps) => {
   return (
     <BottomDrawer 
-      isOpen={heatspotInfo !== undefined} 
+      isOpen={true} // Always keep the drawer visible
       onClose={onClose} 
       initialHeight={isDrawerExpanded ? 75 : 35} 
       maxHeight={75} 
