@@ -86,9 +86,21 @@ export const EventsDrawer = ({
   };
 
   const getIntensityColor = (intensity: number) => {
-    if (intensity > 1.5) return 'text-red-400';
-    if (intensity > 1) return 'text-yellow-400';
-    return 'text-green-400';
+    if (intensity >= 1.5) return 'text-red-500';
+    if (intensity >= 1) return 'text-yellow-500';
+    return 'text-green-500';
+  };
+
+  const getIntensityBgColor = (intensity: number) => {
+    if (intensity >= 1.5) return 'bg-red-500';
+    if (intensity >= 1) return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
+
+  const getIntensityLabel = (intensity: number) => {
+    if (intensity >= 1.5) return 'High';
+    if (intensity >= 1) return 'Medium';
+    return 'Low';
   };
 
   const getIntensityPercentage = (intensity: number) => {
@@ -136,16 +148,14 @@ export const EventsDrawer = ({
               </div>
               <div className="space-y-1">
                 <p className={`text-sm font-medium ${getIntensityColor(heatspotInfo?.intensity || 0)}`}>
-                  {heatspotInfo?.intensity && (
-                    heatspotInfo.intensity > 1.5 ? 'High' : heatspotInfo.intensity > 1 ? 'Medium' : 'Low'
-                  )}
+                  {getIntensityLabel(heatspotInfo?.intensity || 0)}
                 </p>
                 <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${getIntensityPercentage(heatspotInfo?.intensity || 0)}%` }}
                     transition={{ delay: 0.3, duration: 0.5 }}
-                    className={`h-full ${getIntensityColor(heatspotInfo?.intensity || 0)} opacity-80`}
+                    className={`h-full ${getIntensityBgColor(heatspotInfo?.intensity || 0)} opacity-80`}
                   />
                 </div>
               </div>
