@@ -77,7 +77,16 @@ export const useMapInitialization = ({ isDarkMap, onMapLoaded }: UseMapInitializ
         map.current.on('style.load', onMapLoaded);
 
         const cleanupMap = () => {
-          map.current?.remove();
+          if (map.current) {
+            // Remove controls first
+            if (locationControlRef.current) {
+              map.current.removeControl(locationControlRef.current);
+              locationControlRef.current = null;
+            }
+            // Then remove the map
+            map.current.remove();
+            map.current = null;
+          }
         };
 
         return cleanupMap;
@@ -96,8 +105,17 @@ export const useMapInitialization = ({ isDarkMap, onMapLoaded }: UseMapInitializ
     });
 
     return () => {
-      cleanup?.();
-      map.current?.remove();
+      if (cleanup) {
+        cleanup();
+      } else if (map.current) {
+        // Fallback cleanup if the main cleanup function wasn't set
+        if (locationControlRef.current) {
+          map.current.removeControl(locationControlRef.current);
+          locationControlRef.current = null;
+        }
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, [isDarkMap, onMapLoaded, toast]);
 
