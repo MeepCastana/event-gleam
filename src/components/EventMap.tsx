@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -260,14 +261,14 @@ const EventMap = () => {
       {/* Draggable Bottom Panel */}
       <ResizablePanelGroup
         direction="vertical"
-        className="fixed bottom-0 left-0 right-0 z-10 min-h-[15%] max-h-[85%]"
+        className="fixed bottom-0 left-0 right-0 z-10 min-h-[15%] max-h-[45%]"
         onLayout={handlePanelResize}
       >
         <ResizablePanel
           defaultSize={15}
           minSize={15}
-          maxSize={85}
-          className="transition-all duration-300"
+          maxSize={45}
+          className="animate-panel-slide transition-transform duration-300 ease-in-out"
         >
           <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] h-full border border-white/10`}>
             <div className="p-6 cursor-grab active:cursor-grabbing">
