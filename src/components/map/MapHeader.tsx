@@ -1,3 +1,4 @@
+
 import { ArrowLeft, Menu, Search, Settings, Sun, User, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -96,37 +97,38 @@ export const MapHeader = ({
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className={`${isDarkMode ? 'bg-zinc-700/95 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'} backdrop-blur-lg border-white/10`}>
-                  <div className="flex flex-col h-full">
-                    <div className="flex items-center gap-4 p-4 border-b border-white/10">
-                      <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xl font-semibold">
-                        J
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">Jeremy Griffin</h3>
-                        <p className="text-sm text-zinc-400">+1 xxxx yyyyy</p>
-                      </div>
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center gap-4 p-4 border-b border-white/10">
+                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xl font-semibold">
+                      J
                     </div>
-                    <nav className="flex-1 py-4">
-                      <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
-                        <User className="w-5 h-5" />
-                        <span>PROFILE</span>
-                      </a>
-                      <button onClick={onThemeToggle} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
-                        <Sun className="w-5 h-5" />
-                        <span>THEME</span>
-                      </button>
-                      <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
-                        <Settings className="w-5 h-5" />
-                        <span>SETTINGS</span>
-                      </a>
-                    </nav>
-                    <div className="p-4 border-t border-white/10">
-                      <p className="text-sm text-zinc-400">App Version - v2.0</p>
+                    <div className="flex-1">
+                      <h3 className="font-semibold">Jeremy Griffin</h3>
+                      <p className="text-sm text-zinc-400">+1 xxxx yyyyy</p>
                     </div>
                   </div>
-                </SheetContent>
-              </Sheet>}
-          </div>
+                  <nav className="flex-1 py-4">
+                    <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+                      <User className="w-5 h-5" />
+                      <span>PROFILE</span>
+                    </a>
+                    <button onClick={onThemeToggle} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+                      <Sun className="w-5 h-5" />
+                      <span>THEME</span>
+                    </button>
+                    <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+                      <Settings className="w-5 h-5" />
+                      <span>SETTINGS</span>
+                    </a>
+                  </nav>
+                  <div className="p-4 border-t border-white/10">
+                    <p className="text-sm text-zinc-400">App Version - v2.0</p>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
+        </div>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <div className={`${isDarkMode ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'} backdrop-blur-lg shadow-lg px-6 py-3 rounded-full flex-1 border border-white/10`}>
