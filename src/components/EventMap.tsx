@@ -38,9 +38,55 @@ const EventMap = () => {
     }
   };
 
-  const centerOnLocation = () => {
-    if (locationControlRef.current) {
-      locationControlRef.current.trigger();
+  const centerOnLocation = async () => {
+    if (!locationControlRef.current) return;
+
+    try {
+      // First check if we have permission
+      const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+      
+      if (permission.state === 'denied') {
+        toast({
+          title: "Location Access Required",
+          description: "Please enable location access in your browser settings.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Get current position manually first
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          if (map.current && locationControlRef.current) {
+            map.current.flyTo({
+              center: [position.coords.longitude, position.coords.latitude],
+              zoom: 15,
+              essential: true
+            });
+            locationControlRef.current.trigger(); // Trigger the control after centering
+          }
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          toast({
+            title: "Location Error",
+            description: "Unable to get your current location.",
+            variant: "destructive"
+          });
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        }
+      );
+    } catch (error) {
+      console.error('Error accessing location:', error);
+      toast({
+        title: "Location Error",
+        description: "Unable to access location services.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -102,7 +148,7 @@ const EventMap = () => {
         showUserLocation: true
       });
 
-      // Add the control to the map but hide it visually
+      // Add the control to the map
       map.current.addControl(locationControlRef.current);
 
       // Hide the default control UI since we're using our custom button
