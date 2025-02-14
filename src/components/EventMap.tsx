@@ -23,8 +23,12 @@ const EventMap = () => {
   const [selectedHeatspot, setSelectedHeatspot] = useState<HeatspotInfo>();
   const userId = useAnonymousId();
 
+  // First, initialize the theme hook since other hooks depend on isDarkMap
+  const { isDarkMap, toggleTheme } = useMapTheme();
+  
+  // Then use isDarkMap in other hooks
   const { mapContainer, map, locationControlRef } = useMapInitialization({
-    isDarkMap: isDarkMap,
+    isDarkMap,
     onMapLoaded: () => {
       setMapLoaded(true);
       updateHeatmap();
@@ -32,7 +36,6 @@ const EventMap = () => {
   });
 
   const { updateHeatmap } = useHeatmap(map, mapLoaded);
-  const { isDarkMap, toggleTheme } = useMapTheme(map, updateHeatmap);
   const { centerOnLocation } = useMapControls(map, locationControlRef);
 
   // Enable location updates

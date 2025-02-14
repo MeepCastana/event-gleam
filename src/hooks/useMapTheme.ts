@@ -1,8 +1,8 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 
-export const useMapTheme = (map: MutableRefObject<mapboxgl.Map | null>, onStyleChange: () => void) => {
+export const useMapTheme = (map?: MutableRefObject<mapboxgl.Map | null>, onStyleChange?: () => void) => {
   const [isDarkMap, setIsDarkMap] = useState(() => {
     const savedTheme = localStorage.getItem('mapTheme');
     return savedTheme === 'dark';
@@ -13,14 +13,16 @@ export const useMapTheme = (map: MutableRefObject<mapboxgl.Map | null>, onStyleC
     setIsDarkMap(newTheme);
     localStorage.setItem('mapTheme', newTheme ? 'dark' : 'light');
     
-    if (map.current) {
+    if (map?.current) {
       map.current.setStyle(
         newTheme
           ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
           : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
       );
 
-      map.current.once('style.load', onStyleChange);
+      if (onStyleChange) {
+        map.current.once('style.load', onStyleChange);
+      }
     }
   }, [isDarkMap, map, onStyleChange]);
 
