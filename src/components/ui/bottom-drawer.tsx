@@ -56,6 +56,13 @@ export function BottomDrawer({
     setCurrentHeight(targetHeight);
   }, [initialHeight, maxHeight, onExpand, onContract]);
 
+  // Reset to initial height when isOpen changes
+  React.useEffect(() => {
+    if (isOpen) {
+      setCurrentHeight(initialHeight);
+    }
+  }, [isOpen, initialHeight]);
+
   return (
     <Drawer.Root 
       open={isOpen} 
@@ -75,7 +82,7 @@ export function BottomDrawer({
           )}
           style={{
             height: `${maxHeight}vh`,
-            transform: `translateY(${maxHeight - currentHeight}vh)`,
+            transform: `translateY(${(maxHeight - currentHeight)}vh)`,
           }}
         >
           <div className="p-4 cursor-grab active:cursor-grabbing">
