@@ -37,10 +37,10 @@ export function BottomDrawer({
 
   const handleDrag = React.useCallback((_: React.PointerEvent<HTMLDivElement>, percentageDragged: number) => {
     const midPoint = (initialHeight + maxHeight) / 2;
-    const currentHeightPx = percentageDragged * 100;
+    const drawerHeight = maxHeight - ((1 - percentageDragged) * (maxHeight - initialHeight));
     
     // Determine which snap point to use based on drag position
-    const shouldSnapToMax = currentHeightPx > midPoint;
+    const shouldSnapToMax = drawerHeight > midPoint;
     const targetHeight = shouldSnapToMax ? maxHeight : initialHeight;
 
     // Only trigger callbacks if we're actually changing positions
@@ -75,7 +75,7 @@ export function BottomDrawer({
           )}
           style={{
             height: `${maxHeight}vh`,
-            transform: `translateY(${100 - currentHeight}%)`,
+            transform: `translateY(${maxHeight - currentHeight}vh)`,
           }}
         >
           <div className="p-4 cursor-grab active:cursor-grabbing">
