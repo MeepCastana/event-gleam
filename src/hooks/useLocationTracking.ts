@@ -30,12 +30,7 @@ export const useLocationTracking = ({ map, mapLoaded }: UseLocationTrackingProps
         }
         
         if (map && mapLoaded) {
-          map.flyTo({
-            center: [longitude, latitude],
-            zoom: 14,
-            essential: true
-          });
-
+          // Only update the marker position, don't fly to it
           if (!map.hasImage('pulsing-dot')) {
             map.addImage('pulsing-dot', createLocationMarker({
               arrowColor: '#4287f5',

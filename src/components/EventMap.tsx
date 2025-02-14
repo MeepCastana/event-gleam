@@ -180,12 +180,12 @@ const EventMap = () => {
               'interpolate',
               ['linear'],
               ['heatmap-density'],
-              0, 'rgba(33,102,172,0)',
-              0.2, 'rgb(103,169,207)',
-              0.4, 'rgb(209,229,240)',
-              0.6, 'rgb(253,219,199)',
-              0.8, 'rgb(239,138,98)',
-              1, 'rgb(178,24,43)'
+              0, 'rgba(0, 0, 255, 0)',    // transparent blue
+              0.2, 'rgba(0, 255, 0, 0.5)', // semi-transparent green
+              0.4, 'rgba(255, 255, 0, 0.7)', // semi-transparent yellow
+              0.6, 'rgba(255, 165, 0, 0.8)', // semi-transparent orange
+              0.8, 'rgba(255, 0, 0, 0.9)',   // semi-transparent red
+              1, 'rgb(255, 0, 0)'            // solid red
             ],
             'heatmap-radius': [
               'interpolate',
@@ -303,13 +303,12 @@ const EventMap = () => {
       // Get current position manually first
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          if (map.current && locationControlRef.current) {
+          if (map.current) {
             map.current.flyTo({
               center: [position.coords.longitude, position.coords.latitude],
               zoom: 15,
               essential: true
             });
-            locationControlRef.current.trigger(); // Trigger the control after centering
           }
         },
         (error) => {
@@ -322,7 +321,7 @@ const EventMap = () => {
         },
         {
           enableHighAccuracy: true,
-          timeout: 5000,
+          timeout: 10000, // Increased timeout
           maximumAge: 0
         }
       );
