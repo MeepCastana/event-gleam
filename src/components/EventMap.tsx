@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -38,34 +37,77 @@ const EventMap = () => {
 
       if (error) throw error;
 
-      // Get current map center for generating test points
-      const center = map.current.getCenter();
-      const baseLatitude = center.lat;
-      const baseLongitude = center.lng;
+      // Major cities around the world with their coordinates
+      const cities = [
+        // Europe
+        { lat: 51.5074, lng: -0.1278, weight: 1 }, // London
+        { lat: 48.8566, lng: 2.3522, weight: 1 }, // Paris
+        { lat: 52.5200, lng: 13.4050, weight: 1 }, // Berlin
+        { lat: 41.9028, lng: 12.4964, weight: 1 }, // Rome
+        { lat: 40.4168, lng: -3.7038, weight: 1 }, // Madrid
+        { lat: 59.9139, lng: 10.7522, weight: 1 }, // Oslo
+        { lat: 55.7558, lng: 37.6173, weight: 1 }, // Moscow
+        
+        // Asia
+        { lat: 35.6762, lng: 139.6503, weight: 1 }, // Tokyo
+        { lat: 31.2304, lng: 121.4737, weight: 1 }, // Shanghai
+        { lat: 22.3193, lng: 114.1694, weight: 1 }, // Hong Kong
+        { lat: 1.3521, lng: 103.8198, weight: 1 }, // Singapore
+        { lat: 28.6139, lng: 77.2090, weight: 1 }, // New Delhi
+        { lat: 25.2048, lng: 55.2708, weight: 1 }, // Dubai
+        
+        // Africa
+        { lat: -33.9249, lng: 18.4241, weight: 1 }, // Cape Town
+        { lat: 30.0444, lng: 31.2357, weight: 1 }, // Cairo
+        { lat: 6.5244, lng: 3.3792, weight: 1 }, // Lagos
+        { lat: -1.2921, lng: 36.8219, weight: 1 }, // Nairobi
+        
+        // Australia
+        { lat: -33.8688, lng: 151.2093, weight: 1 }, // Sydney
+        { lat: -37.8136, lng: 144.9631, weight: 1 }, // Melbourne
+        { lat: -31.9505, lng: 115.8605, weight: 1 }, // Perth
+        
+        // USA
+        { lat: 40.7128, lng: -74.0060, weight: 1 }, // New York
+        { lat: 34.0522, lng: -118.2437, weight: 1 }, // Los Angeles
+        { lat: 41.8781, lng: -87.6298, weight: 1 }, // Chicago
+        { lat: 29.7604, lng: -95.3698, weight: 1 }, // Houston
+        { lat: 37.7749, lng: -122.4194, weight: 1 }, // San Francisco
+        { lat: 25.7617, lng: -80.1918, weight: 1 } // Miami
+      ];
 
-      // Generate test points in a grid pattern around the center
-      const testPoints = [];
-      for (let i = -5; i <= 5; i++) {
-        for (let j = -5; j <= 5; j++) {
-          testPoints.push({
+      // Generate cluster points around each city
+      const testPoints = cities.flatMap(city => {
+        const points = [];
+        // Generate 20 points around each city
+        for (let i = 0; i < 20; i++) {
+          // Random offset within ~5km
+          const latOffset = (Math.random() - 0.5) * 0.05;
+          const lngOffset = (Math.random() - 0.5) * 0.05;
+          points.push({
             type: "Feature" as const,
-            properties: {},
+            properties: {
+              weight: city.weight * (0.5 + Math.random() * 0.5) // Vary the weight
+            },
             geometry: {
               type: "Point" as const,
               coordinates: [
-                baseLongitude + (j * 0.002), // Spread points by ~200m
-                baseLatitude + (i * 0.002)
+                city.lng + lngOffset,
+                city.lat + latOffset
               ]
             }
           });
         }
-      }
+        return points;
+      });
 
       // Combine real and test data
       const points = [
         ...(locations?.map(loc => ({
           type: "Feature" as const,
-          properties: {},
+          properties: {
+            weight: 1
+          },
           geometry: {
             type: "Point" as const,
             coordinates: [loc.longitude, loc.latitude]
