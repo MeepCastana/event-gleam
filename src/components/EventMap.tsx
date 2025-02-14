@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -272,29 +273,34 @@ const EventMap = () => {
 
       {/* Bottom Panel */}
       <div className="absolute bottom-0 left-0 right-0 z-10">
-        <ResizablePanel
-          defaultSize={15}
-          minSize={15}
-          maxSize={45}
-          onResize={handlePanelResize}
-          className="animate-panel-slide transition-transform duration-300 ease-in-out"
+        <ResizablePanelGroup
+          direction="vertical"
+          style={{ height: `${panelSize}vh` }}
         >
-          <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] h-full border border-white/10`}>
-            <div className="p-6">
-              <div className="w-16 h-1.5 bg-black/20 dark:bg-white/20 rounded-full mx-auto" />
-            </div>
-            <div className="px-6 pb-6 space-y-4">
-              <h2 className="text-xl font-semibold mb-4">
-                Nearby Events
-              </h2>
-              <div className="space-y-4 overflow-y-auto">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className={`h-20 ${menuStyle} backdrop-blur-lg shadow-lg rounded-xl border border-white/10`} />
-                ))}
+          <ResizablePanel
+            defaultSize={100}
+            minSize={15}
+            maxSize={45}
+            onResize={handlePanelResize}
+            className="animate-panel-slide transition-transform duration-300 ease-in-out"
+          >
+            <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] h-full border border-white/10`}>
+              <div className="p-6">
+                <div className="w-16 h-1.5 bg-black/20 dark:bg-white/20 rounded-full mx-auto" />
+              </div>
+              <div className="px-6 pb-6 space-y-4">
+                <h2 className="text-xl font-semibold mb-4">
+                  Nearby Events
+                </h2>
+                <div className="space-y-4 overflow-y-auto">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className={`h-20 ${menuStyle} backdrop-blur-lg shadow-lg rounded-xl border border-white/10`} />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </ResizablePanel>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );
