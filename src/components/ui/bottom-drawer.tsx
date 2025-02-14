@@ -30,12 +30,16 @@ export function BottomDrawer({
   const snapPoints = React.useMemo(() => [initialHeight, maxHeight], [initialHeight, maxHeight]);
   const lastSnapPoint = React.useRef<number>(initialHeight);
 
-  const handleDrag = React.useCallback((height: number) => {
-    const screenHeight = window.innerHeight;
-    const currentHeightPx = (height / screenHeight) * 100;
-    const midPoint = (initialHeight + maxHeight) / 2;
+  const handleSnapPointChange = React.useCallback((snapPoint: number | string) => {
+    const newHeight = typeof snapPoint === 'string' ? parseInt(snapPoint, 10) : snapPoint;
+    setCurrentHeight(newHeight);
+  }, []);
 
-    // Determine which snap point to use based on drag position and direction
+  const handleDrag = React.useCallback((_: React.PointerEvent<HTMLDivElement>, percentageDragged: number) => {
+    const midPoint = (initialHeight + maxHeight) / 2;
+    const currentHeightPx = percentageDragged * 100;
+    
+    // Determine which snap point to use based on drag position
     const shouldSnapToMax = currentHeightPx > midPoint;
     const targetHeight = shouldSnapToMax ? maxHeight : initialHeight;
 
@@ -60,7 +64,7 @@ export function BottomDrawer({
       modal={false}
       snapPoints={snapPoints}
       activeSnapPoint={currentHeight}
-      setActiveSnapPoint={setCurrentHeight}
+      setActiveSnapPoint={handleSnapPointChange}
       onDrag={handleDrag}
     >
       <Drawer.Portal>
