@@ -1,3 +1,4 @@
+
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { Activity, MapPin, Thermometer, Clock, AlertTriangle, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,13 +37,40 @@ export const EventsDrawer = ({
     loading: false
   });
   const [activeTab, setActiveTab] = useState<'info' | 'alerts'>('info');
-  const [historicalData] = useState([
-    { date: new Date(2024, 1, 1), value: 1.2 },
-    { date: new Date(2024, 1, 2), value: 1.4 },
-    { date: new Date(2024, 1, 3), value: 1.8 },
-    { date: new Date(2024, 1, 4), value: 1.3 },
-    { date: new Date(2024, 1, 5), value: 1.6 },
-  ]);
+
+  useEffect(() => {
+    if (heatspotInfo?.coordinates) {
+      setLocationDetails(prev => ({ ...prev, loading: true }));
+      fetchLocationDetails(heatspotInfo.coordinates).then(details => {
+        setLocationDetails({
+          ...details,
+          loading: false
+        });
+      });
+    }
+  }, [heatspotInfo?.coordinates]);
+
+  const fetchLocationDetails = async (coordinates: [number, number]) => {
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinates[0]},${coordinates[1]}.json?access_token=${mapboxgl.accessToken}`
+      );
+      const data = await response.json();
+      
+      if (data.features && data.features.length > 0) {
+        const streetAddress = data.features.find((f: any) => f.place_type.includes('address'))?.text || '';
+        const district = data.features.find((f: any) => f.place_type.includes('neighborhood'))?.text || '';
+        
+        return {
+          street: streetAddress,
+          district: district
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching location details:', error);
+    }
+    return {};
+  };
 
   const getIntensityColor = (intensity: number) => {
     if (intensity > 1.5) return 'text-red-400';
@@ -51,62 +79,8 @@ export const EventsDrawer = ({
   };
 
   const getIntensityPercentage = (intensity: number) => {
-    return Math.min(Math.round((intensity / 2) * 100), 100);
+    return Math.min(Math.max((intensity / 2) * 100, 0), 100);
   };
-
-  useEffect(() => {
-    const fetchLocationDetails = async () => {
-      if (!heatspotInfo) {
-        setLocationDetails({ loading: false });
-        return;
-      }
-
-      setLocationDetails({ loading: true });
-
-      try {
-        // Get Mapbox token from Supabase config
-        const { data: config } = await supabase
-          .from('_config')
-          .select('value')
-          .eq('name', 'MAPBOX_TOKEN')
-          .single();
-
-        if (!config?.value) {
-          console.error('Mapbox token not found');
-          return;
-        }
-
-        const [lng, lat] = heatspotInfo.coordinates;
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${config.value}&types=address,district`
-        );
-
-        if (!response.ok) throw new Error('Geocoding failed');
-
-        const data = await response.json();
-        const features = data.features || [];
-        
-        // Find the street and district from the features
-        const street = features.find((f: any) => f.place_type.includes('address'))?.text;
-        const district = features.find((f: any) => f.place_type.includes('district'))?.text;
-
-        setLocationDetails({
-          street: street || 'Street name unavailable',
-          district: district || 'District unavailable',
-          loading: false
-        });
-      } catch (error) {
-        console.error('Error fetching location details:', error);
-        setLocationDetails({
-          street: 'Unable to load address',
-          district: 'Location unavailable',
-          loading: false
-        });
-      }
-    };
-
-    fetchLocationDetails();
-  }, [heatspotInfo]);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -201,7 +175,6 @@ export const EventsDrawer = ({
 
   const handleDrawerHeightChange = (isExpanded: boolean) => {
     if (!isExpanded) {
-      // If drawer is contracted fully (dragged down), close it and reset
       onClose();
     }
   };
@@ -210,8 +183,8 @@ export const EventsDrawer = ({
     <BottomDrawer 
       isOpen={true}
       onClose={onClose} 
-      initialHeight={isDrawerExpanded ? 90 : 35} // Increased from 85 to 90
-      maxHeight={90} // Increased from 85 to 90
+      initialHeight={isDrawerExpanded ? 90 : 35}
+      maxHeight={90}
       onExpand={() => handleDrawerHeightChange(true)} 
       onContract={() => handleDrawerHeightChange(false)} 
       className={`${menuStyle} backdrop-blur-xl shadow-lg border border-white/10 ${isDarkMode ? 'bg-zinc-700/95' : 'bg-zinc-900/95'} text-zinc-100`}
