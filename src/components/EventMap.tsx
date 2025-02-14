@@ -254,15 +254,15 @@ const EventMap = () => {
   return (
     <div className="relative w-full h-screen">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 glass px-4 py-3">
-        <div className="flex items-center gap-3">
+      <div className="absolute top-4 left-4 right-4 z-10 glass px-6 py-3 rounded-2xl">
+        <div className="flex items-center gap-6">
           <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              className="w-full pl-9 bg-white/10 border-none placeholder:text-muted-foreground"
+              className="w-full pl-9 bg-white/10 border-none placeholder:text-muted-foreground rounded-xl"
               placeholder="Search for some magic..."
             />
           </div>
