@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -279,19 +278,9 @@ const EventMap = () => {
     }
   };
 
-  const centerOnLocation = async () => {
-    if (!map.current || !locationControlRef.current) return;
-
-    try {
-      locationControlRef.current.trigger();
-    } catch (error) {
-      console.error('Error in centerOnLocation:', error);
-      toast({
-        title: "Location Error",
-        description: "Unable to get your location. Please ensure location services are enabled.",
-        variant: "destructive"
-      });
-    }
+  const centerOnLocation = () => {
+    if (!locationControlRef.current) return;
+    locationControlRef.current.trigger();
   };
 
   const toggleTheme = () => {
@@ -349,20 +338,12 @@ const EventMap = () => {
       }
 
       mapboxgl.accessToken = mapboxToken;
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: isDarkMap 
-          ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
-          : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
-        center: [26.1025, 44.4268], // Default center, will be updated by geolocation
-        zoom: 14
-      });
 
-      // Initialize GeolocateControl with trackUserLocation enabled
+      // Create geolocate control first
       locationControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: {
           enableHighAccuracy: true,
-          timeout: 5000,
+          timeout: 2000, // Reduced timeout for faster response
           maximumAge: 0
         },
         trackUserLocation: true,
@@ -370,28 +351,39 @@ const EventMap = () => {
         showUserLocation: true
       });
 
-      // Add the control to the map
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: isDarkMap 
+          ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+          : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
+        zoom: 14
+      });
+
+      // Add the control to the map immediately
       map.current.addControl(locationControlRef.current);
 
-      // Hide the default control UI since we're using our custom button
-      setTimeout(() => {
+      // Hide the default control UI
+      const hideDefaultControl = () => {
         const geolocateControl = document.querySelector('.mapboxgl-ctrl-geolocate');
         if (geolocateControl) {
           (geolocateControl as HTMLElement).style.display = 'none';
         }
-      }, 100);
+      };
+      hideDefaultControl();
 
-      // Center on user's location when the map loads
-      map.current.on('load', () => {
-        console.log('Map loaded, centering on user location...');
+      // When style loads, update heatmap
+      map.current.on('style.load', () => {
+        console.log('Style loaded, updating heatmap...');
         setMapLoaded(true);
         updateHeatmap();
-        // Trigger geolocation after a small delay to ensure everything is initialized
-        setTimeout(() => {
-          if (locationControlRef.current) {
-            locationControlRef.current.trigger();
-          }
-        }, 500);
+      });
+
+      // When map loads, trigger location immediately
+      map.current.on('load', () => {
+        console.log('Map loaded, triggering location...');
+        if (locationControlRef.current) {
+          locationControlRef.current.trigger();
+        }
       });
 
       // Set up periodic heatmap updates
