@@ -132,14 +132,14 @@ const EventMap = () => {
             }
           });
 
-          // Initialize map at user's location with a better zoom level
+          // Initialize map at user's location with a more zoomed in view
           map.current = new mapboxgl.Map({
             container: mapContainer.current!,
             style: isDarkMap 
               ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
               : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
             center: [longitude, latitude],
-            zoom: 11 // Adjusted zoom level for better initial view
+            zoom: 12 // Increased zoom level for closer initial view
           });
 
           // Add control but hide its UI
