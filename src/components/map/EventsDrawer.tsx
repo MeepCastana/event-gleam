@@ -7,16 +7,16 @@ interface EventsDrawerProps {
   onClose: () => void;
 }
 
-export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose }: EventsDrawerProps) => {
+export const EventsDrawer = ({ menuStyle, isDarkMode }: EventsDrawerProps) => {
   return (
     <BottomDrawer 
       isOpen={true} 
-      onClose={onClose} 
+      onClose={() => {}} 
       initialHeight={35} 
       maxHeight={75} 
       onExpand={() => console.log('Drawer expanded')} 
       onContract={() => console.log('Drawer contracted')} 
-      className={`${menuStyle} backdrop-blur-xl shadow-lg border border-white/10 bg-[#1A1F2C]/95`}
+      className={`${menuStyle} backdrop-blur-xl shadow-lg border border-white/10 ${isDarkMode ? 'bg-gray-800/95' : 'bg-gray-900/95'} text-gray-100`}
     >
       <div className="h-full w-full">
         <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none">

@@ -20,7 +20,7 @@ export const MapHeader = ({ menuStyle, isDarkMode, onThemeToggle }: MapHeaderPro
 
   return (
     <div className="absolute top-4 left-4 right-4 z-10 flex items-center gap-3">
-      <div className={`${isDarkMode ? 'bg-[#1A1F2C]/90 text-gray-100' : 'bg-[#1A1F2C]/90 text-gray-100'} backdrop-blur-lg shadow-lg p-2 rounded-full border border-white/10`}>
+      <div className={`${isDarkMode ? 'bg-gray-800/90 text-gray-100' : 'bg-gray-900/95 text-gray-100'} backdrop-blur-lg shadow-lg p-2 rounded-full border border-white/10`}>
         {isSearching ? (
           <button 
             onClick={() => setIsSearching(false)}
@@ -37,7 +37,7 @@ export const MapHeader = ({ menuStyle, isDarkMode, onThemeToggle }: MapHeaderPro
             </SheetTrigger>
             <SheetContent 
               side="left" 
-              className={`${isDarkMode ? 'bg-[#1A1F2C]/95 text-gray-100' : 'bg-[#1A1F2C]/95 text-gray-100'} backdrop-blur-lg border-white/10`}
+              className={`${isDarkMode ? 'bg-gray-800/95 text-gray-100' : 'bg-gray-900/95 text-gray-100'} backdrop-blur-lg border-white/10`}
             >
               <div className="flex flex-col h-full">
                 <div className="flex items-center gap-4 p-4 border-b border-white/10">
@@ -74,7 +74,7 @@ export const MapHeader = ({ menuStyle, isDarkMode, onThemeToggle }: MapHeaderPro
           </Sheet>
         )}
       </div>
-      <div className={`${isDarkMode ? 'bg-[#1A1F2C]/90 text-gray-100' : 'bg-[#1A1F2C]/90 text-gray-100'} backdrop-blur-lg shadow-lg px-6 py-3 rounded-full flex-1 border border-white/10`}>
+      <div className={`${isDarkMode ? 'bg-gray-800/90 text-gray-100' : 'bg-gray-900/95 text-gray-100'} backdrop-blur-lg shadow-lg px-6 py-3 rounded-full flex-1 border border-white/10`}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-60" />
           <Input
