@@ -48,7 +48,7 @@ const EventMap = () => {
         const { latitude, longitude } = position.coords;
         map.current?.flyTo({
           center: [longitude, latitude],
-          zoom: 13,
+          zoom: 14, // Also updating the fly-to zoom to match initial zoom
           duration: 1000,
           essential: true
         });
@@ -139,7 +139,7 @@ const EventMap = () => {
               ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
               : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
             center: [longitude, latitude],
-            zoom: 12 // Increased zoom level for closer initial view
+            zoom: 14 // Increased zoom level for much closer initial view
           });
 
           // Add control but hide its UI
