@@ -278,6 +278,14 @@ const EventMap = () => {
           style={{ height: `${panelSize}vh` }}
         >
           <ResizablePanel
+            defaultSize={85}
+            minSize={55}
+            maxSize={85}
+          >
+            <div className="h-full" />
+          </ResizablePanel>
+          <ResizableHandle />
+          <ResizablePanel
             defaultSize={15}
             minSize={15}
             maxSize={45}
