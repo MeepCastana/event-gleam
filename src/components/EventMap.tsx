@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -268,7 +269,6 @@ const EventMap = () => {
       <BottomDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        snapPoints={[15, 50, 96]}
       >
         <div className={`${menuStyle} h-full rounded-t-[20px]`}>
           <div className="px-6 space-y-4">
