@@ -11,7 +11,11 @@ import { useLocationTracking } from '@/hooks/useLocationTracking';
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [isDarkMap, setIsDarkMap] = useState(false);
+  const [isDarkMap, setIsDarkMap] = useState(() => {
+    // Initialize state from localStorage, default to false if not set
+    const savedTheme = localStorage.getItem('mapTheme');
+    return savedTheme === 'dark';
+  });
   const { toast } = useToast();
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
@@ -21,10 +25,14 @@ const EventMap = () => {
     : "bg-[#1A1F2C]/90 text-gray-100";
 
   const toggleTheme = () => {
-    setIsDarkMap(!isDarkMap);
+    const newTheme = !isDarkMap;
+    setIsDarkMap(newTheme);
+    // Save theme preference to localStorage
+    localStorage.setItem('mapTheme', newTheme ? 'dark' : 'light');
+    
     if (map.current) {
       map.current.setStyle(
-        !isDarkMap
+        newTheme
           ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
           : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
       );
