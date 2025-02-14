@@ -58,6 +58,13 @@ const EventMap = () => {
     }
   }, [mapLoaded, updateHeatmap]);
 
+  // Update theme hook with map reference and update callback after initialization
+  useEffect(() => {
+    if (map.current && mapLoaded) {
+      toggleTheme();
+    }
+  }, [map, mapLoaded]); // we don't include toggleTheme to avoid infinite loop
+
   const handleDrawerClose = () => {
     setIsDrawerExpanded(false);
     setSelectedHeatspot(undefined);
