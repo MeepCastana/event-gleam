@@ -18,6 +18,7 @@ export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose }: EventsDra
       onContract={() => console.log('Drawer contracted')} 
       className="bg-transparent"
     >
+      <div className="h-full w-full bg-gray-950" />
     </BottomDrawer>
   );
 }
