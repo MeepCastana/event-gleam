@@ -7,7 +7,7 @@ export interface LocationMarkerProps {
   map: mapboxgl.Map;
 }
 
-export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 200, map }: LocationMarkerProps) => {
+export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 60, map }: LocationMarkerProps) => {
   const size = dotSize;
   
   return {
@@ -30,22 +30,20 @@ export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 200, ma
       // Calculate center and scale for the marker
       const centerX = this.width / 2;
       const centerY = this.height / 2;
-      const scale = size / 63; // The original SVG is 63x63
+      const scale = 0.95; // Scale slightly smaller than the canvas
 
       // Move to center and scale the drawing
       context.save();
       context.translate(centerX, centerY);
       context.scale(scale, scale);
-      context.translate(-31.5, -31.5); // Center of 63x63
+      context.translate(-centerX, -centerY);
 
-      // Draw the marker path
+      // Draw the marker path - scaled to fit within the canvas
       context.beginPath();
-      context.moveTo(23.70577136594, 9.3230854637602);
-      context.arc(31.5, 9.3230854637602, 9, -2.498091544796509, -0.6435011087932844, true);
-      context.lineTo(59.70577136594, 44.67691453624);
-      context.arc(51.91154273188, 58.17691453624, 9, -0.6435011087932844, -2.498091544796509, true);
-      context.lineTo(11.08845726812, 58.17691453624);
-      context.arc(3.29422863406, 44.67691453624, 9, -2.498091544796509, -0.6435011087932844, true);
+      context.moveTo(centerX - 15, centerY - 20);
+      context.arc(centerX, centerY - 20, 15, Math.PI, 0, false);
+      context.lineTo(centerX + 15, centerY + 15);
+      context.arc(centerX, centerY + 15, 15, 0, Math.PI, false);
       context.closePath();
 
       // Fill with blue color
