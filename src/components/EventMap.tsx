@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -85,6 +84,7 @@ const EventMap = () => {
 
   const handleDrawerClose = () => {
     setIsDrawerExpanded(false);
+    setSelectedHeatspot(undefined); // Clear selected heatspot when drawer is closed
   };
 
   const initializeMap = async () => {
@@ -436,8 +436,7 @@ const EventMap = () => {
         map.current.on('click', (e) => {
           // Only run if we're not clicking on a heatspot
           if (!isClickingHeatspot) {
-            setSelectedHeatspot(undefined);
-            setIsDrawerExpanded(false);
+            handleDrawerClose(); // Use the same handler for consistency
           }
           // Reset the flag for the next click
           isClickingHeatspot = false;
@@ -493,7 +492,7 @@ const EventMap = () => {
       <EventsDrawer 
         menuStyle={isDarkMap ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'}
         isDrawerExpanded={isDrawerExpanded}
-        onClose={handleDrawerClose}
+        onClose={handleDrawerClose} // This will now handle both closing scenarios
         isDarkMode={isDarkMap}
         heatspotInfo={selectedHeatspot}
       />

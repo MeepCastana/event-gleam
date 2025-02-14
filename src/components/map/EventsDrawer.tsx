@@ -1,4 +1,3 @@
-
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { Activity, MapPin, Thermometer, Clock, AlertTriangle, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
