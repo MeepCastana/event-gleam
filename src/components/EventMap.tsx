@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -12,10 +11,15 @@ const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
-  const {
-    toast
-  } = useToast();
+  const [isDarkMap, setIsDarkMap] = useState(false);
+  const { toast } = useToast();
   const [mapLoaded, setMapLoaded] = useState(false);
+
+  // Function to get menu background color based on map style
+  const menuStyle = isDarkMap
+    ? "bg-white/40 text-gray-900"
+    : "bg-[#1A1F2C]/90 text-gray-100";
+
   const createPulsingDot = (map: mapboxgl.Map) => {
     const size = 200;
     const pulsingDot = {
@@ -153,10 +157,12 @@ const EventMap = () => {
   const initializeMap = async () => {
     if (!mapContainer.current || map.current) return;
     try {
-      const {
-        data: config,
-        error
-      } = await supabase.from('_config').select('value').eq('name', 'MAPBOX_TOKEN').maybeSingle();
+      const { data: config, error } = await supabase
+        .from('_config')
+        .select('value')
+        .eq('name', 'MAPBOX_TOKEN')
+        .maybeSingle();
+
       if (error) throw error;
       if (!config) {
         toast({
@@ -166,6 +172,7 @@ const EventMap = () => {
         });
         return;
       }
+
       const mapboxToken = config.value;
       if (!mapboxToken) {
         toast({
@@ -175,15 +182,19 @@ const EventMap = () => {
         });
         return;
       }
+
       mapboxgl.accessToken = mapboxToken;
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
+        style: 'mapbox://styles/mapbox/light-v11', // Start with light style
         center: [-74.5, 40],
-        // Default center before getting user location
         zoom: 9
       });
+
+      // Listen for style changes to update menu colors
       map.current.on('style.load', () => {
+        const style = map.current?.getStyle();
+        setIsDarkMap(style?.name?.toLowerCase().includes('dark'));
         setMapLoaded(true);
       });
     } catch (error) {
@@ -220,16 +231,16 @@ const EventMap = () => {
     <div className="relative w-full h-screen">
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-10 flex items-center gap-3">
-        <div className="glass shadow-lg p-2 rounded-full">
-          <button className="p-2 hover:bg-white/20 rounded-full transition-colors">
+        <div className={`${menuStyle} backdrop-blur-lg shadow-lg p-2 rounded-full border border-white/10`}>
+          <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
         </div>
-        <div className="glass shadow-lg px-6 py-3 rounded-2xl flex-1">
+        <div className={`${menuStyle} backdrop-blur-lg shadow-lg px-6 py-3 rounded-2xl flex-1 border border-white/10`}>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-60" />
             <Input
-              className="w-full pl-9 bg-white/20 border-none placeholder:text-muted-foreground rounded-xl"
+              className="w-full pl-9 bg-white/10 border-none placeholder:text-inherit/60 rounded-xl"
               placeholder="Search for some magic..."
             />
           </div>
@@ -246,24 +257,21 @@ const EventMap = () => {
         className="fixed bottom-0 left-0 right-0 z-10"
       >
         <CollapsibleTrigger asChild>
-          <div className={`glass shadow-lg rounded-t-[32px] cursor-pointer transition-all duration-300 ${isExpanded ? 'pb-4' : 'pb-2'}`}>
+          <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] cursor-pointer transition-all duration-300 border border-white/10 ${isExpanded ? 'pb-4' : 'pb-2'}`}>
             <div className="p-4">
-              <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-2" />
+              <div className="w-12 h-1 bg-current/20 rounded-full mx-auto mb-2" />
             </div>
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent className="slide-up">
-          <div className="glass shadow-lg px-6 pb-6 space-y-4 rounded-t-[32px] -mt-[32px] pt-8">
+          <div className={`${menuStyle} backdrop-blur-lg shadow-lg px-6 pb-6 space-y-4 rounded-t-[32px] -mt-[32px] pt-8 border border-white/10`}>
             <h2 className="text-xl font-semibold mb-4">
               Nearby Events
             </h2>
             <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-              <div className="h-20 glass shadow-lg rounded-xl" />
-              <div className="h-20 glass shadow-lg rounded-xl" />
-              <div className="h-20 glass shadow-lg rounded-xl" />
-              <div className="h-20 glass shadow-lg rounded-xl" />
-              <div className="h-20 glass shadow-lg rounded-xl" />
-              <div className="h-20 glass shadow-lg rounded-xl" />
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className={`h-20 ${menuStyle} backdrop-blur-lg shadow-lg rounded-xl border border-white/10`} />
+              ))}
             </div>
           </div>
         </CollapsibleContent>
