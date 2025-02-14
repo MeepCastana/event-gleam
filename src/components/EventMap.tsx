@@ -39,7 +39,7 @@ const EventMap = () => {
   };
 
   const centerOnLocation = () => {
-    if (map.current && locationControlRef.current) {
+    if (locationControlRef.current) {
       locationControlRef.current.trigger();
     }
   };
@@ -92,15 +92,26 @@ const EventMap = () => {
         zoom: 14
       });
 
-      // Initialize GeolocateControl but don't add it to the map
+      // Initialize GeolocateControl and add it to the map
       locationControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: {
           enableHighAccuracy: true
         },
         trackUserLocation: true,
         showAccuracyCircle: false,
-        showUserLocation: false // Hide the blue dot
+        showUserLocation: true
       });
+
+      // Add the control to the map but hide it visually
+      map.current.addControl(locationControlRef.current);
+
+      // Hide the default control UI since we're using our custom button
+      setTimeout(() => {
+        const geolocateControl = document.querySelector('.mapboxgl-ctrl-geolocate');
+        if (geolocateControl) {
+          (geolocateControl as HTMLElement).style.display = 'none';
+        }
+      }, 100);
 
       map.current.on('style.load', () => {
         setMapLoaded(true);
