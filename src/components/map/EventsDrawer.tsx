@@ -12,7 +12,7 @@ export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose }: EventsDra
     <BottomDrawer
       isOpen={true}
       onClose={onClose}
-      initialHeight={15}
+      initialHeight={30}
       maxHeight={75}
       onExpand={() => console.log('Drawer expanded')}
       onContract={() => console.log('Drawer contracted')}
@@ -20,6 +20,9 @@ export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose }: EventsDra
     >
       <div className={`${menuStyle} h-full rounded-t-[20px]`}>
         <div className="px-6 space-y-4">
+          <h2 className="text-xl font-semibold mb-4">
+            Nearby Events
+          </h2>
           <div className="space-y-4">
             {[...Array(6)].map((_, i) => (
               <div 
