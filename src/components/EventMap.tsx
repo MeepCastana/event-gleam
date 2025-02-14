@@ -141,15 +141,16 @@ const EventMap = () => {
 
       console.log('Generated points:', points.length);
 
+      // Check if we need to add or update the source
       if (map.current.getSource('heatmap-source')) {
         console.log('Updating existing source');
-        const source = map.current.getSource('heatmap-source') as mapboxgl.GeoJSONSource;
-        source.setData({
+        (map.current.getSource('heatmap-source') as mapboxgl.GeoJSONSource).setData({
           type: "FeatureCollection",
           features: points
         });
       } else if (mapLoaded) {
         console.log('Adding new source and layer');
+        // Add source
         map.current.addSource('heatmap-source', {
           type: 'geojson',
           data: {
@@ -158,20 +159,19 @@ const EventMap = () => {
           }
         });
 
+        // Add layer with new color scheme and adjusted settings
         map.current.addLayer({
           id: 'heatmap-layer',
           type: 'heatmap',
           source: 'heatmap-source',
           paint: {
-            // More gradual weight distribution
             'heatmap-weight': [
               'interpolate',
               ['linear'],
-              ['get', 'weight', ['properties']],
-              0, 0.3,
-              2, 1.5
+              ['get', 'weight'],
+              0, 0,
+              1, 1
             ],
-            // Reduced intensity
             'heatmap-intensity': [
               'interpolate',
               ['linear'],
@@ -179,100 +179,31 @@ const EventMap = () => {
               0, 1,
               9, 3
             ],
-            // More varied color palette
             'heatmap-color': [
               'interpolate',
               ['linear'],
               ['heatmap-density'],
-              0, 'rgba(0,0,0,0)',
-              0.2, 'rgba(150,150,255,0.4)',  // Light blue
-              0.4, 'rgba(0,255,0,0.5)',      // Green
-              0.6, 'rgba(255,255,0,0.6)',    // Yellow
-              0.8, 'rgba(255,150,0,0.7)',    // Orange
-              1, 'rgba(255,0,0,0,0.8)'         // Red
+              0, 'rgba(33,102,172,0)',
+              0.2, 'rgb(103,169,207)',
+              0.4, 'rgb(209,229,240)',
+              0.6, 'rgb(253,219,199)',
+              0.8, 'rgb(239,138,98)',
+              1, 'rgb(178,24,43)'
             ],
-            // Smaller radius
             'heatmap-radius': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, 10,
-              9, 25
+              0, 2,
+              9, 20
             ],
-            // Slightly reduced opacity
             'heatmap-opacity': 0.8
+          },
+          layout: {
+            visibility: 'visible'
           }
         });
       }
-
-      if (map.current && mapLoaded) {
-        let isClickingHeatspot = false;
-
-        // Add click event handler for the heatmap layer first
-        map.current.on('click', 'heatmap-layer', (e) => {
-          if (!e.features?.[0]) return;
-
-          // Set flag to prevent map click handler from running
-          isClickingHeatspot = true;
-
-          const coords = e.features[0].geometry.type === 'Point' 
-            ? e.features[0].geometry.coordinates as [number, number]
-            : undefined;
-
-          if (coords) {
-            // Center the map on the clicked point with animation
-            map.current?.flyTo({
-              center: [coords[0], coords[1]],
-              zoom: 12,
-              duration: 1500,
-              essential: true
-            });
-
-            // Find the nearest city to the clicked point
-            const nearestCity = cities.reduce((nearest, city) => {
-              const distance = Math.sqrt(
-                Math.pow(city.lng - coords[0], 2) + 
-                Math.pow(city.lat - coords[1], 2)
-              );
-              return distance < nearest.distance ? { city, distance } : nearest;
-            }, { city: cities[0], distance: Infinity }).city;
-
-            setSelectedHeatspot({
-              cityName: nearestCity.name,
-              coordinates: coords,
-              intensity: nearestCity.weight
-            });
-            
-            // Force drawer to expand fully
-            setIsDrawerExpanded(true);
-          }
-        });
-
-        // Add click event handler for the map after the heatmap layer handler
-        map.current.on('click', (e) => {
-          // Only run if we're not clicking on a heatspot
-          if (!isClickingHeatspot) {
-            setSelectedHeatspot(undefined);
-            setIsDrawerExpanded(false);
-          }
-          // Reset the flag for the next click
-          isClickingHeatspot = false;
-        });
-
-        // Change cursor to pointer when hovering over heatmap
-        map.current.on('mouseenter', 'heatmap-layer', () => {
-          if (map.current) {
-            map.current.getCanvas().style.cursor = 'pointer';
-          }
-        });
-
-        map.current.on('mouseleave', 'heatmap-layer', () => {
-          if (map.current) {
-            map.current.getCanvas().style.cursor = '';
-          }
-        });
-      }
-
     } catch (error) {
       console.error('Error updating heatmap:', error);
     }
@@ -284,6 +215,9 @@ const EventMap = () => {
     localStorage.setItem('mapTheme', newTheme ? 'dark' : 'light');
     
     if (map.current) {
+      // Store the current visibility state of the heatmap layer
+      const heatmapVisible = map.current.getLayoutProperty('heatmap-layer', 'visibility') === 'visible';
+      
       map.current.setStyle(
         newTheme
           ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
@@ -293,7 +227,12 @@ const EventMap = () => {
       // Re-add heatmap layer when style is loaded
       map.current.once('style.load', () => {
         console.log('Style loaded, re-adding heatmap...');
-        updateHeatmap();
+        updateHeatmap().then(() => {
+          // Restore the visibility state after updating
+          if (map.current && map.current.getLayer('heatmap-layer')) {
+            map.current.setLayoutProperty('heatmap-layer', 'visibility', heatmapVisible ? 'visible' : 'none');
+          }
+        });
       });
     }
   };
