@@ -59,37 +59,26 @@ const EventMap = () => {
         { lat: 46.0177, lng: 23.5804, weight: 1.0 }, // Alba Iulia (74k)
         { lat: 45.8667, lng: 22.9167, weight: 1.0 }, // Deva (61k)
         { lat: 44.1733, lng: 28.6383, weight: 1.4 }, // Constanța (283k)
-        
-        // Europe
-        { lat: 51.5074, lng: -0.1278, weight: 1 }, // London
-        
-        // Asia
-        { lat: 35.6762, lng: 139.6503, weight: 1 }, // Tokyo
-        
-        // Africa
-        { lat: -33.9249, lng: 18.4241, weight: 1 }, // Cape Town
-        
-        // Australia
-        { lat: -33.8688, lng: 151.2093, weight: 1 }, // Sydney
-        
-        // USA
-        { lat: 40.7128, lng: -74.0060, weight: 1 }, // New York
       ];
 
       // Generate cluster points around each city
       const testPoints = cities.flatMap(city => {
         const points = [];
-        // Generate more points for Romanian cities based on weight
-        const numPoints = Math.floor(city.weight * 30); // Adjust number of points based on weight
+        // Reduced number of points per city (10 * weight instead of 30)
+        const numPoints = Math.floor(city.weight * 10);
         for (let i = 0; i < numPoints; i++) {
-          // Random offset within ~3km for Romanian cities, ~5km for others
-          const radiusFactor = city.weight > 1 ? 0.03 : 0.05; // Smaller radius for Romanian cities
+          // Smaller radius for more concentrated clusters
+          const radiusFactor = city.weight > 1 ? 0.015 : 0.025; // Half the previous values
           const latOffset = (Math.random() - 0.5) * radiusFactor;
           const lngOffset = (Math.random() - 0.5) * radiusFactor;
+          
+          // Vary the weights more significantly
+          const randomWeight = city.weight * (0.3 + Math.random() * 0.7); // More variation in weight
+          
           points.push({
             type: "Feature" as const,
             properties: {
-              weight: city.weight * (0.5 + Math.random() * 0.5) // Vary the weight
+              weight: randomWeight
             },
             geometry: {
               type: "Point" as const,
@@ -142,44 +131,44 @@ const EventMap = () => {
           type: 'heatmap',
           source: 'heatmap-source',
           paint: {
-            // Increase the heatmap weight to make points more significant
+            // More gradual weight distribution
             'heatmap-weight': [
               'interpolate',
               ['linear'],
               ['get', 'weight', ['properties']],
-              0, 1,
-              2, 3
+              0, 0.3,
+              2, 1.5
             ],
-            // Increase the heatmap intensity
+            // Reduced intensity
             'heatmap-intensity': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, 2,
-              9, 5
+              0, 1,
+              9, 3
             ],
-            // Adjust color ramp to match the example
+            // More varied color palette
             'heatmap-color': [
               'interpolate',
               ['linear'],
               ['heatmap-density'],
               0, 'rgba(0,0,0,0)',
-              0.2, 'rgba(0,255,0,0.3)',
-              0.4, 'rgba(0,255,0,0.5)',
-              0.6, 'rgba(255,255,0,0.7)',
-              0.8, 'rgba(255,0,0,0.8)',
-              1, 'rgba(255,0,0,1)'
+              0.2, 'rgba(150,150,255,0.4)',  // Light blue
+              0.4, 'rgba(0,255,0,0.5)',      // Green
+              0.6, 'rgba(255,255,0,0.6)',    // Yellow
+              0.8, 'rgba(255,150,0,0.7)',    // Orange
+              1, 'rgba(255,0,0,0.8)'         // Red
             ],
-            // Significantly increase the radius to make clusters more visible
+            // Smaller radius
             'heatmap-radius': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, 20,
-              9, 50
+              0, 10,
+              9, 25
             ],
-            // Increase overall opacity
-            'heatmap-opacity': 1
+            // Slightly reduced opacity
+            'heatmap-opacity': 0.8
           }
         });
       }
