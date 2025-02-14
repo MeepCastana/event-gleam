@@ -29,6 +29,7 @@ const EventMap = () => {
     if (!map.current || !mapLoaded) return;
 
     try {
+      console.log('Updating heatmap...');
       // Get real data from Supabase
       const { data: locations, error } = await supabase
         .from('user_locations')
@@ -117,14 +118,17 @@ const EventMap = () => {
         ...testPoints
       ];
 
-      const source = map.current.getSource('heatmap-source') as mapboxgl.GeoJSONSource;
+      console.log('Generated points:', points.length);
 
-      if (source) {
+      if (map.current.getSource('heatmap-source')) {
+        console.log('Updating existing source');
+        const source = map.current.getSource('heatmap-source') as mapboxgl.GeoJSONSource;
         source.setData({
           type: "FeatureCollection",
           features: points
         });
       } else if (mapLoaded) {
+        console.log('Adding new source and layer');
         map.current.addSource('heatmap-source', {
           type: 'geojson',
           data: {
@@ -363,6 +367,19 @@ const EventMap = () => {
     map: map.current,
     mapLoaded
   });
+
+  // Call updateHeatmap when map is loaded and periodically
+  useEffect(() => {
+    if (mapLoaded) {
+      console.log('Map loaded, updating heatmap...');
+      updateHeatmap();
+      
+      // Set up periodic updates
+      const interval = setInterval(updateHeatmap, 30000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [mapLoaded]);
 
   return (
     <div className="relative w-full h-screen">
