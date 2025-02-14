@@ -43,23 +43,29 @@ export const MapHeader = ({
                       </a>
                       <button 
                         onClick={onThemeToggle} 
-                        className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-300 ${
+                        className={`group w-full flex items-center justify-between px-4 py-3 transition-all duration-300 ${
                           isDarkMode 
-                            ? 'bg-zinc-800 hover:bg-zinc-700 text-yellow-300' 
-                            : 'bg-blue-50 hover:bg-blue-100 text-blue-600'
+                            ? 'hover:bg-zinc-800/70' 
+                            : 'hover:bg-white/10'
                         }`}
                       >
-                        {isDarkMode ? (
-                          <>
-                            <Moon className="w-5 h-5" />
-                            <span>NIGHT MODE</span>
-                          </>
-                        ) : (
-                          <>
-                            <Sun className="w-5 h-5" />
-                            <span>DAY MODE</span>
-                          </>
-                        )}
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-full transition-all duration-300 ${
+                            isDarkMode 
+                              ? 'bg-zinc-800 text-yellow-300 group-hover:bg-zinc-700' 
+                              : 'bg-blue-500/10 text-blue-500 group-hover:bg-blue-500/20'
+                          }`}>
+                            {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                          </div>
+                          <span className="font-medium">{isDarkMode ? 'Dark' : 'Light'}</span>
+                        </div>
+                        <div className={`text-xs px-2 py-1 rounded-full transition-all duration-300 ${
+                          isDarkMode 
+                            ? 'bg-zinc-800 text-zinc-400' 
+                            : 'bg-white/10 text-zinc-300'
+                        }`}>
+                          {isDarkMode ? 'ON' : 'OFF'}
+                        </div>
                       </button>
                       <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
                         <Settings className="w-5 h-5" />
