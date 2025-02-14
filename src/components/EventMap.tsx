@@ -105,8 +105,8 @@ const EventMap = () => {
       setIsDrawerExpanded(true);
     };
 
-    // Add click handler for heatmap layer
-    map.current.on('click', 'heatmap-layer', handleHeatmapClick);
+    // Add click handler for both heatmap and points layers
+    map.current.on('click', 'heatmap-points', handleHeatmapClick);
 
     // Hide the geolocate control
     const hideGeolocateControl = () => {
@@ -125,7 +125,7 @@ const EventMap = () => {
     return () => {
       clearInterval(interval);
       if (map.current) {
-        map.current.off('click', 'heatmap-layer', handleHeatmapClick);
+        map.current.off('click', 'heatmap-points', handleHeatmapClick);
         map.current.off('style.load', hideGeolocateControl);
       }
     };

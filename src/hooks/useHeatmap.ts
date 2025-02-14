@@ -106,6 +106,18 @@ export const useHeatmap = (map: MutableRefObject<mapboxgl.Map | null>, mapLoaded
 
       console.log('Generated points:', points.length);
 
+      // Create a transparent circle layer for better click targets
+      const circleLayer = {
+        id: 'heatmap-points',
+        type: 'circle',
+        source: 'heatmap-source',
+        paint: {
+          'circle-radius': 20,
+          'circle-color': 'transparent',
+          'circle-opacity': 0
+        }
+      };
+
       if (map.current.getSource('heatmap-source')) {
         console.log('Updating existing source');
         const source = map.current.getSource('heatmap-source') as mapboxgl.GeoJSONSource;
@@ -161,6 +173,22 @@ export const useHeatmap = (map: MutableRefObject<mapboxgl.Map | null>, mapLoaded
               9, 25
             ],
             'heatmap-opacity': 0.8
+          }
+        });
+
+        // Add the circle layer after the heatmap layer
+        map.current.addLayer(circleLayer as any);
+
+        // Change cursor to pointer when hovering over the circle layer
+        map.current.on('mouseenter', 'heatmap-points', () => {
+          if (map.current) {
+            map.current.getCanvas().style.cursor = 'pointer';
+          }
+        });
+
+        map.current.on('mouseleave', 'heatmap-points', () => {
+          if (map.current) {
+            map.current.getCanvas().style.cursor = '';
           }
         });
       }
