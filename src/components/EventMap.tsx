@@ -88,7 +88,7 @@ const EventMap = () => {
       const watchId = navigator.geolocation.watchPosition(
         (position) => {
           const { longitude, latitude } = position.coords;
-          if (map.current) {
+          if (map.current && mapLoaded) {
             // Update map center
             map.current.flyTo({
               center: [longitude, latitude],
@@ -101,31 +101,35 @@ const EventMap = () => {
               map.current.addImage('pulsing-dot', createPulsingDot(map.current), { pixelRatio: 2 });
             }
 
-            // Add or update the location point
-            if (!map.current.getSource('location')) {
-              map.current.addSource('location', {
-                type: 'geojson',
-                data: {
+            try {
+              // Add or update the location point
+              if (!map.current.getSource('location')) {
+                map.current.addSource('location', {
+                  type: 'geojson',
+                  data: {
+                    type: 'Point',
+                    coordinates: [longitude, latitude]
+                  }
+                });
+                
+                map.current.addLayer({
+                  id: 'location',
+                  source: 'location',
+                  type: 'symbol',
+                  layout: {
+                    'icon-image': 'pulsing-dot',
+                    'icon-allow-overlap': true
+                  }
+                });
+              } else {
+                const source = map.current.getSource('location') as mapboxgl.GeoJSONSource;
+                source.setData({
                   type: 'Point',
                   coordinates: [longitude, latitude]
-                }
-              });
-              
-              map.current.addLayer({
-                id: 'location',
-                source: 'location',
-                type: 'symbol',
-                layout: {
-                  'icon-image': 'pulsing-dot',
-                  'icon-allow-overlap': true
-                }
-              });
-            } else {
-              const source = map.current.getSource('location') as mapboxgl.GeoJSONSource;
-              source.setData({
-                type: 'Point',
-                coordinates: [longitude, latitude]
-              });
+                });
+              }
+            } catch (error) {
+              console.error('Error updating location:', error);
             }
           }
         },
@@ -205,9 +209,8 @@ const EventMap = () => {
         zoom: 9,
       });
 
-      map.current.on('load', () => {
+      map.current.on('style.load', () => {
         setMapLoaded(true);
-        getUserLocation(); // Get user location once map is loaded
         toast({
           title: "Map loaded successfully",
           description: "Start exploring events in your area",
@@ -229,7 +232,6 @@ const EventMap = () => {
     
     const setupMap = async () => {
       await initializeMap();
-      cleanupLocation = getUserLocation();
     };
 
     setupMap();
@@ -239,6 +241,15 @@ const EventMap = () => {
       map.current?.remove();
     };
   }, []);
+
+  // Effect for handling location after map is loaded
+  useEffect(() => {
+    let cleanupLocation: (() => void) | undefined;
+    if (mapLoaded) {
+      cleanupLocation = getUserLocation();
+    }
+    return () => cleanupLocation?.();
+  }, [mapLoaded]);
 
   return (
     <div className="relative w-full h-screen">
