@@ -44,9 +44,9 @@ export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 60, map
       context.fillStyle = `${arrowColor}20`;
       context.fill();
 
-      // Draw center dot (increased size from size/8 to size/6)
+      // Draw center dot (increased size from size/6 to size/4)
       context.beginPath();
-      context.arc(centerX, centerY, size / 6, 0, Math.PI * 2);
+      context.arc(centerX, centerY, size / 4, 0, Math.PI * 2);
       context.fillStyle = arrowColor;
       context.fill();
 
