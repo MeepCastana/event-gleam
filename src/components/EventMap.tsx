@@ -138,39 +138,44 @@ const EventMap = () => {
           type: 'heatmap',
           source: 'heatmap-source',
           paint: {
+            // Increase the heatmap weight to make points more significant
             'heatmap-weight': [
               'interpolate',
               ['linear'],
               ['get', 'weight', ['properties']],
-              0, 0.6,
-              1, 1
+              0, 1,
+              2, 3
             ],
+            // Increase the heatmap intensity
             'heatmap-intensity': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, 1,
-              9, 3
+              0, 2,
+              9, 5
             ],
+            // Adjust color ramp to match the example
             'heatmap-color': [
               'interpolate',
               ['linear'],
               ['heatmap-density'],
-              0, 'rgba(33,102,172,0)',
-              0.2, 'rgb(103,169,207)',
-              0.4, 'rgb(209,229,240)',
-              0.6, 'rgb(253,219,199)',
-              0.8, 'rgb(239,138,98)',
-              1, 'rgb(178,24,43)'
+              0, 'rgba(0,0,0,0)',
+              0.2, 'rgba(0,255,0,0.3)',
+              0.4, 'rgba(0,255,0,0.5)',
+              0.6, 'rgba(255,255,0,0.7)',
+              0.8, 'rgba(255,0,0,0.8)',
+              1, 'rgba(255,0,0,1)'
             ],
+            // Significantly increase the radius to make clusters more visible
             'heatmap-radius': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, 4,
-              9, 30
+              0, 20,
+              9, 50
             ],
-            'heatmap-opacity': 0.8
+            // Increase overall opacity
+            'heatmap-opacity': 1
           }
         });
       }
