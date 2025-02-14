@@ -12,7 +12,7 @@ export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose }: EventsDra
     <BottomDrawer 
       isOpen={true} 
       onClose={onClose} 
-      initialHeight={25} 
+      initialHeight={35} 
       maxHeight={75} 
       onExpand={() => console.log('Drawer expanded')} 
       onContract={() => console.log('Drawer contracted')} 
