@@ -35,4 +35,4 @@ export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose }: EventsDra
       </div>
     </BottomDrawer>
   );
-};
+}

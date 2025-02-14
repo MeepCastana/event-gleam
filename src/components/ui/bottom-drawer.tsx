@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { Drawer } from "vaul";
+import { motion, useAnimation, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export interface BottomDrawerProps {
@@ -26,73 +26,86 @@ export function BottomDrawer({
   onExpand,
   onContract,
 }: BottomDrawerProps) {
-  const [currentHeight, setCurrentHeight] = React.useState(initialHeight);
-  const snapPoints = React.useMemo(() => [initialHeight, maxHeight], [initialHeight, maxHeight]);
-  const lastSnapPoint = React.useRef<number>(initialHeight);
+  const controls = useAnimation();
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  
+  // Convert height percentages to pixels for calculations
+  const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
+  const initialHeightPx = (initialHeight / 100) * windowHeight;
+  const maxHeightPx = (maxHeight / 100) * windowHeight;
+  const snapThresholdPx = ((maxHeightPx - initialHeightPx) * snapThreshold) / 100;
 
-  const handleSnapPointChange = React.useCallback((snapPoint: number | string) => {
-    const newHeight = typeof snapPoint === 'string' ? parseInt(snapPoint, 10) : snapPoint;
-    setCurrentHeight(newHeight);
-  }, []);
-
-  const handleDrag = React.useCallback((_: React.PointerEvent<HTMLDivElement>, percentageDragged: number) => {
-    const midPoint = (initialHeight + maxHeight) / 2;
-    const drawerHeight = maxHeight - ((1 - percentageDragged) * (maxHeight - initialHeight));
-    
-    // Determine which snap point to use based on drag position
-    const shouldSnapToMax = drawerHeight > midPoint;
-    const targetHeight = shouldSnapToMax ? maxHeight : initialHeight;
-
-    // Only trigger callbacks if we're actually changing positions
-    if (targetHeight !== lastSnapPoint.current) {
-      if (shouldSnapToMax) {
-        onExpand?.();
-      } else {
-        onContract?.();
-      }
-      lastSnapPoint.current = targetHeight;
-    }
-
-    setCurrentHeight(targetHeight);
-  }, [initialHeight, maxHeight, onExpand, onContract]);
-
-  // Reset to initial height when isOpen changes
   React.useEffect(() => {
     if (isOpen) {
-      setCurrentHeight(initialHeight);
+      controls.start({
+        y: windowHeight - initialHeightPx,
+        transition: { type: "spring", stiffness: 300, damping: 30 }
+      });
     }
-  }, [isOpen, initialHeight]);
+  }, [isOpen, controls, initialHeightPx, windowHeight]);
+
+  const handleDragEnd = (_: any, info: PanInfo) => {
+    const yPosition = info.point.y;
+    const dragDistance = info.offset.y;
+    
+    // Calculate positions
+    const currentPosition = windowHeight - yPosition;
+    const isMovingUp = dragDistance < 0;
+    
+    const shouldSnapToMax = isMovingUp && 
+      (currentPosition > initialHeightPx + snapThresholdPx || 
+       Math.abs(dragDistance) > snapThresholdPx);
+    
+    if (shouldSnapToMax) {
+      controls.start({
+        y: windowHeight - maxHeightPx,
+        transition: { type: "spring", stiffness: 300, damping: 30 }
+      });
+      setIsExpanded(true);
+      onExpand?.();
+    } else {
+      controls.start({
+        y: windowHeight - initialHeightPx,
+        transition: { type: "spring", stiffness: 300, damping: 30 }
+      });
+      setIsExpanded(false);
+      onContract?.();
+    }
+  };
 
   return (
-    <Drawer.Root 
-      open={isOpen} 
-      onOpenChange={(open) => !open && onClose()}
-      dismissible={false}
-      modal={false}
-      snapPoints={snapPoints}
-      activeSnapPoint={currentHeight}
-      setActiveSnapPoint={handleSnapPointChange}
-      onDrag={handleDrag}
-    >
-      <Drawer.Portal>
-        <Drawer.Content
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ y: windowHeight }}
+          animate={controls}
+          exit={{ y: windowHeight }}
+          drag="y"
+          dragConstraints={{
+            top: windowHeight - maxHeightPx,
+            bottom: windowHeight - initialHeightPx
+          }}
+          dragElastic={0.2}
+          onDragEnd={handleDragEnd}
           className={cn(
-            "fixed bottom-0 left-0 right-0 z-50 rounded-t-[20px] bg-background transition-transform duration-300 ease-spring",
+            "fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-[20px] shadow-lg",
             className
           )}
-          style={{
-            height: `${maxHeight}vh`,
-            transform: `translateY(${(maxHeight - currentHeight)}vh)`,
-          }}
+          style={{ height: `${maxHeight}vh` }}
         >
-          <div className="p-4 cursor-grab active:cursor-grabbing">
-            <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto" />
+          {/* Drag Handle */}
+          <div className="absolute top-0 left-0 right-0 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none">
+            <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full" />
           </div>
-          <div className="p-4 flex-1 overflow-y-auto">
-            {children}
+          
+          {/* Content Area */}
+          <div className="h-full pt-8 overflow-y-auto overscroll-contain">
+            <div className="p-4">
+              {children}
+            </div>
           </div>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
