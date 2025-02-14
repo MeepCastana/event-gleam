@@ -206,21 +206,14 @@ const EventMap = () => {
       }
 
       if (map.current && mapLoaded) {
-        // Add click event handler for the map to close drawer when clicking outside heatspots
-        map.current.on('click', (e) => {
-          const features = map.current?.queryRenderedFeatures(e.point, {
-            layers: ['heatmap-layer']
-          });
-          
-          if (!features || features.length === 0) {
-            setSelectedHeatspot(undefined);
-            setIsDrawerExpanded(false);
-          }
-        });
+        let isClickingHeatspot = false;
 
-        // Add click event handler for the heatmap layer
+        // Add click event handler for the heatmap layer first
         map.current.on('click', 'heatmap-layer', (e) => {
           if (!e.features?.[0]) return;
+
+          // Set flag to prevent map click handler from running
+          isClickingHeatspot = true;
 
           const coords = e.features[0].geometry.type === 'Point' 
             ? e.features[0].geometry.coordinates as [number, number]
@@ -229,7 +222,7 @@ const EventMap = () => {
           if (coords) {
             // Center the map on the clicked point with animation
             map.current?.flyTo({
-              center: [coords[0], coords[1]], // Explicitly create a tuple
+              center: [coords[0], coords[1]],
               zoom: 12,
               duration: 1500,
               essential: true
@@ -252,10 +245,18 @@ const EventMap = () => {
             
             // Force drawer to expand fully
             setIsDrawerExpanded(true);
-
-            // Stop event propagation to prevent the map click handler from firing
-            e.stopPropagation();
           }
+        });
+
+        // Add click event handler for the map after the heatmap layer handler
+        map.current.on('click', (e) => {
+          // Only run if we're not clicking on a heatspot
+          if (!isClickingHeatspot) {
+            setSelectedHeatspot(undefined);
+            setIsDrawerExpanded(false);
+          }
+          // Reset the flag for the next click
+          isClickingHeatspot = false;
         });
 
         // Change cursor to pointer when hovering over heatmap
