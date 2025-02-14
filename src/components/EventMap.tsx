@@ -40,9 +40,28 @@ const EventMap = () => {
   } | undefined>();
 
   const centerOnLocation = () => {
-    if (!locationControlRef.current) return;
-    // Get the user's location without animation
-    locationControlRef.current.trigger();
+    if (!locationControlRef.current || !map.current) return;
+    
+    // Get current position and fly to it
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        map.current?.flyTo({
+          center: [longitude, latitude],
+          zoom: 13,
+          duration: 1000,
+          essential: true
+        });
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        toast({
+          variant: "destructive",
+          title: "Location Error",
+          description: "Unable to get your location. Please enable location services."
+        });
+      }
+    );
   };
 
   const toggleTheme = () => {
@@ -113,14 +132,14 @@ const EventMap = () => {
             }
           });
 
-          // Initialize map at user's location
+          // Initialize map at user's location with a less zoomed in view
           map.current = new mapboxgl.Map({
             container: mapContainer.current!,
             style: isDarkMap 
               ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
               : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
             center: [longitude, latitude],
-            zoom: 14
+            zoom: 11 // Less zoomed in initial view
           });
 
           // Add control but hide its UI
