@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -211,10 +210,6 @@ const EventMap = () => {
 
       map.current.on('style.load', () => {
         setMapLoaded(true);
-        toast({
-          title: "Map loaded successfully",
-          description: "Start exploring events in your area",
-        });
       });
 
     } catch (error) {
@@ -254,12 +249,14 @@ const EventMap = () => {
   return (
     <div className="relative w-full h-screen">
       {/* Header */}
-      <div className="absolute top-4 left-4 right-4 z-10 glass px-6 py-3 rounded-2xl">
-        <div className="flex items-center gap-8">
+      <div className="absolute top-4 left-4 right-4 z-10 flex items-center gap-3">
+        <div className="glass p-2 rounded-full">
           <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="relative flex-1">
+        </div>
+        <div className="glass px-6 py-3 rounded-2xl flex-1">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               className="w-full pl-9 bg-white/10 border-none placeholder:text-muted-foreground rounded-xl"
