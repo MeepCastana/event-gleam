@@ -47,23 +47,81 @@ const EventMap = () => {
     mapLoaded
   });
 
-  // Set up periodic heatmap updates
+  // Set up periodic heatmap updates and click handling
   useEffect(() => {
-    if (mapLoaded) {
-      console.log('Map loaded, updating heatmap...');
-      updateHeatmap();
-      
-      const interval = setInterval(updateHeatmap, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [mapLoaded, updateHeatmap]);
+    if (!mapLoaded || !map.current) return;
 
-  // Update theme hook with map reference and update callback after initialization
-  useEffect(() => {
-    if (map.current && mapLoaded) {
-      toggleTheme();
-    }
-  }, [map, mapLoaded]); // we don't include toggleTheme to avoid infinite loop
+    console.log('Map loaded, updating heatmap...');
+    updateHeatmap();
+    
+    const interval = setInterval(updateHeatmap, 30000);
+
+    // Add click handler for heatmap layer
+    map.current.on('click', 'heatmap-layer', (e) => {
+      if (!e.features?.[0]) return;
+
+      const coordinates = e.features[0].geometry.coordinates.slice() as [number, number];
+      const intensity = e.features[0].properties?.weight || 0;
+
+      // Find the closest city
+      const cities = [
+        { name: "Bucharest", coords: [26.1025, 44.4268] },
+        { name: "Timișoara", coords: [21.2087, 45.7489] },
+        { name: "Cluj-Napoca", coords: [23.6236, 46.7712] },
+        // ... add other cities as needed
+      ];
+
+      let closestCity = cities[0];
+      let minDistance = Infinity;
+
+      cities.forEach(city => {
+        const dist = Math.sqrt(
+          Math.pow(coordinates[0] - city.coords[0], 2) + 
+          Math.pow(coordinates[1] - city.coords[1], 2)
+        );
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestCity = city;
+        }
+      });
+
+      setSelectedHeatspot({
+        cityName: closestCity.name,
+        coordinates,
+        intensity
+      });
+
+      map.current?.flyTo({
+        center: coordinates,
+        zoom: 14,
+        essential: true
+      });
+
+      setIsDrawerExpanded(true);
+    });
+
+    // Hide the geolocate control
+    const hideGeolocateControl = () => {
+      const geolocateControl = document.querySelector('.mapboxgl-ctrl-geolocate');
+      if (geolocateControl) {
+        (geolocateControl as HTMLElement).style.display = 'none';
+      }
+    };
+
+    // Initial hide
+    hideGeolocateControl();
+
+    // Hide after any style changes
+    map.current.on('style.load', hideGeolocateControl);
+
+    return () => {
+      clearInterval(interval);
+      if (map.current) {
+        map.current.off('click', 'heatmap-layer');
+        map.current.off('style.load', hideGeolocateControl);
+      }
+    };
+  }, [mapLoaded, map, updateHeatmap]);
 
   const handleDrawerClose = () => {
     setIsDrawerExpanded(false);

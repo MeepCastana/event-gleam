@@ -1,3 +1,4 @@
+
 import { useCallback, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { supabase } from "@/integrations/supabase/client";
@@ -74,7 +75,8 @@ export const useHeatmap = (map: MutableRefObject<mapboxgl.Map | null>, mapLoaded
           points.push({
             type: "Feature" as const,
             properties: {
-              weight: randomWeight
+              weight: randomWeight,
+              cityName: city.name
             },
             geometry: {
               type: "Point" as const,
