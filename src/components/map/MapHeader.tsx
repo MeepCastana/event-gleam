@@ -1,14 +1,17 @@
+
 import { ArrowLeft, Menu, Search, Settings, Sun, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet";
 import { LocationButton } from "./LocationButton";
+
 interface MapHeaderProps {
   menuStyle: string;
   isDarkMode: boolean;
   onThemeToggle: () => void;
   onLocationClick: () => void;
 }
+
 export const MapHeader = ({
   menuStyle,
   isDarkMode,
@@ -31,13 +34,7 @@ export const MapHeader = ({
                 <SheetContent side="left" className={`${isDarkMode ? 'bg-zinc-700/95 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'} backdrop-blur-lg border-white/10`}>
                   <div className="flex flex-col h-full">
                     <div className="flex items-center gap-4 p-4 border-b border-white/10">
-                      <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xl font-semibold">
-                        J
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">Jeremy Griffin</h3>
-                        <p className="text-sm text-zinc-400">+1 xxxx yyyyy</p>
-                      </div>
+                      <h3 className="font-comfortaa text-2xl font-bold text-primary">HotSpot</h3>
                     </div>
                     <nav className="flex-1 py-4">
                       <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
