@@ -16,9 +16,9 @@ export const EventsDrawer = ({ menuStyle, isDrawerExpanded, onClose }: EventsDra
       maxHeight={75} 
       onExpand={() => console.log('Drawer expanded')} 
       onContract={() => console.log('Drawer contracted')} 
-      className="bg-transparent"
+      className="bg-gray-950"
     >
-      <div className="h-full w-full bg-gray-950" />
+      <div className="h-full w-full" />
     </BottomDrawer>
   );
 }
