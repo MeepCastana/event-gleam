@@ -88,13 +88,13 @@ export function BottomDrawer({
       height: `${maxHeight}vh`
     }}>
           {/* Drag Handle */}
-          <div className="absolute top-0 left-0 right-0 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none bg-gray-950 hover:bg-gray-800 rounded-none rounded-t-2xl">
+          <div className="absolute top-0 left-0 right-0 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none bg-gray-950  rounded-none rounded-t-2xl">
             <div className="w-12 h-1.5 bg-white/20 rounded-full" />
           </div>
           
           {/* Content Area */}
           <div className="h-full pt-8 overflow-y-auto overscroll-contain">
-            <div className="p-4 bg-gray-950 hover:bg-gray-800 ">
+            <div className="p-4 bg-gray-950 ">
               {children}
             </div>
           </div>
