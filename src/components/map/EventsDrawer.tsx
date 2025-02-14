@@ -234,14 +234,21 @@ export const EventsDrawer = ({
     }
   };
 
+  const handleDrawerHeightChange = (isExpanded: boolean) => {
+    if (!isExpanded) {
+      // If drawer is contracted fully (dragged down), close it and reset
+      onClose();
+    }
+  };
+
   return (
     <BottomDrawer 
       isOpen={true}
       onClose={onClose} 
-      initialHeight={isDrawerExpanded ? 75 : 35} 
-      maxHeight={75} 
-      onExpand={() => console.log('Drawer expanded')} 
-      onContract={() => console.log('Drawer contracted')} 
+      initialHeight={isDrawerExpanded ? 85 : 35} // Increased from 75 to 85
+      maxHeight={85} // Increased from 75 to 85
+      onExpand={() => handleDrawerHeightChange(true)} 
+      onContract={() => handleDrawerHeightChange(false)} 
       className={`${menuStyle} backdrop-blur-xl shadow-lg border border-white/10 ${isDarkMode ? 'bg-zinc-700/95' : 'bg-zinc-900/95'} text-zinc-100`}
     >
       <div className="h-full w-full p-4">
