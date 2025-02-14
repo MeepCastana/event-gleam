@@ -67,7 +67,7 @@ export const MapHeader = ({
           </div>
         </div>
       </div>
-      <div className="mt-3 ml-2">
+      <div className="mt-3 ml-2 w-10">
         <LocationButton onClick={onLocationClick} isDarkMode={isDarkMode} />
       </div>
     </div>;
