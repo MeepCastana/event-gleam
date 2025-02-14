@@ -1,6 +1,5 @@
-
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
-import { Activity, MapPin, Thermometer, Clock, ChevronLeft, ChevronRight, Users, TrendingUp, AlertTriangle } from "lucide-react";
+import { Activity, MapPin, Thermometer, Clock, AlertTriangle, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,7 +35,7 @@ export const EventsDrawer = ({
   const [locationDetails, setLocationDetails] = useState<LocationDetails>({
     loading: false
   });
-  const [activeTab, setActiveTab] = useState<'info' | 'trends' | 'alerts'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'alerts'>('info');
   const [historicalData] = useState([
     { date: new Date(2024, 1, 1), value: 1.2 },
     { date: new Date(2024, 1, 2), value: 1.4 },
@@ -166,41 +165,6 @@ export const EventsDrawer = ({
             </motion.div>
           </div>
         );
-      case 'trends':
-        return (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-4"
-          >
-            <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-              <h3 className="text-sm font-medium text-zinc-400 mb-4">Activity Trend (Last 5 Days)</h3>
-              <div className="h-32 relative">
-                <div className="absolute inset-0 flex items-end justify-between">
-                  {historicalData.map((data, index) => (
-                    <div key={index} className="flex flex-col items-center gap-2 flex-1">
-                      <motion.div 
-                        initial={{ height: 0 }}
-                        animate={{ height: `${(data.value / 2) * 100}%` }}
-                        transition={{ delay: index * 0.1 }}
-                        className={`w-2 rounded-full ${getIntensityColor(data.value)}`}
-                      />
-                      <span className="text-xs text-zinc-400 rotate-45 origin-left translate-y-4">
-                        {format(data.date, 'MMM d')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-zinc-400">Average Activity</span>
-                <span className="font-medium">1.46</span>
-              </div>
-            </div>
-          </motion.div>
-        );
       case 'alerts':
         return (
           <motion.div 
@@ -292,14 +256,6 @@ export const EventsDrawer = ({
                 }`}
               >
                 Info
-              </button>
-              <button
-                onClick={() => setActiveTab('trends')}
-                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'trends' ? 'bg-white/10' : 'hover:bg-white/5'
-                }`}
-              >
-                Trends
               </button>
               <button
                 onClick={() => setActiveTab('alerts')}
