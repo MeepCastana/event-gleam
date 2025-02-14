@@ -24,9 +24,9 @@ export const EventsDrawer = ({
 }: EventsDrawerProps) => {
   return (
     <BottomDrawer 
-      isOpen={true} 
+      isOpen={heatspotInfo !== undefined} 
       onClose={onClose} 
-      initialHeight={35} 
+      initialHeight={isDrawerExpanded ? 75 : 35} 
       maxHeight={75} 
       onExpand={() => console.log('Drawer expanded')} 
       onContract={() => console.log('Drawer contracted')} 

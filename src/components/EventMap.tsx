@@ -206,6 +206,18 @@ const EventMap = () => {
       }
 
       if (map.current && mapLoaded) {
+        // Add click event handler for the map to close drawer when clicking outside heatspots
+        map.current.on('click', (e) => {
+          const features = map.current?.queryRenderedFeatures(e.point, {
+            layers: ['heatmap-layer']
+          });
+          
+          if (!features || features.length === 0) {
+            setSelectedHeatspot(undefined);
+            setIsDrawerExpanded(false);
+          }
+        });
+
         // Add click event handler for the heatmap layer
         map.current.on('click', 'heatmap-layer', (e) => {
           if (!e.features?.[0]) return;
@@ -238,8 +250,11 @@ const EventMap = () => {
               intensity: nearestCity.weight
             });
             
-            // Force drawer to expand
+            // Force drawer to expand fully
             setIsDrawerExpanded(true);
+
+            // Stop event propagation to prevent the map click handler from firing
+            e.stopPropagation();
           }
         });
 
