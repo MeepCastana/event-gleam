@@ -55,7 +55,7 @@ export const MapHeader = ({ menuStyle }: MapHeaderProps) => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-60" />
           <Input
-            className="w-full pl-9 bg-white/10 border-none placeholder:text-inherit/60 rounded-full"
+            className="w-full pl-9 bg-white/10 border-none placeholder:text-inherit/60 rounded-full focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             placeholder="Search for fun"
             onFocus={() => setIsSearching(true)}
             onBlur={() => setIsSearching(false)}
