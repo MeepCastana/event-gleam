@@ -39,51 +39,52 @@ const EventMap = () => {
 
       // Major cities around the world with their coordinates
       const cities = [
+        // Romanian cities with population-based weights
+        { lat: 44.4268, lng: 26.1025, weight: 2.0 }, // Bucharest (1.8M)
+        { lat: 45.7489, lng: 21.2087, weight: 1.5 }, // Timișoara (319k)
+        { lat: 46.7712, lng: 23.6236, weight: 1.5 }, // Cluj-Napoca (324k)
+        { lat: 47.1585, lng: 27.6014, weight: 1.5 }, // Iași (318k)
+        { lat: 44.3178, lng: 23.7945, weight: 1.4 }, // Craiova (302k)
+        { lat: 45.6427, lng: 25.5887, weight: 1.3 }, // Brașov (290k)
+        { lat: 44.4323, lng: 26.1063, weight: 1.3 }, // Sector 2 (288k)
+        { lat: 47.6458, lng: 26.2499, weight: 1.2 }, // Suceava (124k)
+        { lat: 45.4371, lng: 28.0500, weight: 1.2 }, // Galați (249k)
+        { lat: 44.4268, lng: 26.1025, weight: 1.2 }, // Sector 3 (244k)
+        { lat: 45.2652, lng: 27.9750, weight: 1.1 }, // Brăila (180k)
+        { lat: 46.5455, lng: 24.5627, weight: 1.1 }, // Târgu Mureș (134k)
+        { lat: 45.7489, lng: 21.2087, weight: 1.1 }, // Baia Mare (123k)
+        { lat: 44.9371, lng: 26.0300, weight: 1.0 }, // Ploiești (209k)
+        { lat: 47.7484, lng: 22.8784, weight: 1.0 }, // Satu Mare (102k)
+        { lat: 46.0177, lng: 23.5804, weight: 1.0 }, // Alba Iulia (74k)
+        { lat: 45.8667, lng: 22.9167, weight: 1.0 }, // Deva (61k)
+        { lat: 44.1733, lng: 28.6383, weight: 1.4 }, // Constanța (283k)
+        
         // Europe
         { lat: 51.5074, lng: -0.1278, weight: 1 }, // London
-        { lat: 48.8566, lng: 2.3522, weight: 1 }, // Paris
-        { lat: 52.5200, lng: 13.4050, weight: 1 }, // Berlin
-        { lat: 41.9028, lng: 12.4964, weight: 1 }, // Rome
-        { lat: 40.4168, lng: -3.7038, weight: 1 }, // Madrid
-        { lat: 59.9139, lng: 10.7522, weight: 1 }, // Oslo
-        { lat: 55.7558, lng: 37.6173, weight: 1 }, // Moscow
         
         // Asia
         { lat: 35.6762, lng: 139.6503, weight: 1 }, // Tokyo
-        { lat: 31.2304, lng: 121.4737, weight: 1 }, // Shanghai
-        { lat: 22.3193, lng: 114.1694, weight: 1 }, // Hong Kong
-        { lat: 1.3521, lng: 103.8198, weight: 1 }, // Singapore
-        { lat: 28.6139, lng: 77.2090, weight: 1 }, // New Delhi
-        { lat: 25.2048, lng: 55.2708, weight: 1 }, // Dubai
         
         // Africa
         { lat: -33.9249, lng: 18.4241, weight: 1 }, // Cape Town
-        { lat: 30.0444, lng: 31.2357, weight: 1 }, // Cairo
-        { lat: 6.5244, lng: 3.3792, weight: 1 }, // Lagos
-        { lat: -1.2921, lng: 36.8219, weight: 1 }, // Nairobi
         
         // Australia
         { lat: -33.8688, lng: 151.2093, weight: 1 }, // Sydney
-        { lat: -37.8136, lng: 144.9631, weight: 1 }, // Melbourne
-        { lat: -31.9505, lng: 115.8605, weight: 1 }, // Perth
         
         // USA
         { lat: 40.7128, lng: -74.0060, weight: 1 }, // New York
-        { lat: 34.0522, lng: -118.2437, weight: 1 }, // Los Angeles
-        { lat: 41.8781, lng: -87.6298, weight: 1 }, // Chicago
-        { lat: 29.7604, lng: -95.3698, weight: 1 }, // Houston
-        { lat: 37.7749, lng: -122.4194, weight: 1 }, // San Francisco
-        { lat: 25.7617, lng: -80.1918, weight: 1 } // Miami
       ];
 
       // Generate cluster points around each city
       const testPoints = cities.flatMap(city => {
         const points = [];
-        // Generate 20 points around each city
-        for (let i = 0; i < 20; i++) {
-          // Random offset within ~5km
-          const latOffset = (Math.random() - 0.5) * 0.05;
-          const lngOffset = (Math.random() - 0.5) * 0.05;
+        // Generate more points for Romanian cities based on weight
+        const numPoints = Math.floor(city.weight * 30); // Adjust number of points based on weight
+        for (let i = 0; i < numPoints; i++) {
+          // Random offset within ~3km for Romanian cities, ~5km for others
+          const radiusFactor = city.weight > 1 ? 0.03 : 0.05; // Smaller radius for Romanian cities
+          const latOffset = (Math.random() - 0.5) * radiusFactor;
+          const lngOffset = (Math.random() - 0.5) * radiusFactor;
           points.push({
             type: "Feature" as const,
             properties: {
