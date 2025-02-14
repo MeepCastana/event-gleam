@@ -1,5 +1,5 @@
 
-import { ArrowLeft, Menu, Search, Settings, Sun, User } from "lucide-react";
+import { ArrowLeft, Menu, Search, Settings, Sun, User, Navigation } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { 
@@ -8,14 +8,16 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { LocationButton } from "./LocationButton";
 
 interface MapHeaderProps {
   menuStyle: string;
   isDarkMode: boolean;
   onThemeToggle: () => void;
+  onLocationClick: () => void;
 }
 
-export const MapHeader = ({ menuStyle, isDarkMode, onThemeToggle }: MapHeaderProps) => {
+export const MapHeader = ({ menuStyle, isDarkMode, onThemeToggle, onLocationClick }: MapHeaderProps) => {
   const [isSearching, setIsSearching] = useState(false);
 
   return (
@@ -54,6 +56,10 @@ export const MapHeader = ({ menuStyle, isDarkMode, onThemeToggle }: MapHeaderPro
                     <User className="w-5 h-5" />
                     <span>PROFILE</span>
                   </a>
+                  <LocationButton 
+                    onClick={onLocationClick}
+                    isDarkMode={isDarkMode}
+                  />
                   <button
                     onClick={onThemeToggle}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors"

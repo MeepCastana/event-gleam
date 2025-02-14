@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -7,8 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { MapHeader } from './map/MapHeader';
 import { EventsDrawer } from './map/EventsDrawer';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
-import { Button } from './ui/button';
-import { Navigation } from 'lucide-react';
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -154,15 +151,9 @@ const EventMap = () => {
         menuStyle={menuStyle} 
         isDarkMode={isDarkMap}
         onThemeToggle={toggleTheme}
+        onLocationClick={centerOnLocation}
       />
       <div ref={mapContainer} className="absolute inset-0" />
-      <Button
-        onClick={centerOnLocation}
-        className="absolute bottom-6 right-6 rounded-full w-12 h-12 p-0 shadow-lg bg-primary hover:bg-primary/90"
-        size="icon"
-      >
-        <Navigation className="h-5 w-5" />
-      </Button>
       <EventsDrawer 
         menuStyle={menuStyle}
         isDrawerExpanded={isDrawerExpanded}
