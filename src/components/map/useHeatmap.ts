@@ -1,5 +1,5 @@
 
-import { useCallback } from 'react';
+import { useCallback, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { supabase } from "@/integrations/supabase/client";
 import { CityInfo } from '@/types/map';
