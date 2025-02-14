@@ -408,6 +408,34 @@ const EventMap = () => {
     setSelectedHeatspot(undefined);
   };
 
+  const toggleTheme = () => {
+    const newTheme = !isDarkMap;
+    setIsDarkMap(newTheme);
+    localStorage.setItem('mapTheme', newTheme ? 'dark' : 'light');
+    
+    if (map.current) {
+      // Store the current visibility state of the heatmap layer
+      const heatmapVisible = map.current.getLayoutProperty('heatmap-layer', 'visibility') === 'visible';
+      
+      map.current.setStyle(
+        newTheme
+          ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+          : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
+      );
+
+      // Re-add heatmap layer when style is loaded
+      map.current.once('style.load', () => {
+        console.log('Style loaded, re-adding heatmap...');
+        updateHeatmap().then(() => {
+          // Restore the visibility state after updating
+          if (map.current && map.current.getLayer('heatmap-layer')) {
+            map.current.setLayoutProperty('heatmap-layer', 'visibility', heatmapVisible ? 'visible' : 'none');
+          }
+        });
+      });
+    }
+  };
+
   // Initialize map
   useEffect(() => {
     let cleanup: (() => void) | undefined;
