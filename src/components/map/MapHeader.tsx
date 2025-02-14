@@ -1,5 +1,5 @@
 
-import { ArrowLeft, Menu, Moon, Search, Sun } from "lucide-react";
+import { ArrowLeft, Menu, Moon, Search, Settings, Sun, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { 
@@ -48,56 +48,27 @@ export const MapHeader = ({ menuStyle, isDarkMode, onThemeToggle }: MapHeaderPro
                 </div>
                 <nav className="flex-1 py-4">
                   <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="w-5 h-5">🏠</div>
-                    <span>HOME</span>
-                  </a>
-                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="w-5 h-5">👤</div>
+                    <User className="w-5 h-5" />
                     <span>PROFILE</span>
-                  </a>
-                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="w-5 h-5">ℹ️</div>
-                    <span>ABOUT US</span>
-                  </a>
-                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="w-5 h-5">✈️</div>
-                    <span>PLANS</span>
-                  </a>
-                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="w-5 h-5">💬</div>
-                    <span>MESSAGE</span>
-                  </a>
-                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="w-5 h-5">💳</div>
-                    <span>PAYMENT</span>
-                  </a>
-                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="w-5 h-5">📅</div>
-                    <span>SCHEDULE</span>
-                  </a>
-                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="w-5 h-5">🛒</div>
-                    <span>MY CART</span>
-                  </a>
-                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="w-5 h-5">🎯</div>
-                    <span>PROMOTION</span>
-                  </a>
-                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="w-5 h-5">🎧</div>
-                    <span>SUPPORT</span>
                   </a>
                   <button
                     onClick={onThemeToggle}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors"
                   >
-                    <div className="w-5 h-5">
-                      {isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                    </div>
-                    <span>THEME</span>
+                    {isDarkMode ? (
+                      <>
+                        <Moon className="w-5 h-5" />
+                        <span>DARK MODE</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sun className="w-5 h-5" />
+                        <span>LIGHT MODE</span>
+                      </>
+                    )}
                   </button>
                   <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="w-5 h-5">⚙️</div>
+                    <Settings className="w-5 h-5" />
                     <span>SETTINGS</span>
                   </a>
                 </nav>
