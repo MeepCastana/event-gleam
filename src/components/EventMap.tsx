@@ -3,33 +3,12 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const { toast } = useToast();
   const [mapLoaded, setMapLoaded] = useState(false);
-
-  const testEdgeFunction = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('test-function')
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Edge Function Test",
-        description: data.message,
-      });
-    } catch (error) {
-      console.error('Error testing edge function:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to test edge function. Check console for details.",
-      });
-    }
-  };
 
   const initializeMap = async () => {
     if (!mapContainer.current || map.current) return;
@@ -99,11 +78,6 @@ const EventMap = () => {
   return (
     <div className="relative w-full h-screen">
       <div ref={mapContainer} className="absolute inset-0" />
-      <div className="absolute top-4 right-4 z-10">
-        <Button onClick={testEdgeFunction}>
-          Test Edge Function
-        </Button>
-      </div>
       <div className="absolute bottom-0 left-0 right-0 glass rounded-t-3xl p-6 slide-up transform transition-transform duration-300">
         <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
         <h2 className="text-xl font-semibold mb-4">Nearby Events</h2>
