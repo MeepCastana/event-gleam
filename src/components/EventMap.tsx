@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -15,6 +14,7 @@ const EventMap = () => {
   const { toast } = useToast();
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
 
   const menuStyle = isDarkMap
     ? "bg-white/40 text-gray-900"
@@ -221,6 +221,11 @@ const EventMap = () => {
     }
   };
 
+  const handleDrawerClose = () => {
+    // When user tries to close, just set to default expanded state
+    setIsDrawerExpanded(false);
+  };
+
   useEffect(() => {
     let cleanupLocation: (() => void) | undefined;
     const setupMap = async () => {
@@ -265,11 +270,11 @@ const EventMap = () => {
       {/* Map */}
       <div ref={mapContainer} className="absolute inset-0" />
 
-      {/* Bottom Drawer */}
+      {/* Bottom Drawer - Always visible */}
       <BottomDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        initialHeight={30}
+        isOpen={true}
+        onClose={handleDrawerClose}
+        initialHeight={isDrawerExpanded ? 75 : 30}
         maxHeight={75}
       >
         <div className={`${menuStyle} h-full rounded-t-[20px]`}>
