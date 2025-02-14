@@ -9,11 +9,13 @@ export interface LocationMarkerProps {
 
 export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 60, map }: LocationMarkerProps) => {
   const size = dotSize;
+  let data = new Uint8Array(size * size * 4);
+  let animationFrame = 0;
   
   return {
     width: size,
     height: size,
-    data: new Uint8Array(size * size * 4),
+    data: data,
     onAdd: function () {
       const canvas = document.createElement('canvas');
       canvas.width = this.width;
@@ -24,29 +26,34 @@ export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 60, map
       const context = this.context;
       if (!context) return false;
 
+      // Update animation frame
+      animationFrame = (animationFrame + 1) % 60;
+      const pulseScale = 1 + Math.sin(animationFrame * (Math.PI / 30)) * 0.1;
+
       // Clear the canvas
       context.clearRect(0, 0, this.width, this.height);
 
-      // Calculate center and scale for the marker
+      // Calculate center
       const centerX = this.width / 2;
       const centerY = this.height / 2;
-      const scale = 0.95; // Scale slightly smaller than the canvas
 
-      // Move to center and scale the drawing
+      // Move to center and apply pulsing scale
       context.save();
       context.translate(centerX, centerY);
-      context.scale(scale, scale);
+      context.scale(pulseScale, pulseScale);
       context.translate(-centerX, -centerY);
 
-      // Draw the marker path - scaled to fit within the canvas
+      // Draw the marker path
       context.beginPath();
-      context.moveTo(centerX - 15, centerY - 20);
-      context.arc(centerX, centerY - 20, 15, Math.PI, 0, false);
-      context.lineTo(centerX + 15, centerY + 15);
-      context.arc(centerX, centerY + 15, 15, 0, Math.PI, false);
+      context.moveTo(centerX - 8, centerY - 15);
+      context.arc(centerX, centerY - 15, 8, Math.PI, 0, false);
+      context.lineTo(centerX + 8, centerY + 8);
+      context.arc(centerX, centerY + 8, 8, 0, Math.PI, false);
       context.closePath();
 
-      // Fill with blue color
+      // Fill with blue color and add some shadow for depth
+      context.shadowColor = arrowColor;
+      context.shadowBlur = 10;
       context.fillStyle = arrowColor;
       context.fill();
 
