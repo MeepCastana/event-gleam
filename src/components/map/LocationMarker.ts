@@ -26,9 +26,9 @@ export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 60, map
       const context = this.context;
       if (!context) return false;
 
-      // Update animation frame
-      animationFrame = (animationFrame + 1) % 60;
-      const pulseScale = 1 + Math.sin(animationFrame * (Math.PI / 30)) * 0.3;
+      // Update animation frame with slower speed
+      animationFrame = (animationFrame + 0.5) % 60; // Reduced from 1 to 0.5 for slower animation
+      const pulseScale = 1 + Math.sin(animationFrame * (Math.PI / 45)) * 0.3; // Changed from 30 to 45 for smoother transition
 
       // Clear the canvas
       context.clearRect(0, 0, this.width, this.height);

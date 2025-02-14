@@ -39,7 +39,7 @@ export const useLocationTracking = ({ map, mapLoaded }: UseLocationTrackingProps
           if (!map.hasImage('pulsing-dot')) {
             map.addImage('pulsing-dot', createLocationMarker({
               arrowColor: '#4287f5',
-              dotSize: 200,
+              dotSize: 60,
               map
             }), { pixelRatio: 2 });
           }
@@ -72,6 +72,11 @@ export const useLocationTracking = ({ map, mapLoaded }: UseLocationTrackingProps
             }
           } catch (error) {
             console.error('Error updating location:', error);
+            toast({
+              variant: "destructive",
+              title: "Location Error",
+              description: "Unable to update your location on the map."
+            });
           }
         }
       }, error => {
