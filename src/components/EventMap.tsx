@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -12,22 +13,120 @@ const EventMap = () => {
   const { toast } = useToast();
   const [mapLoaded, setMapLoaded] = useState(false);
 
+  const createPulsingDot = (map: mapboxgl.Map) => {
+    const size = 200;
+    const pulsingDot = {
+      width: size,
+      height: size,
+      data: new Uint8Array(size * size * 4),
+      
+      onAdd: function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = this.width;
+        canvas.height = this.height;
+        this.context = canvas.getContext('2d');
+      },
+      
+      render: function() {
+        const duration = 1000;
+        const t = (performance.now() % duration) / duration;
+        
+        const radius = (size / 2) * 0.3;
+        const outerRadius = (size / 2) * 0.7 * t + radius;
+        const context = this.context;
+        
+        // Draw the outer circle
+        context.clearRect(0, 0, this.width, this.height);
+        context.beginPath();
+        context.arc(
+          this.width / 2,
+          this.height / 2,
+          outerRadius,
+          0,
+          Math.PI * 2
+        );
+        context.fillStyle = `rgba(66, 135, 245, ${1 - t})`;
+        context.fill();
+        
+        // Draw the inner circle
+        context.beginPath();
+        context.arc(
+          this.width / 2,
+          this.height / 2,
+          radius,
+          0,
+          Math.PI * 2
+        );
+        context.fillStyle = 'rgba(66, 135, 245, 1)';
+        context.strokeStyle = 'white';
+        context.lineWidth = 2 + 4 * (1 - t);
+        context.fill();
+        context.stroke();
+        
+        // Update this image's data with data from the canvas
+        this.data = context.getImageData(
+          0,
+          0,
+          this.width,
+          this.height
+        ).data;
+        
+        // Continuously repaint the map
+        map.triggerRepaint();
+        
+        // Return `true` to let the map know that the image was updated
+        return true;
+      }
+    };
+    
+    return pulsingDot;
+  };
+
   const getUserLocation = () => {
     if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
+      // Watch position instead of getting it once
+      const watchId = navigator.geolocation.watchPosition(
         (position) => {
           const { longitude, latitude } = position.coords;
           if (map.current) {
+            // Update map center
             map.current.flyTo({
               center: [longitude, latitude],
               zoom: 14,
               essential: true
             });
 
-            // Add a marker at user's location
-            new mapboxgl.Marker({ color: "#FF0000" })
-              .setLngLat([longitude, latitude])
-              .addTo(map.current);
+            // Add or update the pulsing dot marker
+            if (!map.current.hasImage('pulsing-dot')) {
+              map.current.addImage('pulsing-dot', createPulsingDot(map.current), { pixelRatio: 2 });
+            }
+
+            // Add or update the location point
+            if (!map.current.getSource('location')) {
+              map.current.addSource('location', {
+                type: 'geojson',
+                data: {
+                  type: 'Point',
+                  coordinates: [longitude, latitude]
+                }
+              });
+              
+              map.current.addLayer({
+                id: 'location',
+                source: 'location',
+                type: 'symbol',
+                layout: {
+                  'icon-image': 'pulsing-dot',
+                  'icon-allow-overlap': true
+                }
+              });
+            } else {
+              const source = map.current.getSource('location') as mapboxgl.GeoJSONSource;
+              source.setData({
+                type: 'Point',
+                coordinates: [longitude, latitude]
+              });
+            }
           }
         },
         (error) => {
@@ -37,8 +136,26 @@ const EventMap = () => {
             title: "Location Error",
             description: "Unable to get your location. Please enable location services.",
           });
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 5000
         }
       );
+
+      // Setup device orientation handling
+      if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', (event) => {
+          if (map.current && event.alpha !== null) {
+            // Rotate the map based on device orientation
+            map.current.rotateTo(-event.alpha, { duration: 0 });
+          }
+        });
+      }
+
+      // Cleanup function to stop watching position
+      return () => navigator.geolocation.clearWatch(watchId);
     } else {
       toast({
         variant: "destructive",
@@ -108,8 +225,9 @@ const EventMap = () => {
   };
 
   useEffect(() => {
-    initializeMap();
+    const cleanup = initializeMap();
     return () => {
+      cleanup?.();
       map.current?.remove();
     };
   }, []);
