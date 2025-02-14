@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -96,21 +97,18 @@ const EventMap = () => {
       // Generate cluster points around each city
       const testPoints = cities.flatMap(city => {
         const points = [];
-        // Reduced number of points per city (10 * weight instead of 30)
-        const numPoints = Math.floor(city.weight * 10);
+        const numPoints = Math.floor(city.weight * 30);
         for (let i = 0; i < numPoints; i++) {
-          // Smaller radius for more concentrated clusters
-          const radiusFactor = city.weight > 1 ? 0.015 : 0.025; // Half the previous values
+          const radiusFactor = city.weight > 1 ? 0.03 : 0.05;
           const latOffset = (Math.random() - 0.5) * radiusFactor;
           const lngOffset = (Math.random() - 0.5) * radiusFactor;
-          
-          // Vary the weights more significantly
-          const randomWeight = city.weight * (0.3 + Math.random() * 0.7); // More variation in weight
+          const randomWeight = city.weight * (0.5 + Math.random() * 0.5);
           
           points.push({
             type: "Feature" as const,
             properties: {
-              weight: randomWeight
+              weight: randomWeight,
+              cityName: city.name
             },
             geometry: {
               type: "Point" as const,
@@ -198,9 +196,36 @@ const EventMap = () => {
               9, 20
             ],
             'heatmap-opacity': 0.8
-          },
-          layout: {
-            visibility: 'visible'
+          }
+        });
+
+        // Add click interaction
+        map.current.on('click', 'heatmap-layer', (e) => {
+          if (e.features && e.features.length > 0) {
+            const feature = e.features[0];
+            const coordinates = feature.geometry.coordinates.slice() as [number, number];
+            const intensity = feature.properties.weight;
+            const cityName = feature.properties.cityName || 'Unknown Location';
+
+            setSelectedHeatspot({
+              cityName,
+              coordinates,
+              intensity
+            });
+            setIsDrawerExpanded(true);
+          }
+        });
+
+        // Change cursor on hover
+        map.current.on('mouseenter', 'heatmap-layer', () => {
+          if (map.current) {
+            map.current.getCanvas().style.cursor = 'pointer';
+          }
+        });
+
+        map.current.on('mouseleave', 'heatmap-layer', () => {
+          if (map.current) {
+            map.current.getCanvas().style.cursor = '';
           }
         });
       }
