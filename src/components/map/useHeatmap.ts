@@ -209,6 +209,18 @@ function setupHeatmapInteractions(
     }
   });
 
+  // Add click handler for the entire map
+  map.on('click', (e) => {
+    // Check if we clicked on a heatspot layer
+    const features = map.queryRenderedFeatures(e.point, { layers: ['heatmap-layer'] });
+    
+    // If we didn't click on a heatspot and the drawer is open, close it
+    if (features.length === 0) {
+      setSelectedHeatspot(undefined);
+      setIsDrawerExpanded(false);
+    }
+  });
+
   map.on('mouseenter', 'heatmap-layer', () => {
     map.getCanvas().style.cursor = 'pointer';
   });
