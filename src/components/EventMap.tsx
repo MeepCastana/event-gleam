@@ -7,10 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { MapHeader } from './map/MapHeader';
 import { EventsDrawer } from './map/EventsDrawer';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
+import { Button } from './ui/button';
+import { Navigation } from 'lucide-react';
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const locationControlRef = useRef<mapboxgl.GeolocateControl | null>(null);
   const [isDarkMap, setIsDarkMap] = useState(() => {
     const savedTheme = localStorage.getItem('mapTheme');
     return savedTheme === 'dark';
@@ -35,6 +38,10 @@ const EventMap = () => {
           : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
       );
     }
+  };
+
+  const centerOnLocation = () => {
+    locationControlRef.current?.trigger();
   };
 
   const initializeMap = async () => {
@@ -86,7 +93,7 @@ const EventMap = () => {
       });
 
       // Add location control
-      const locationControl = new mapboxgl.GeolocateControl({
+      locationControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: {
           enableHighAccuracy: true
         },
@@ -94,7 +101,12 @@ const EventMap = () => {
         showAccuracyCircle: false
       });
 
-      map.current.addControl(locationControl, 'bottom-right');
+      map.current.addControl(locationControlRef.current);
+      // Hide the default control as we'll use our custom button
+      const geolocateControl = document.querySelector('.mapboxgl-ctrl-geolocate');
+      if (geolocateControl) {
+        (geolocateControl as HTMLElement).style.display = 'none';
+      }
 
       map.current.on('style.load', () => {
         setMapLoaded(true);
@@ -144,6 +156,13 @@ const EventMap = () => {
         onThemeToggle={toggleTheme}
       />
       <div ref={mapContainer} className="absolute inset-0" />
+      <Button
+        onClick={centerOnLocation}
+        className="absolute bottom-6 right-6 rounded-full w-12 h-12 p-0 shadow-lg bg-primary hover:bg-primary/90"
+        size="icon"
+      >
+        <Navigation className="h-5 w-5" />
+      </Button>
       <EventsDrawer 
         menuStyle={menuStyle}
         isDrawerExpanded={isDrawerExpanded}
