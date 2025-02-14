@@ -130,6 +130,7 @@ const EventMap = () => {
         menuStyle={menuStyle}
         isDrawerExpanded={isDrawerExpanded}
         onClose={handleDrawerClose}
+        isDarkMode={isDarkMap}
       />
     </div>
   );
