@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -286,10 +287,13 @@ const EventMap = () => {
             <div 
               className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] h-full border border-white/10 transition-all duration-300`}
             >
-              <div className="p-6">
-                <div className="w-16 h-1.5 bg-black/20 dark:bg-white/20 rounded-full mx-auto" />
-              </div>
-              <div className="px-6 pb-6 space-y-4">
+              <ResizableHandle className="absolute inset-x-0 top-0 h-12 cursor-grab active:cursor-grabbing rounded-t-[32px]">
+                <div className="flex items-center justify-center h-full">
+                  <div className="w-16 h-1.5 bg-black/20 dark:bg-white/20 rounded-full" />
+                </div>
+              </ResizableHandle>
+              
+              <div className="px-6 pt-12 pb-6 space-y-4">
                 <h2 className="text-xl font-semibold mb-4">
                   Nearby Events
                 </h2>
