@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -17,16 +18,25 @@ const EventMap = () => {
         .from('_config')
         .select('value')
         .eq('name', 'MAPBOX_TOKEN')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
-      const mapboxToken = config?.value;
+      if (!config) {
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description: "Mapbox token not found in configuration. Please make sure it's set in Supabase.",
+        });
+        return;
+      }
+
+      const mapboxToken = config.value;
       if (!mapboxToken) {
         toast({
           variant: "destructive",
           title: "Configuration Error",
-          description: "Mapbox token not found",
+          description: "Invalid Mapbox token configuration",
         });
         return;
       }
