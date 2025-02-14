@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -257,9 +258,9 @@ const EventMap = () => {
         className="fixed bottom-0 left-0 right-0 z-10"
       >
         <CollapsibleTrigger asChild>
-          <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] cursor-pointer transition-all duration-300 border border-white/10 ${isExpanded ? 'pb-4' : 'pb-2'}`}>
-            <div className="p-4">
-              <div className="w-12 h-1 bg-current/20 rounded-full mx-auto mb-2" />
+          <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] cursor-pointer transition-all duration-300 border border-white/10 ${isExpanded ? 'pb-6' : 'pb-4'}`}>
+            <div className="p-6">
+              <div className="w-16 h-1.5 bg-black/20 dark:bg-white/20 rounded-full mx-auto" />
             </div>
           </div>
         </CollapsibleTrigger>
