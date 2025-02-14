@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -280,90 +279,20 @@ const EventMap = () => {
   };
 
   const centerOnLocation = async () => {
-    if (!map.current) return;
+    if (!map.current || !locationControlRef.current) return;
 
     try {
-      // Show loading toast first
-      toast({
-        title: "Getting Location",
-        description: "Please wait while we locate you...",
-      });
-
-      // Get current position with a longer timeout and retry mechanism
-      const getPositionWithRetry = async (retries = 2): Promise<GeolocationPosition> => {
-        try {
-          return await new Promise<GeolocationPosition>((resolve, reject) => {
-            console.log(`Attempting to get location (${retries} retries left)`);
-            navigator.geolocation.getCurrentPosition(
-              resolve,
-              reject,
-              {
-                enableHighAccuracy: true,
-                timeout: 30000, // 30 seconds timeout
-                maximumAge: 0
-              }
-            );
-          });
-        } catch (error) {
-          if (retries > 0) {
-            console.log('Retrying location acquisition...');
-            return getPositionWithRetry(retries - 1);
-          }
-          throw error;
-        }
-      };
-
-      // First check if we have permission
-      const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-      console.log('Location permission state:', permission.state);
+      // Trigger the geolocate control directly
+      locationControlRef.current.trigger();
       
-      if (permission.state === 'denied') {
-        toast({
-          title: "Location Access Required",
-          description: "Please enable location access in your browser settings.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Get position with retry mechanism
-      const position = await getPositionWithRetry();
-      console.log('Position acquired:', position.coords);
-
-      // If we get here, we have a valid position
-      map.current.flyTo({
-        center: [position.coords.longitude, position.coords.latitude],
-        zoom: 14,
-        essential: true
-      });
-
-      toast({
-        title: "Location Found",
-        description: "Map centered on your location.",
-      });
-
+      // The GeolocateControl will handle the location centering automatically
+      // and it's much more efficient as it maintains a connection to the location API
+      
     } catch (error) {
       console.error('Error in centerOnLocation:', error);
-      
-      let errorMessage = "Unable to get your current location. Please ensure location services are enabled.";
-      
-      if (error instanceof GeolocationPositionError) {
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = "Location permission was denied. Please enable location access in your browser settings.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = "Location information is unavailable. Please try again.";
-            break;
-          case error.TIMEOUT:
-            errorMessage = "Location request timed out. Please try again or check your internet connection.";
-            break;
-        }
-      }
-      
       toast({
         title: "Location Error",
-        description: errorMessage,
+        description: "Unable to get your location. Please ensure location services are enabled.",
         variant: "destructive"
       });
     }
@@ -397,15 +326,6 @@ const EventMap = () => {
   const initializeMap = async () => {
     if (!mapContainer.current || map.current) return;
     try {
-      // Get initial location before initializing map
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        });
-      });
-
       const { data: config, error } = await supabase
         .from('_config')
         .select('value')
@@ -438,14 +358,16 @@ const EventMap = () => {
         style: isDarkMap 
           ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
           : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
-        center: [position.coords.longitude, position.coords.latitude],
+        center: [26.1025, 44.4268], // Default center
         zoom: 14
       });
 
-      // Initialize GeolocateControl and add it to the map
+      // Initialize GeolocateControl with trackUserLocation enabled
       locationControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: {
-          enableHighAccuracy: true
+          enableHighAccuracy: true,
+          timeout: 5000, // Reduced timeout to 5 seconds for faster response
+          maximumAge: 0
         },
         trackUserLocation: true,
         showAccuracyCircle: false,
