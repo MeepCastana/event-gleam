@@ -156,7 +156,7 @@ const EventMap = () => {
           }
         });
 
-        // Add layer with new color scheme and adjusted settings
+        // Add layer with restored color scheme
         map.current.addLayer({
           id: 'heatmap-layer',
           type: 'heatmap',
@@ -198,7 +198,7 @@ const EventMap = () => {
           }
         });
 
-        // Add click interaction with proper typing
+        // Add click interaction with proper typing and flying to location
         map.current.on('click', 'heatmap-layer', (e) => {
           if (e.features && e.features.length > 0) {
             const feature = e.features[0];
@@ -207,6 +207,13 @@ const EventMap = () => {
             const coordinates = geometry.coordinates as [number, number];
             const intensity = feature.properties?.weight || 0;
             const cityName = feature.properties?.cityName || 'Unknown Location';
+
+            // Fly to the clicked location
+            map.current?.flyTo({
+              center: coordinates,
+              zoom: 14,
+              essential: true
+            });
 
             setSelectedHeatspot({
               cityName,
@@ -227,6 +234,20 @@ const EventMap = () => {
         map.current.on('mouseleave', 'heatmap-layer', () => {
           if (map.current) {
             map.current.getCanvas().style.cursor = '';
+          }
+        });
+
+        // Add click handler to close drawer when clicking on the map (outside heatmap)
+        map.current.on('click', (e) => {
+          // Check if the click was on the heatmap layer
+          const features = map.current?.queryRenderedFeatures(e.point, { 
+            layers: ['heatmap-layer'] 
+          });
+          
+          // If click was not on heatmap, close drawer
+          if (!features?.length) {
+            setIsDrawerExpanded(false);
+            setSelectedHeatspot(undefined);
           }
         });
       }
