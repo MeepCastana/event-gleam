@@ -45,19 +45,42 @@ const EventMap = () => {
     localStorage.setItem('mapTheme', newTheme ? 'dark' : 'light');
     
     if (map.current) {
+      // Store current map state
+      const currentCenter = map.current.getCenter();
+      const currentZoom = map.current.getZoom();
+      const currentPitch = map.current.getPitch();
+      const currentBearing = map.current.getBearing();
       const heatmapVisible = map.current.getLayoutProperty('heatmap-layer', 'visibility') === 'visible';
       
+      // Set new style
       map.current.setStyle(
         newTheme
           ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
           : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
       );
 
+      // Wait for style to load and restore state
       map.current.once('style.load', () => {
-        console.log('Style loaded, re-adding heatmap...');
+        console.log('Style loaded, restoring map state...');
+        
+        // Restore map state
+        map.current?.setCenter(currentCenter);
+        map.current?.setZoom(currentZoom);
+        map.current?.setPitch(currentPitch);
+        map.current?.setBearing(currentBearing);
+
+        // Re-add heatmap and preserve visibility
+        console.log('Re-adding heatmap layer...');
         updateHeatmap().then(() => {
           if (map.current && map.current.getLayer('heatmap-layer')) {
-            map.current.setLayoutProperty('heatmap-layer', 'visibility', heatmapVisible ? 'visible' : 'none');
+            console.log('Setting heatmap visibility:', heatmapVisible ? 'visible' : 'none');
+            map.current.setLayoutProperty(
+              'heatmap-layer',
+              'visibility',
+              heatmapVisible ? 'visible' : 'none'
+            );
+          } else {
+            console.warn('Heatmap layer not found after style change');
           }
         });
       });
