@@ -156,7 +156,7 @@ const EventMap = () => {
           }
         });
 
-        // Add layer with restored color scheme
+        // Add layer with updated color scheme
         map.current.addLayer({
           id: 'heatmap-layer',
           type: 'heatmap',
@@ -180,12 +180,12 @@ const EventMap = () => {
               'interpolate',
               ['linear'],
               ['heatmap-density'],
-              0, 'rgba(0, 0, 255, 0)',    // transparent blue
-              0.2, 'rgba(0, 255, 0, 0.5)', // semi-transparent green
-              0.4, 'rgba(255, 255, 0, 0.7)', // semi-transparent yellow
-              0.6, 'rgba(255, 165, 0, 0.8)', // semi-transparent orange
-              0.8, 'rgba(255, 0, 0, 0.9)',   // semi-transparent red
-              1, 'rgb(255, 0, 0)'            // solid red
+              0, 'rgba(155, 135, 245, 0)',    // transparent purple
+              0.2, 'rgba(242, 252, 226, 0.6)', // semi-transparent green
+              0.4, 'rgba(254, 247, 205, 0.7)', // semi-transparent yellow
+              0.6, 'rgba(254, 198, 161, 0.8)', // semi-transparent orange
+              0.8, 'rgba(234, 56, 76, 0.9)',   // semi-transparent red
+              1, 'rgb(234, 56, 76)'            // solid red
             ],
             'heatmap-radius': [
               'interpolate',
@@ -256,34 +256,6 @@ const EventMap = () => {
     }
   };
 
-  const toggleTheme = () => {
-    const newTheme = !isDarkMap;
-    setIsDarkMap(newTheme);
-    localStorage.setItem('mapTheme', newTheme ? 'dark' : 'light');
-    
-    if (map.current) {
-      // Store the current visibility state of the heatmap layer
-      const heatmapVisible = map.current.getLayoutProperty('heatmap-layer', 'visibility') === 'visible';
-      
-      map.current.setStyle(
-        newTheme
-          ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
-          : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
-      );
-
-      // Re-add heatmap layer when style is loaded
-      map.current.once('style.load', () => {
-        console.log('Style loaded, re-adding heatmap...');
-        updateHeatmap().then(() => {
-          // Restore the visibility state after updating
-          if (map.current && map.current.getLayer('heatmap-layer')) {
-            map.current.setLayoutProperty('heatmap-layer', 'visibility', heatmapVisible ? 'visible' : 'none');
-          }
-        });
-      });
-    }
-  };
-
   const centerOnLocation = async () => {
     if (!locationControlRef.current) return;
 
@@ -303,12 +275,14 @@ const EventMap = () => {
       // Get current position manually first
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          if (map.current) {
+          if (map.current && locationControlRef.current) {
             map.current.flyTo({
               center: [position.coords.longitude, position.coords.latitude],
               zoom: 15,
               essential: true
             });
+            // Trigger the location control to update the marker
+            locationControlRef.current.trigger();
           }
         },
         (error) => {
@@ -321,7 +295,7 @@ const EventMap = () => {
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000, // Increased timeout
+          timeout: 10000,
           maximumAge: 0
         }
       );
