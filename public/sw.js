@@ -1,11 +1,10 @@
 
-const CACHE_NAME = 'hotspot-v1';
+const CACHE_NAME = 'wherry-v1';
 const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icon-192x192.png',
-  '/icon-512x512.png'
+  '/lovable-uploads/10fef719-5863-41dc-b003-b6e1523355c7.png'
 ];
 
 self.addEventListener('install', (event) => {
