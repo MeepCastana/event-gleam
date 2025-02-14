@@ -196,8 +196,8 @@ export const EventsDrawer = ({
     <BottomDrawer 
       isOpen={true}
       onClose={onClose} 
-      initialHeight={isDrawerExpanded ? 90 : 35}
-      maxHeight={90}
+      initialHeight={isDrawerExpanded ? 80 : 20}
+      maxHeight={80}
       onExpand={() => handleDrawerHeightChange(true)} 
       onContract={() => handleDrawerHeightChange(false)} 
       className={`${menuStyle} backdrop-blur-xl shadow-lg border border-white/10 ${isDarkMode ? 'bg-zinc-700/95' : 'bg-zinc-900/95'} text-zinc-100`}
