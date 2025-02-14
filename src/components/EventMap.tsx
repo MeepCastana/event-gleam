@@ -139,7 +139,7 @@ const EventMap = () => {
               ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
               : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
             center: [longitude, latitude],
-            zoom: 11 // Less zoomed in initial view
+            zoom: 9 // Even less zoomed in initial view
           });
 
           // Add control but hide its UI
@@ -164,16 +164,12 @@ const EventMap = () => {
           // When map loads, trigger location tracking without animation
           map.current.on('load', () => {
             console.log('Map loaded, starting location tracking...');
-            if (locationControlRef.current) {
-              locationControlRef.current.trigger();
-            }
             removeGeolocateControl();
           });
 
           // Set up periodic heatmap updates
           const updateInterval = setInterval(updateHeatmap, 30000);
 
-          // Return cleanup function
           return () => {
             clearInterval(updateInterval);
             map.current?.remove();
@@ -186,7 +182,6 @@ const EventMap = () => {
             title: "Location Error",
             description: "Unable to get your location. Please enable location services."
           });
-          // Return empty cleanup function to satisfy TypeScript
           return () => {};
         },
         {
@@ -196,7 +191,6 @@ const EventMap = () => {
         }
       );
 
-      // Return empty cleanup function to satisfy TypeScript
       return () => {};
 
     } catch (error) {
@@ -206,7 +200,6 @@ const EventMap = () => {
         title: "Error loading map",
         description: "Please check the Mapbox configuration and try again"
       });
-      // Return empty cleanup function to satisfy TypeScript
       return () => {};
     }
   };
