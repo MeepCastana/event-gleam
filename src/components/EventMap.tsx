@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -7,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { MapHeader } from './map/MapHeader';
 import { EventsDrawer } from './map/EventsDrawer';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
+import { useAnonymousId } from '@/hooks/useAnonymousId';
+import { useLocationUpdates } from '@/hooks/useLocationUpdates';
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -19,10 +20,86 @@ const EventMap = () => {
   const { toast } = useToast();
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
+  const userId = useAnonymousId();
 
-  const menuStyle = isDarkMap
-    ? "bg-white/40 text-gray-900"
-    : "bg-[#1A1F2C]/90 text-gray-100";
+  // Enable location updates
+  useLocationUpdates({ userId, enabled: mapLoaded });
+
+  const updateHeatmap = async () => {
+    if (!map.current || !mapLoaded) return;
+
+    try {
+      const { data: locations, error } = await supabase
+        .from('user_locations')
+        .select('latitude, longitude')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
+      if (error) throw error;
+
+      const points = locations?.map(loc => ({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Point',
+          coordinates: [loc.longitude, loc.latitude]
+        }
+      })) || [];
+
+      const source = map.current.getSource('heatmap-source') as mapboxgl.GeoJSONSource;
+
+      if (source) {
+        source.setData({
+          type: 'FeatureCollection',
+          features: points
+        });
+      } else if (mapLoaded) {
+        map.current.addSource('heatmap-source', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: points
+          }
+        });
+
+        map.current.addLayer({
+          id: 'heatmap-layer',
+          type: 'heatmap',
+          source: 'heatmap-source',
+          paint: {
+            'heatmap-weight': 1,
+            'heatmap-intensity': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0, 1,
+              9, 3
+            ],
+            'heatmap-color': [
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0, 'rgba(33,102,172,0)',
+              0.2, 'rgb(103,169,207)',
+              0.4, 'rgb(209,229,240)',
+              0.6, 'rgb(253,219,199)',
+              0.8, 'rgb(239,138,98)',
+              1, 'rgb(178,24,43)'
+            ],
+            'heatmap-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0, 2,
+              9, 20
+            ],
+            'heatmap-opacity': 0.8
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error updating heatmap:', error);
+    }
+  };
 
   const toggleTheme = () => {
     const newTheme = !isDarkMap;
@@ -161,9 +238,14 @@ const EventMap = () => {
 
       map.current.on('style.load', () => {
         setMapLoaded(true);
+        updateHeatmap();
       });
 
+      // Set up periodic heatmap updates
+      const updateInterval = setInterval(updateHeatmap, 30000);
+
       return () => {
+        clearInterval(updateInterval);
         map.current?.remove();
       };
     } catch (error) {
