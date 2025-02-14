@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -39,6 +38,172 @@ const EventMap = () => {
     coordinates: [number, number];
     intensity: number;
   } | undefined>();
+
+  const centerOnLocation = () => {
+    if (!locationControlRef.current) return;
+    // Get the user's location without animation
+    locationControlRef.current.trigger();
+  };
+
+  const toggleTheme = () => {
+    const newTheme = !isDarkMap;
+    setIsDarkMap(newTheme);
+    localStorage.setItem('mapTheme', newTheme ? 'dark' : 'light');
+    
+    if (map.current) {
+      map.current.setStyle(newTheme 
+        ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+        : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
+      );
+    }
+  };
+
+  const handleDrawerClose = () => {
+    setIsDrawerExpanded(false);
+  };
+
+  const initializeMap = async () => {
+    if (!mapContainer.current || map.current) return;
+    try {
+      const { data: config, error } = await supabase
+        .from('_config')
+        .select('value')
+        .eq('name', 'MAPBOX_TOKEN')
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!config) {
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description: "Mapbox token not found in configuration. Please make sure it's set in Supabase."
+        });
+        return;
+      }
+
+      const mapboxToken = config.value;
+      if (!mapboxToken) {
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description: "Invalid Mapbox token configuration"
+        });
+        return;
+      }
+
+      mapboxgl.accessToken = mapboxToken;
+
+      // First, get the user's location before initializing the map
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+
+          // Create geolocate control
+          locationControlRef.current = new mapboxgl.GeolocateControl({
+            positionOptions: {
+              enableHighAccuracy: true,
+              timeout: 2000,
+              maximumAge: 0
+            },
+            trackUserLocation: true,
+            showAccuracyCircle: false,
+            showUserLocation: true,
+            fitBoundsOptions: {
+              animate: false // Disable animation when centering
+            }
+          });
+
+          // Initialize map at user's location
+          map.current = new mapboxgl.Map({
+            container: mapContainer.current!,
+            style: isDarkMap 
+              ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+              : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
+            center: [longitude, latitude],
+            zoom: 14
+          });
+
+          // Add control but hide its UI
+          map.current.addControl(locationControlRef.current);
+
+          // Completely remove the default geolocate control button
+          const removeGeolocateControl = () => {
+            const geolocateControl = document.querySelector('.mapboxgl-ctrl-geolocate');
+            if (geolocateControl && geolocateControl.parentElement) {
+              geolocateControl.parentElement.remove();
+            }
+          };
+
+          // When style loads, update heatmap and remove control
+          map.current.on('style.load', () => {
+            console.log('Style loaded, updating heatmap...');
+            setMapLoaded(true);
+            updateHeatmap();
+            removeGeolocateControl();
+          });
+
+          // When map loads, trigger location tracking without animation
+          map.current.on('load', () => {
+            console.log('Map loaded, starting location tracking...');
+            if (locationControlRef.current) {
+              locationControlRef.current.trigger();
+            }
+            removeGeolocateControl();
+          });
+
+          // Set up periodic heatmap updates
+          const updateInterval = setInterval(updateHeatmap, 30000);
+
+          // Return cleanup function
+          return () => {
+            clearInterval(updateInterval);
+            map.current?.remove();
+          };
+        },
+        (error) => {
+          console.error('Error getting initial location:', error);
+          toast({
+            variant: "destructive",
+            title: "Location Error",
+            description: "Unable to get your location. Please enable location services."
+          });
+          // Return empty cleanup function to satisfy TypeScript
+          return () => {};
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 2000,
+          maximumAge: 0
+        }
+      );
+
+      // Return empty cleanup function to satisfy TypeScript
+      return () => {};
+
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      toast({
+        variant: "destructive",
+        title: "Error loading map",
+        description: "Please check the Mapbox configuration and try again"
+      });
+      // Return empty cleanup function to satisfy TypeScript
+      return () => {};
+    }
+  };
+
+  // Initialize map
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    const setupMap = async () => {
+      cleanup = await initializeMap();
+    };
+    setupMap();
+    return () => {
+      cleanup?.();
+      map.current?.remove();
+    };
+  }, []);
 
   const updateHeatmap = async () => {
     if (!map.current || !mapLoaded) return;
@@ -278,148 +443,6 @@ const EventMap = () => {
       console.error('Error updating heatmap:', error);
     }
   };
-
-  const centerOnLocation = () => {
-    if (!locationControlRef.current) return;
-    // Get the user's location without animation
-    locationControlRef.current.trigger();
-  };
-
-  const initializeMap = async () => {
-    if (!mapContainer.current || map.current) return;
-    try {
-      const { data: config, error } = await supabase
-        .from('_config')
-        .select('value')
-        .eq('name', 'MAPBOX_TOKEN')
-        .maybeSingle();
-
-      if (error) throw error;
-      if (!config) {
-        toast({
-          variant: "destructive",
-          title: "Configuration Error",
-          description: "Mapbox token not found in configuration. Please make sure it's set in Supabase."
-        });
-        return;
-      }
-
-      const mapboxToken = config.value;
-      if (!mapboxToken) {
-        toast({
-          variant: "destructive",
-          title: "Configuration Error",
-          description: "Invalid Mapbox token configuration"
-        });
-        return;
-      }
-
-      mapboxgl.accessToken = mapboxToken;
-
-      // First, get the user's location before initializing the map
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-
-          // Create geolocate control
-          locationControlRef.current = new mapboxgl.GeolocateControl({
-            positionOptions: {
-              enableHighAccuracy: true,
-              timeout: 2000,
-              maximumAge: 0
-            },
-            trackUserLocation: true,
-            showAccuracyCircle: false,
-            showUserLocation: true,
-            fitBoundsOptions: {
-              animate: false // Disable animation when centering
-            }
-          });
-
-          // Initialize map at user's location
-          map.current = new mapboxgl.Map({
-            container: mapContainer.current!,
-            style: isDarkMap 
-              ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
-              : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
-            center: [longitude, latitude],
-            zoom: 14,
-            animate: false
-          });
-
-          // Add control but hide its UI
-          map.current.addControl(locationControlRef.current);
-
-          // Completely remove the default geolocate control button
-          const removeGeolocateControl = () => {
-            const geolocateControl = document.querySelector('.mapboxgl-ctrl-geolocate');
-            if (geolocateControl && geolocateControl.parentElement) {
-              geolocateControl.parentElement.remove();
-            }
-          };
-
-          // When style loads, update heatmap and remove control
-          map.current.on('style.load', () => {
-            console.log('Style loaded, updating heatmap...');
-            setMapLoaded(true);
-            updateHeatmap();
-            removeGeolocateControl();
-          });
-
-          // When map loads, trigger location tracking without animation
-          map.current.on('load', () => {
-            console.log('Map loaded, starting location tracking...');
-            if (locationControlRef.current) {
-              locationControlRef.current.trigger();
-            }
-            removeGeolocateControl();
-          });
-
-          // Set up periodic heatmap updates
-          const updateInterval = setInterval(updateHeatmap, 30000);
-
-          return () => {
-            clearInterval(updateInterval);
-            map.current?.remove();
-          };
-        },
-        (error) => {
-          console.error('Error getting initial location:', error);
-          toast({
-            variant: "destructive",
-            title: "Location Error",
-            description: "Unable to get your location. Please enable location services."
-          });
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 2000,
-          maximumAge: 0
-        }
-      );
-
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      toast({
-        variant: "destructive",
-        title: "Error loading map",
-        description: "Please check the Mapbox configuration and try again"
-      });
-    }
-  };
-
-  // Initialize map
-  useEffect(() => {
-    let cleanup: (() => void) | undefined;
-    const setupMap = async () => {
-      cleanup = await initializeMap();
-    };
-    setupMap();
-    return () => {
-      cleanup?.();
-      map.current?.remove();
-    };
-  }, []);
 
   // Setup location tracking
   useLocationTracking({
