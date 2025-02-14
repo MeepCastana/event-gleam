@@ -12,11 +12,10 @@ const EventMap = () => {
   const map = useRef<mapboxgl.Map | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDarkMap, setIsDarkMap] = useState(false);
-  const [panelSize, setPanelSize] = useState(15); // Default size 15%
+  const [panelSize, setPanelSize] = useState(15);
   const { toast } = useToast();
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  // Function to get menu background color based on map style
   const menuStyle = isDarkMap
     ? "bg-white/40 text-gray-900"
     : "bg-[#1A1F2C]/90 text-gray-100";
@@ -187,17 +186,31 @@ const EventMap = () => {
       mapboxgl.accessToken = mapboxToken;
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11', // Start with light style
+        style: isDarkMap 
+          ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+          : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
         center: [-74.5, 40],
         zoom: 9
       });
 
-      // Listen for style changes to update menu colors
       map.current.on('style.load', () => {
-        const style = map.current?.getStyle();
-        setIsDarkMap(style?.name?.toLowerCase().includes('dark'));
         setMapLoaded(true);
       });
+
+      // Watch for system color scheme changes
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleColorSchemeChange = (e: MediaQueryListEvent) => {
+        setIsDarkMap(e.matches);
+        if (map.current) {
+          map.current.setStyle(e.matches
+            ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+            : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
+          );
+        }
+      };
+      mediaQuery.addEventListener('change', handleColorSchemeChange);
+
+      return () => mediaQuery.removeEventListener('change', handleColorSchemeChange);
     } catch (error) {
       console.error('Error initializing map:', error);
       toast({
@@ -207,6 +220,7 @@ const EventMap = () => {
       });
     }
   };
+
   useEffect(() => {
     let cleanupLocation: (() => void) | undefined;
     const setupMap = async () => {
@@ -256,39 +270,41 @@ const EventMap = () => {
       {/* Map */}
       <div ref={mapContainer} className="absolute inset-0" />
 
-      {/* Draggable Bottom Panel */}
-      <ResizablePanelGroup
-        direction="vertical"
-        className="fixed bottom-0 left-0 right-0 z-10"
-      >
-        <ResizablePanel defaultSize={85}>
-          <div className="h-full" /> {/* Spacer for map content */}
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel
-          defaultSize={15}
-          minSize={15}
-          maxSize={45}
-          onResize={handlePanelResize}
-          className="animate-panel-slide transition-transform duration-300 ease-in-out"
+      {/* Draggable Bottom Panel - Now positioned relative to the bottom of the viewport */}
+      <div className="absolute bottom-0 left-0 right-0 z-10" style={{ height: `${panelSize}vh` }}>
+        <ResizablePanelGroup
+          direction="vertical"
+          className="h-full"
         >
-          <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] h-full border border-white/10`}>
-            <div className="p-6">
-              <div className="w-16 h-1.5 bg-black/20 dark:bg-white/20 rounded-full mx-auto" />
-            </div>
-            <div className="px-6 pb-6 space-y-4">
-              <h2 className="text-xl font-semibold mb-4">
-                Nearby Events
-              </h2>
-              <div className="space-y-4 overflow-y-auto">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className={`h-20 ${menuStyle} backdrop-blur-lg shadow-lg rounded-xl border border-white/10`} />
-                ))}
+          <ResizablePanel defaultSize={85}>
+            <div className="h-full" />
+          </ResizablePanel>
+          <ResizableHandle className="h-2 bg-white/10 hover:bg-white/20 transition-colors" />
+          <ResizablePanel
+            defaultSize={15}
+            minSize={15}
+            maxSize={45}
+            onResize={handlePanelResize}
+            className="animate-panel-slide transition-transform duration-300 ease-in-out"
+          >
+            <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] h-full border border-white/10`}>
+              <div className="p-6">
+                <div className="w-16 h-1.5 bg-black/20 dark:bg-white/20 rounded-full mx-auto" />
+              </div>
+              <div className="px-6 pb-6 space-y-4">
+                <h2 className="text-xl font-semibold mb-4">
+                  Nearby Events
+                </h2>
+                <div className="space-y-4 overflow-y-auto">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className={`h-20 ${menuStyle} backdrop-blur-lg shadow-lg rounded-xl border border-white/10`} />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     </div>
   );
 };
