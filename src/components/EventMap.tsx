@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -38,7 +39,9 @@ const EventMap = () => {
   };
 
   const centerOnLocation = () => {
-    locationControlRef.current?.trigger();
+    if (map.current && locationControlRef.current) {
+      locationControlRef.current.trigger();
+    }
   };
 
   const initializeMap = async () => {
@@ -89,21 +92,15 @@ const EventMap = () => {
         zoom: 14
       });
 
-      // Add location control
+      // Initialize GeolocateControl but don't add it to the map
       locationControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: {
           enableHighAccuracy: true
         },
         trackUserLocation: true,
-        showAccuracyCircle: false
+        showAccuracyCircle: false,
+        showUserLocation: false // Hide the blue dot
       });
-
-      map.current.addControl(locationControlRef.current);
-      // Hide the default control as we'll use our custom button
-      const geolocateControl = document.querySelector('.mapboxgl-ctrl-geolocate');
-      if (geolocateControl) {
-        (geolocateControl as HTMLElement).style.display = 'none';
-      }
 
       map.current.on('style.load', () => {
         setMapLoaded(true);
