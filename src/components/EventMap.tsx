@@ -180,12 +180,12 @@ const EventMap = () => {
               'interpolate',
               ['linear'],
               ['heatmap-density'],
-              0, 'rgba(155, 135, 245, 0)',    // transparent purple
-              0.2, 'rgba(242, 252, 226, 0.6)', // semi-transparent green
-              0.4, 'rgba(254, 247, 205, 0.7)', // semi-transparent yellow
-              0.6, 'rgba(254, 198, 161, 0.8)', // semi-transparent orange
-              0.8, 'rgba(234, 56, 76, 0.9)',   // semi-transparent red
-              1, 'rgb(234, 56, 76)'            // solid red
+              0, 'rgba(155, 135, 245, 0)',    // transparent purple #9b87f5
+              0.2, 'rgb(242, 252, 226)',      // green #F2FCE2
+              0.4, 'rgb(254, 247, 205)',      // yellow #FEF7CD
+              0.6, 'rgb(254, 198, 161)',      // orange #FEC6A1
+              0.8, 'rgb(234, 56, 76)',        // red #ea384c
+              1, 'rgb(234, 56, 76)'           // solid red #ea384c
             ],
             'heatmap-radius': [
               'interpolate',
@@ -289,7 +289,7 @@ const EventMap = () => {
           console.error('Error getting location:', error);
           toast({
             title: "Location Error",
-            description: "Unable to get your current location.",
+            description: "Unable to get your current location. Please ensure location services are enabled in your device settings.",
             variant: "destructive"
           });
         },
@@ -303,7 +303,7 @@ const EventMap = () => {
       console.error('Error accessing location:', error);
       toast({
         title: "Location Error",
-        description: "Unable to access location services.",
+        description: "Unable to access location services. Please check your browser permissions.",
         variant: "destructive"
       });
     }
