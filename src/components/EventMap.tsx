@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -70,6 +71,11 @@ const EventMap = () => {
     localStorage.setItem('mapTheme', newTheme ? 'dark' : 'light');
     
     if (map.current) {
+      map.current.once('style.load', () => {
+        console.log('Style loaded, updating heatmap...');
+        updateHeatmap();
+      });
+      
       map.current.setStyle(newTheme 
         ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
         : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
@@ -139,7 +145,7 @@ const EventMap = () => {
               ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
               : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
             center: [longitude, latitude],
-            zoom: 14 // Increased zoom level for much closer initial view
+            zoom: 14
           });
 
           // Add control but hide its UI
