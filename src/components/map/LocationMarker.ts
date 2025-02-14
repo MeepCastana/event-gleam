@@ -28,7 +28,7 @@ export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 60, map
 
       // Update animation frame
       animationFrame = (animationFrame + 1) % 60;
-      const pulseScale = 1 + Math.sin(animationFrame * (Math.PI / 30)) * 0.1;
+      const pulseScale = 1 + Math.sin(animationFrame * (Math.PI / 30)) * 0.3;
 
       // Clear the canvas
       context.clearRect(0, 0, this.width, this.height);
@@ -37,28 +37,18 @@ export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 60, map
       const centerX = this.width / 2;
       const centerY = this.height / 2;
 
-      // Move to center and apply pulsing scale
-      context.save();
-      context.translate(centerX, centerY);
-      context.scale(pulseScale, pulseScale);
-      context.translate(-centerX, -centerY);
-
-      // Draw the marker path
+      // Draw pulsing ring
+      const maxRadius = size / 3;
       context.beginPath();
-      context.moveTo(centerX - 8, centerY - 15);
-      context.arc(centerX, centerY - 15, 8, Math.PI, 0, false);
-      context.lineTo(centerX + 8, centerY + 8);
-      context.arc(centerX, centerY + 8, 8, 0, Math.PI, false);
-      context.closePath();
-
-      // Fill with blue color and add some shadow for depth
-      context.shadowColor = arrowColor;
-      context.shadowBlur = 10;
-      context.fillStyle = arrowColor;
+      context.arc(centerX, centerY, maxRadius * pulseScale, 0, Math.PI * 2);
+      context.fillStyle = `${arrowColor}20`; // 20 is hex for 12% opacity
       context.fill();
 
-      // Restore the context
-      context.restore();
+      // Draw center dot
+      context.beginPath();
+      context.arc(centerX, centerY, size / 8, 0, Math.PI * 2);
+      context.fillStyle = arrowColor;
+      context.fill();
 
       this.data = context.getImageData(0, 0, this.width, this.height).data;
       map.triggerRepaint();
