@@ -5,6 +5,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "vaul";
+
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -211,7 +218,9 @@ const EventMap = () => {
     }
     return () => cleanupLocation?.();
   }, [mapLoaded]);
-  return <div className="relative w-full h-screen">
+
+  return (
+    <div className="relative w-full h-screen">
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-10 flex items-center gap-3">
         <div className="glass p-2 rounded-full">
@@ -219,10 +228,13 @@ const EventMap = () => {
             <ArrowLeft className="w-5 h-5" />
           </button>
         </div>
-        <div className="glass px-6 py-3 flex-1 rounded-full">
+        <div className="glass px-6 py-3 rounded-2xl flex-1">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input className="w-full pl-9 bg-white/10 border-none placeholder:text-muted-foreground rounded-xl" placeholder="Search for some magic..." />
+            <Input
+              className="w-full pl-9 bg-white/10 border-none placeholder:text-muted-foreground rounded-xl"
+              placeholder="Search for some magic..."
+            />
           </div>
         </div>
       </div>
@@ -230,14 +242,24 @@ const EventMap = () => {
       {/* Map */}
       <div ref={mapContainer} className="absolute inset-0" />
 
-      {/* Bottom Panel */}
-      <div className="absolute bottom-0 left-0 right-0 glass rounded-t-3xl p-6 slide-up transform transition-transform duration-300">
-        <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-        <h2 className="text-xl font-semibold mb-4">Nearby Events</h2>
-        <div className="space-y-4">
-          {/* Event cards will go here */}
-        </div>
-      </div>
-    </div>;
+      {/* Bottom Drawer */}
+      <Drawer.Root direction="bottom" dismissible>
+        <DrawerContent className="fixed bottom-0 left-0 right-0 glass rounded-t-3xl">
+          <div className="p-6">
+            <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
+            <DrawerHeader>
+              <DrawerTitle className="text-xl font-semibold mb-4">
+                Nearby Events
+              </DrawerTitle>
+            </DrawerHeader>
+            <div className="space-y-4 min-h-[200px] max-h-[80vh] overflow-y-auto">
+              {/* Event cards will go here */}
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer.Root>
+    </div>
+  );
 };
+
 export default EventMap;
