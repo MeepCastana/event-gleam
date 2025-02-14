@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import mapboxgl from 'mapbox-gl';
 
 interface HeatspotInfo {
   cityName: string;
@@ -52,8 +53,20 @@ export const EventsDrawer = ({
 
   const fetchLocationDetails = async (coordinates: [number, number]) => {
     try {
+      // Get Mapbox token from Supabase config
+      const { data: config } = await supabase
+        .from('_config')
+        .select('value')
+        .eq('name', 'MAPBOX_TOKEN')
+        .single();
+
+      if (!config?.value) {
+        console.error('Mapbox token not found');
+        return {};
+      }
+
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinates[0]},${coordinates[1]}.json?access_token=${mapboxgl.accessToken}`
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinates[0]},${coordinates[1]}.json?access_token=${config.value}`
       );
       const data = await response.json();
       
