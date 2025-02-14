@@ -50,6 +50,7 @@ export const MapHeader = ({
   const handleCitySelect = async (city: City) => {
     setOpen(false);
     setSearchQuery(city.name);
+    setIsSearching(false);
 
     // Get Mapbox token from config
     const { data: config } = await supabase
@@ -75,6 +76,10 @@ export const MapHeader = ({
     }
   };
 
+  const filteredCities = cities.filter(city => 
+    searchQuery && city.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return <>
     <div className="absolute top-4 left-4 right-4 z-10">
       <div className="flex items-center gap-3">
@@ -84,6 +89,7 @@ export const MapHeader = ({
               onClick={() => {
                 setIsSearching(false);
                 setOpen(false);
+                setSearchQuery("");
               }} 
               className="p-2 hover:bg-white/5 rounded-full transition-colors"
             >
@@ -129,19 +135,21 @@ export const MapHeader = ({
             </Sheet>
           )}
         </div>
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open && filteredCities.length > 0} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <div className={`${isDarkMode ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'} backdrop-blur-lg shadow-lg px-6 py-3 rounded-full flex-1 border border-white/10`}>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-60" />
                 <Input
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setOpen(true);
+                  }}
                   className="w-full pl-9 bg-white/5 border-none placeholder:text-inherit/60 rounded-full focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
                   placeholder="Search for city"
                   onFocus={() => {
                     setIsSearching(true);
-                    setOpen(true);
                   }}
                 />
               </div>
@@ -156,26 +164,21 @@ export const MapHeader = ({
             align="start"
           >
             <Command>
-              <CommandInput placeholder="Search cities..." />
               <CommandList>
                 <CommandGroup>
-                  {cities
-                    .filter(city => 
-                      city.name.toLowerCase().includes(searchQuery.toLowerCase())
-                    )
-                    .map(city => (
-                      <CommandItem
-                        key={city.name}
-                        value={city.name}
-                        onSelect={() => handleCitySelect(city)}
-                        className="hover:bg-white/5 cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
-                          {city.name}
-                        </div>
-                      </CommandItem>
-                    ))}
+                  {filteredCities.map(city => (
+                    <CommandItem
+                      key={city.name}
+                      value={city.name}
+                      onSelect={() => handleCitySelect(city)}
+                      className="hover:bg-white/5 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        {city.name}
+                      </div>
+                    </CommandItem>
+                  ))}
                 </CommandGroup>
               </CommandList>
             </Command>
