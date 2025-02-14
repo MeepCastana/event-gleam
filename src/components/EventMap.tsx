@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -284,6 +285,7 @@ const EventMap = () => {
     try {
       // First check if we have permission
       const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+      console.log('Location permission state:', permission.state);
       
       if (permission.state === 'denied') {
         toast({
@@ -294,31 +296,71 @@ const EventMap = () => {
         return;
       }
 
-      // Get current position manually
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(
-          resolve,
-          reject,
-          {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-          }
-        );
-      });
+      // Even if permission is prompt or granted, we need to explicitly request the position
+      if (permission.state === 'prompt' || permission.state === 'granted') {
+        // Show loading toast
+        toast({
+          title: "Getting Location",
+          description: "Please wait while we locate you...",
+        });
 
-      // If we get here, we have a valid position
-      map.current.flyTo({
-        center: [position.coords.longitude, position.coords.latitude],
-        zoom: 14,
-        essential: true
-      });
+        // Get current position with a longer timeout
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              console.log('Position acquired:', pos.coords);
+              resolve(pos);
+            },
+            (err) => {
+              console.error('Geolocation error:', err);
+              reject(err);
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 20000, // Increased timeout to 20 seconds
+              maximumAge: 0
+            }
+          );
+        });
+
+        console.log('Flying to position:', [position.coords.longitude, position.coords.latitude]);
+        
+        // If we get here, we have a valid position
+        map.current.flyTo({
+          center: [position.coords.longitude, position.coords.latitude],
+          zoom: 14,
+          essential: true
+        });
+
+        toast({
+          title: "Location Found",
+          description: "Map centered on your location.",
+        });
+      }
 
     } catch (error) {
-      console.error('Error accessing location:', error);
+      console.error('Error in centerOnLocation:', error);
+      
+      // Provide more specific error messages based on the error type
+      let errorMessage = "Unable to get your current location. Please ensure location services are enabled.";
+      
+      if (error instanceof GeolocationPositionError) {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location permission was denied. Please enable location access in your browser settings.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information is unavailable. Please try again.";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out. Please check your connection and try again.";
+            break;
+        }
+      }
+      
       toast({
         title: "Location Error",
-        description: "Unable to get your current location. Please ensure location services are enabled.",
+        description: errorMessage,
         variant: "destructive"
       });
     }
