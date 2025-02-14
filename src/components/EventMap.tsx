@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -6,16 +5,15 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { BottomDrawer } from "@/components/ui/bottom-drawer";
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isDarkMap, setIsDarkMap] = useState(false);
-  const [panelSize, setPanelSize] = useState(15);
   const { toast } = useToast();
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
 
   const menuStyle = isDarkMap
     ? "bg-white/40 text-gray-900"
@@ -243,11 +241,6 @@ const EventMap = () => {
     return () => cleanupLocation?.();
   }, [mapLoaded]);
 
-  const handlePanelResize = (size: number) => {
-    setPanelSize(size);
-    setIsExpanded(size > 15);
-  };
-
   return (
     <div className="relative w-full h-screen">
       {/* Header */}
@@ -271,56 +264,28 @@ const EventMap = () => {
       {/* Map */}
       <div ref={mapContainer} className="absolute inset-0" />
 
-      {/* Bottom Panel */}
-      <div className="absolute bottom-0 left-0 right-0 z-10">
-        <ResizablePanelGroup
-          direction="vertical"
-          style={{ height: `${panelSize}vh` }}
-        >
-          <ResizablePanel
-            defaultSize={85}
-            minSize={55}
-            maxSize={85}
-          >
-            <div className="h-full" />
-          </ResizablePanel>
-          <ResizableHandle />
-          <ResizablePanel
-            defaultSize={15}
-            minSize={15}
-            maxSize={45}
-            onResize={handlePanelResize}
-            className="transition-all duration-300 ease-in-out"
-          >
-            <div 
-              className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] h-full border border-white/10 transition-all duration-300`}
-            >
-              <ResizableHandle className="absolute inset-x-0 top-0 h-12 cursor-grab active:cursor-grabbing rounded-t-[32px]">
-                <div className="flex items-center justify-center h-full">
-                  <div className="w-16 h-1.5 bg-black/20 dark:bg-white/20 rounded-full" />
-                </div>
-              </ResizableHandle>
-              
-              <div className="px-6 pt-12 pb-6 space-y-4">
-                <h2 className="text-xl font-semibold mb-4">
-                  Nearby Events
-                </h2>
-                <div className={`space-y-4 overflow-y-auto transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>
-                  {[...Array(6)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`h-20 ${menuStyle} backdrop-blur-lg shadow-lg rounded-xl border border-white/10 transition-transform duration-300 ${
-                        isExpanded ? 'translate-y-0' : 'translate-y-4'
-                      }`}
-                      style={{ transitionDelay: `${i * 50}ms` }}
-                    />
-                  ))}
-                </div>
-              </div>
+      {/* Bottom Drawer */}
+      <BottomDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        snapPoints={[15, 50, 96]}
+      >
+        <div className={`${menuStyle} h-full rounded-t-[20px]`}>
+          <div className="px-6 space-y-4">
+            <h2 className="text-xl font-semibold mb-4">
+              Nearby Events
+            </h2>
+            <div className="space-y-4">
+              {[...Array(6)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className={`h-20 ${menuStyle} backdrop-blur-lg shadow-lg rounded-xl border border-white/10`}
+                />
+              ))}
             </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
+          </div>
+        </div>
+      </BottomDrawer>
     </div>
   );
 };
