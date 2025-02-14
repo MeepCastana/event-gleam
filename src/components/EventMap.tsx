@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -7,12 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDarkMap, setIsDarkMap] = useState(false);
+  const [panelSize, setPanelSize] = useState(15); // Default size 15%
   const { toast } = useToast();
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -228,6 +229,11 @@ const EventMap = () => {
     return () => cleanupLocation?.();
   }, [mapLoaded]);
 
+  const handlePanelResize = (sizes: number[]) => {
+    setPanelSize(sizes[0]);
+    setIsExpanded(sizes[0] > 15);
+  };
+
   return (
     <div className="relative w-full h-screen">
       {/* Header */}
@@ -251,32 +257,35 @@ const EventMap = () => {
       {/* Map */}
       <div ref={mapContainer} className="absolute inset-0" />
 
-      {/* Expandable Bottom Panel */}
-      <Collapsible
-        open={isExpanded}
-        onOpenChange={setIsExpanded}
-        className="fixed bottom-0 left-0 right-0 z-10"
+      {/* Draggable Bottom Panel */}
+      <ResizablePanelGroup
+        direction="vertical"
+        className="fixed bottom-0 left-0 right-0 z-10 min-h-[15%] max-h-[85%]"
+        onLayout={handlePanelResize}
       >
-        <CollapsibleTrigger asChild>
-          <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] cursor-pointer transition-all duration-300 border border-white/10 ${isExpanded ? 'pb-6' : 'pb-4'}`}>
-            <div className="p-6">
+        <ResizablePanel
+          defaultSize={15}
+          minSize={15}
+          maxSize={85}
+          className="transition-all duration-300"
+        >
+          <div className={`${menuStyle} backdrop-blur-lg shadow-lg rounded-t-[32px] h-full border border-white/10`}>
+            <div className="p-6 cursor-grab active:cursor-grabbing">
               <div className="w-16 h-1.5 bg-black/20 dark:bg-white/20 rounded-full mx-auto" />
             </div>
-          </div>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="slide-up">
-          <div className={`${menuStyle} backdrop-blur-lg shadow-lg px-6 pb-6 space-y-4 rounded-t-[32px] -mt-[32px] pt-8 border border-white/10`}>
-            <h2 className="text-xl font-semibold mb-4">
-              Nearby Events
-            </h2>
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className={`h-20 ${menuStyle} backdrop-blur-lg shadow-lg rounded-xl border border-white/10`} />
-              ))}
+            <div className="px-6 pb-6 space-y-4">
+              <h2 className="text-xl font-semibold mb-4">
+                Nearby Events
+              </h2>
+              <div className="space-y-4 overflow-y-auto">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className={`h-20 ${menuStyle} backdrop-blur-lg shadow-lg rounded-xl border border-white/10`} />
+                ))}
+              </div>
             </div>
           </div>
-        </CollapsibleContent>
-      </Collapsible>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };
