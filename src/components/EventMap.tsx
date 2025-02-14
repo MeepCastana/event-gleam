@@ -215,6 +215,14 @@ const EventMap = () => {
             : undefined;
 
           if (clickedPoint) {
+            // Center the map on the clicked point with animation
+            map.current?.flyTo({
+              center: clickedPoint,
+              zoom: 12,
+              duration: 1500,
+              essential: true
+            });
+
             // Find the nearest city to the clicked point
             const nearestCity = cities.reduce((nearest, city) => {
               const distance = Math.sqrt(
@@ -229,6 +237,8 @@ const EventMap = () => {
               coordinates: [clickedPoint[0], clickedPoint[1]],
               intensity: nearestCity.weight
             });
+            
+            // Force drawer to expand
             setIsDrawerExpanded(true);
           }
         });
@@ -417,6 +427,7 @@ const EventMap = () => {
 
   const handleDrawerClose = () => {
     setIsDrawerExpanded(false);
+    setSelectedHeatspot(undefined);
   };
 
   // Initialize map
