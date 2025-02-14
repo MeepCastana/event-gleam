@@ -352,6 +352,7 @@ const EventMap = () => {
 
   const initializeMap = async () => {
     if (!mapContainer.current || map.current) return;
+    
     try {
       // Get initial location before initializing map
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -362,33 +363,25 @@ const EventMap = () => {
         });
       });
 
+      // Fetch Mapbox token from Supabase config
       const { data: config, error } = await supabase
         .from('_config')
         .select('value')
         .eq('name', 'MAPBOX_TOKEN')
         .maybeSingle();
 
-      if (error) throw error;
-      if (!config) {
-        toast({
-          variant: "destructive",
-          title: "Configuration Error",
-          description: "Mapbox token not found in configuration. Please make sure it's set in Supabase."
-        });
-        return;
+      if (error) {
+        console.error('Error fetching Mapbox token:', error);
+        throw error;
       }
 
-      const mapboxToken = config.value;
-      if (!mapboxToken) {
-        toast({
-          variant: "destructive",
-          title: "Configuration Error",
-          description: "Invalid Mapbox token configuration"
-        });
-        return;
+      if (!config?.value) {
+        console.error('Mapbox token not found in configuration');
+        throw new Error('Mapbox token not found in configuration');
       }
 
-      mapboxgl.accessToken = mapboxToken;
+      mapboxgl.accessToken = config.value;
+      
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: isDarkMap 
