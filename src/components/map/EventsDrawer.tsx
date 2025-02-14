@@ -1,3 +1,4 @@
+
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { Activity, MapPin, Thermometer, Clock, ChevronLeft, ChevronRight, Users, TrendingUp, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -245,8 +246,8 @@ export const EventsDrawer = ({
     <BottomDrawer 
       isOpen={true}
       onClose={onClose} 
-      initialHeight={isDrawerExpanded ? 85 : 35} // Increased from 75 to 85
-      maxHeight={85} // Increased from 75 to 85
+      initialHeight={isDrawerExpanded ? 90 : 35} // Increased from 85 to 90
+      maxHeight={90} // Increased from 85 to 90
       onExpand={() => handleDrawerHeightChange(true)} 
       onContract={() => handleDrawerHeightChange(false)} 
       className={`${menuStyle} backdrop-blur-xl shadow-lg border border-white/10 ${isDarkMode ? 'bg-zinc-700/95' : 'bg-zinc-900/95'} text-zinc-100`}
