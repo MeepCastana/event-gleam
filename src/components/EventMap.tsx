@@ -37,10 +37,10 @@ const EventMap = () => {
       if (error) throw error;
 
       const points = locations?.map(loc => ({
-        type: 'Feature',
+        type: "Feature" as const,
         properties: {},
         geometry: {
-          type: 'Point',
+          type: "Point" as const,
           coordinates: [loc.longitude, loc.latitude]
         }
       })) || [];
@@ -49,14 +49,14 @@ const EventMap = () => {
 
       if (source) {
         source.setData({
-          type: 'FeatureCollection',
+          type: "FeatureCollection",
           features: points
         });
       } else if (mapLoaded) {
         map.current.addSource('heatmap-source', {
           type: 'geojson',
           data: {
-            type: 'FeatureCollection',
+            type: "FeatureCollection",
             features: points
           }
         });
@@ -284,14 +284,14 @@ const EventMap = () => {
   return (
     <div className="relative w-full h-screen">
       <MapHeader 
-        menuStyle={menuStyle} 
+        menuStyle={isDarkMap ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'} 
         isDarkMode={isDarkMap}
         onThemeToggle={toggleTheme}
         onLocationClick={centerOnLocation}
       />
       <div ref={mapContainer} className="absolute inset-0" />
       <EventsDrawer 
-        menuStyle={menuStyle}
+        menuStyle={isDarkMap ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'}
         isDrawerExpanded={isDrawerExpanded}
         onClose={handleDrawerClose}
         isDarkMode={isDarkMap}
