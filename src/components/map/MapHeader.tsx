@@ -1,5 +1,5 @@
 
-import { ArrowLeft, Menu, Search, Settings, Sun, User } from "lucide-react";
+import { ArrowLeft, Menu, Search, Settings, Sun, Moon, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet";
@@ -41,9 +41,25 @@ export const MapHeader = ({
                         <User className="w-5 h-5" />
                         <span>PROFILE</span>
                       </a>
-                      <button onClick={onThemeToggle} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
-                        <Sun className="w-5 h-5" />
-                        <span>THEME</span>
+                      <button 
+                        onClick={onThemeToggle} 
+                        className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-300 ${
+                          isDarkMode 
+                            ? 'bg-zinc-800 hover:bg-zinc-700 text-yellow-300' 
+                            : 'bg-blue-50 hover:bg-blue-100 text-blue-600'
+                        }`}
+                      >
+                        {isDarkMode ? (
+                          <>
+                            <Moon className="w-5 h-5" />
+                            <span>NIGHT MODE</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sun className="w-5 h-5" />
+                            <span>DAY MODE</span>
+                          </>
+                        )}
                       </button>
                       <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
                         <Settings className="w-5 h-5" />
