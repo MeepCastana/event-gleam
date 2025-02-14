@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { motion, useAnimation, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -94,7 +95,7 @@ export function BottomDrawer({
           
           {/* Content Area */}
           <div className="h-full pt-8 overflow-y-auto overscroll-contain">
-            <div className="p-4 bg-gray-950 hover:bg-gray-800">
+            <div className="p-4">
               {children}
             </div>
           </div>
