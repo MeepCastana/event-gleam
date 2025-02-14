@@ -196,7 +196,7 @@ export const EventsDrawer = ({
     <BottomDrawer 
       isOpen={true}
       onClose={onClose} 
-      initialHeight={isDrawerExpanded ? 80 : 20}
+      initialHeight={isDrawerExpanded ? 80 : 33}
       maxHeight={80}
       onExpand={() => handleDrawerHeightChange(true)} 
       onContract={() => handleDrawerHeightChange(false)} 
