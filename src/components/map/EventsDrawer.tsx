@@ -2,6 +2,8 @@
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { Activity, MapPin, Thermometer, Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface HeatspotInfo {
   cityName: string;
@@ -17,6 +19,12 @@ interface EventsDrawerProps {
   heatspotInfo?: HeatspotInfo;
 }
 
+interface LocationDetails {
+  street?: string;
+  district?: string;
+  loading: boolean;
+}
+
 export const EventsDrawer = ({ 
   menuStyle, 
   isDrawerExpanded, 
@@ -24,6 +32,10 @@ export const EventsDrawer = ({
   isDarkMode,
   heatspotInfo 
 }: EventsDrawerProps) => {
+  const [locationDetails, setLocationDetails] = useState<LocationDetails>({
+    loading: false
+  });
+
   const getIntensityColor = (intensity: number) => {
     if (intensity > 1.5) return 'text-red-400';
     if (intensity > 1) return 'text-yellow-400';
@@ -33,6 +45,60 @@ export const EventsDrawer = ({
   const getIntensityPercentage = (intensity: number) => {
     return Math.min(Math.round((intensity / 2) * 100), 100);
   };
+
+  useEffect(() => {
+    const fetchLocationDetails = async () => {
+      if (!heatspotInfo) {
+        setLocationDetails({ loading: false });
+        return;
+      }
+
+      setLocationDetails({ loading: true });
+
+      try {
+        // Get Mapbox token from Supabase config
+        const { data: config } = await supabase
+          .from('_config')
+          .select('value')
+          .eq('name', 'MAPBOX_TOKEN')
+          .single();
+
+        if (!config?.value) {
+          console.error('Mapbox token not found');
+          return;
+        }
+
+        const [lng, lat] = heatspotInfo.coordinates;
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${config.value}&types=address,district`
+        );
+
+        if (!response.ok) throw new Error('Geocoding failed');
+
+        const data = await response.json();
+        const features = data.features || [];
+        
+        // Find the street and district from the features
+        const street = features.find((f: any) => f.place_type.includes('address'))?.text;
+        const district = features.find((f: any) => f.place_type.includes('district'))?.text;
+
+        setLocationDetails({
+          street: street || 'Street name unavailable',
+          district: district || 'District unavailable',
+          loading: false
+        });
+      } catch (error) {
+        console.error('Error fetching location details:', error);
+        setLocationDetails({
+          street: 'Unable to load address',
+          district: 'Location unavailable',
+          loading: false
+        });
+      }
+    };
+
+    fetchLocationDetails();
+  }, [heatspotInfo]);
 
   return (
     <BottomDrawer 
@@ -87,11 +153,18 @@ export const EventsDrawer = ({
                   <MapPin size={16} />
                   <span className="text-sm font-medium">Location</span>
                 </div>
-                <p className="text-sm">
-                  {heatspotInfo.coordinates[1].toFixed(4)}°N
-                  <br />
-                  {heatspotInfo.coordinates[0].toFixed(4)}°E
-                </p>
+                {locationDetails.loading ? (
+                  <motion.div 
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="h-4 bg-white/10 rounded w-3/4"
+                  />
+                ) : (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">{locationDetails.street}</p>
+                    <p className="text-sm text-zinc-400">{locationDetails.district}</p>
+                  </div>
+                )}
               </motion.div>
 
               <motion.div 
