@@ -1,9 +1,10 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -115,7 +116,26 @@ const EventMap = () => {
 
   return (
     <div className="relative w-full h-screen">
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 z-10 glass px-4 py-3">
+        <div className="flex items-center gap-3">
+          <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              className="w-full pl-9 bg-white/10 border-none placeholder:text-muted-foreground"
+              placeholder="Search for some magic..."
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Map */}
       <div ref={mapContainer} className="absolute inset-0" />
+
+      {/* Bottom Panel */}
       <div className="absolute bottom-0 left-0 right-0 glass rounded-t-3xl p-6 slide-up transform transition-transform duration-300">
         <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
         <h2 className="text-xl font-semibold mb-4">Nearby Events</h2>
