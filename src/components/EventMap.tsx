@@ -1,22 +1,36 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const { toast } = useToast();
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [mapboxToken, setMapboxToken] = useState('');
-  const [isTokenSet, setIsTokenSet] = useState(false);
 
-  const initializeMap = () => {
-    if (!mapContainer.current || map.current || !mapboxToken) return;
+  const initializeMap = async () => {
+    if (!mapContainer.current || map.current) return;
 
     try {
+      const { data: config, error } = await supabase
+        .from('_config')
+        .select('value')
+        .eq('name', 'MAPBOX_TOKEN')
+        .single();
+
+      if (error) throw error;
+
+      const mapboxToken = config?.value;
+      if (!mapboxToken) {
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description: "Mapbox token not found",
+        });
+        return;
+      }
+
       mapboxgl.accessToken = mapboxToken;
       
       map.current = new mapboxgl.Map({
@@ -39,51 +53,17 @@ const EventMap = () => {
       toast({
         variant: "destructive",
         title: "Error loading map",
-        description: "Please check your Mapbox token and try again",
+        description: "Please check the Mapbox configuration and try again",
       });
     }
   };
 
   useEffect(() => {
+    initializeMap();
     return () => {
       map.current?.remove();
     };
   }, []);
-
-  const handleSetToken = () => {
-    if (!mapboxToken) {
-      toast({
-        variant: "destructive",
-        title: "Token Required",
-        description: "Please enter your Mapbox token",
-      });
-      return;
-    }
-
-    setIsTokenSet(true);
-    initializeMap();
-  };
-
-  if (!isTokenSet) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen p-4 space-y-4 max-w-md mx-auto">
-        <h2 className="text-xl font-semibold text-center">Enter your Mapbox Token</h2>
-        <p className="text-sm text-muted-foreground text-center">
-          To use the map, please enter your Mapbox public token. You can find this in your Mapbox account dashboard.
-        </p>
-        <Input
-          type="text"
-          placeholder="pk.eyJ1..."
-          value={mapboxToken}
-          onChange={(e) => setMapboxToken(e.target.value)}
-          className="w-full"
-        />
-        <Button onClick={handleSetToken} className="w-full">
-          Set Token
-        </Button>
-      </div>
-    );
-  }
 
   return (
     <div className="relative w-full h-screen">
