@@ -27,8 +27,8 @@ export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 60, map
       if (!context) return false;
 
       // Update animation frame with slower speed
-      animationFrame = (animationFrame + 0.5) % 60; // Reduced from 1 to 0.5 for slower animation
-      const pulseScale = 1 + Math.sin(animationFrame * (Math.PI / 45)) * 0.3; // Changed from 30 to 45 for smoother transition
+      animationFrame = (animationFrame + 0.5) % 60;
+      const pulseScale = 1 + Math.sin(animationFrame * (Math.PI / 45)) * 0.3;
 
       // Clear the canvas
       context.clearRect(0, 0, this.width, this.height);
@@ -41,12 +41,12 @@ export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 60, map
       const maxRadius = size / 3;
       context.beginPath();
       context.arc(centerX, centerY, maxRadius * pulseScale, 0, Math.PI * 2);
-      context.fillStyle = `${arrowColor}20`; // 20 is hex for 12% opacity
+      context.fillStyle = `${arrowColor}20`;
       context.fill();
 
-      // Draw center dot
+      // Draw center dot (increased size from size/8 to size/6)
       context.beginPath();
-      context.arc(centerX, centerY, size / 8, 0, Math.PI * 2);
+      context.arc(centerX, centerY, size / 6, 0, Math.PI * 2);
       context.fillStyle = arrowColor;
       context.fill();
 
