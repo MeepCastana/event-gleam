@@ -225,9 +225,17 @@ const EventMap = () => {
   };
 
   useEffect(() => {
-    const cleanup = initializeMap();
+    let cleanupLocation: (() => void) | undefined;
+    
+    const setupMap = async () => {
+      await initializeMap();
+      cleanupLocation = getUserLocation();
+    };
+
+    setupMap();
+
     return () => {
-      cleanup?.();
+      cleanupLocation?.();
       map.current?.remove();
     };
   }, []);
