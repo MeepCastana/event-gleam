@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -199,13 +198,15 @@ const EventMap = () => {
           }
         });
 
-        // Add click interaction
+        // Add click interaction with proper typing
         map.current.on('click', 'heatmap-layer', (e) => {
           if (e.features && e.features.length > 0) {
             const feature = e.features[0];
-            const coordinates = feature.geometry.coordinates.slice() as [number, number];
-            const intensity = feature.properties.weight;
-            const cityName = feature.properties.cityName || 'Unknown Location';
+            // Type assertion to ensure we're working with a Point geometry
+            const geometry = feature.geometry as GeoJSON.Point;
+            const coordinates = geometry.coordinates as [number, number];
+            const intensity = feature.properties?.weight || 0;
+            const cityName = feature.properties?.cityName || 'Unknown Location';
 
             setSelectedHeatspot({
               cityName,
