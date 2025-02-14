@@ -283,6 +283,36 @@ const EventMap = () => {
     if (!map.current) return;
 
     try {
+      // Show loading toast first
+      toast({
+        title: "Getting Location",
+        description: "Please wait while we locate you...",
+      });
+
+      // Get current position with a longer timeout and retry mechanism
+      const getPositionWithRetry = async (retries = 2): Promise<GeolocationPosition> => {
+        try {
+          return await new Promise<GeolocationPosition>((resolve, reject) => {
+            console.log(`Attempting to get location (${retries} retries left)`);
+            navigator.geolocation.getCurrentPosition(
+              resolve,
+              reject,
+              {
+                enableHighAccuracy: true,
+                timeout: 30000, // 30 seconds timeout
+                maximumAge: 0
+              }
+            );
+          });
+        } catch (error) {
+          if (retries > 0) {
+            console.log('Retrying location acquisition...');
+            return getPositionWithRetry(retries - 1);
+          }
+          throw error;
+        }
+      };
+
       // First check if we have permission
       const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
       console.log('Location permission state:', permission.state);
@@ -296,52 +326,25 @@ const EventMap = () => {
         return;
       }
 
-      // Even if permission is prompt or granted, we need to explicitly request the position
-      if (permission.state === 'prompt' || permission.state === 'granted') {
-        // Show loading toast
-        toast({
-          title: "Getting Location",
-          description: "Please wait while we locate you...",
-        });
+      // Get position with retry mechanism
+      const position = await getPositionWithRetry();
+      console.log('Position acquired:', position.coords);
 
-        // Get current position with a longer timeout
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              console.log('Position acquired:', pos.coords);
-              resolve(pos);
-            },
-            (err) => {
-              console.error('Geolocation error:', err);
-              reject(err);
-            },
-            {
-              enableHighAccuracy: true,
-              timeout: 20000, // Increased timeout to 20 seconds
-              maximumAge: 0
-            }
-          );
-        });
+      // If we get here, we have a valid position
+      map.current.flyTo({
+        center: [position.coords.longitude, position.coords.latitude],
+        zoom: 14,
+        essential: true
+      });
 
-        console.log('Flying to position:', [position.coords.longitude, position.coords.latitude]);
-        
-        // If we get here, we have a valid position
-        map.current.flyTo({
-          center: [position.coords.longitude, position.coords.latitude],
-          zoom: 14,
-          essential: true
-        });
-
-        toast({
-          title: "Location Found",
-          description: "Map centered on your location.",
-        });
-      }
+      toast({
+        title: "Location Found",
+        description: "Map centered on your location.",
+      });
 
     } catch (error) {
       console.error('Error in centerOnLocation:', error);
       
-      // Provide more specific error messages based on the error type
       let errorMessage = "Unable to get your current location. Please ensure location services are enabled.";
       
       if (error instanceof GeolocationPositionError) {
@@ -353,7 +356,7 @@ const EventMap = () => {
             errorMessage = "Location information is unavailable. Please try again.";
             break;
           case error.TIMEOUT:
-            errorMessage = "Location request timed out. Please check your connection and try again.";
+            errorMessage = "Location request timed out. Please try again or check your internet connection.";
             break;
         }
       }
