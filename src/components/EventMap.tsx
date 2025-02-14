@@ -255,7 +255,7 @@ const EventMap = () => {
     <div className="relative w-full h-screen">
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-10 glass px-6 py-3 rounded-2xl">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
