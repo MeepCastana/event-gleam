@@ -20,6 +20,17 @@ const EventMap = () => {
     ? "bg-white/40 text-gray-900"
     : "bg-[#1A1F2C]/90 text-gray-100";
 
+  const toggleTheme = () => {
+    setIsDarkMap(!isDarkMap);
+    if (map.current) {
+      map.current.setStyle(
+        !isDarkMap
+          ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+          : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
+      );
+    }
+  };
+
   const initializeMap = async () => {
     if (!mapContainer.current || map.current) return;
     try {
@@ -63,19 +74,9 @@ const EventMap = () => {
         setMapLoaded(true);
       });
 
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleColorSchemeChange = (e: MediaQueryListEvent) => {
-        setIsDarkMap(e.matches);
-        if (map.current) {
-          map.current.setStyle(e.matches
-            ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
-            : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
-          );
-        }
+      return () => {
+        map.current?.remove();
       };
-      mediaQuery.addEventListener('change', handleColorSchemeChange);
-
-      return () => mediaQuery.removeEventListener('change', handleColorSchemeChange);
     } catch (error) {
       console.error('Error initializing map:', error);
       toast({
@@ -111,7 +112,11 @@ const EventMap = () => {
 
   return (
     <div className="relative w-full h-screen">
-      <MapHeader menuStyle={menuStyle} />
+      <MapHeader 
+        menuStyle={menuStyle} 
+        isDarkMode={isDarkMap}
+        onThemeToggle={toggleTheme}
+      />
       <div ref={mapContainer} className="absolute inset-0" />
       <EventsDrawer 
         menuStyle={menuStyle}

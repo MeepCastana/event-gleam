@@ -1,20 +1,21 @@
 
-import { ArrowLeft, Menu, Search } from "lucide-react";
+import { ArrowLeft, Menu, Moon, Search, Sun } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { 
   Sheet,
   SheetContent,
   SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 
 interface MapHeaderProps {
   menuStyle: string;
+  isDarkMode: boolean;
+  onThemeToggle: () => void;
 }
 
-export const MapHeader = ({ menuStyle }: MapHeaderProps) => {
+export const MapHeader = ({ menuStyle, isDarkMode, onThemeToggle }: MapHeaderProps) => {
   const [isSearching, setIsSearching] = useState(false);
 
   return (
@@ -35,17 +36,74 @@ export const MapHeader = ({ menuStyle }: MapHeaderProps) => {
               </button>
             </SheetTrigger>
             <SheetContent side="left" className={`${menuStyle} backdrop-blur-lg border-white/10`}>
-              <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
-              </SheetHeader>
-              {/* Add your menu items here */}
-              <div className="py-4">
-                <nav className="flex flex-col gap-2">
-                  <a href="#" className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors">Home</a>
-                  <a href="#" className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors">Events</a>
-                  <a href="#" className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors">Profile</a>
-                  <a href="#" className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors">Settings</a>
+              <div className="flex flex-col h-full">
+                <div className="flex items-center gap-4 p-4 border-b border-white/10">
+                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white text-xl font-semibold">
+                    J
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">Jeremy Griffin</h3>
+                    <p className="text-sm opacity-60">+1 xxxx yyyyy</p>
+                  </div>
+                </div>
+                <nav className="flex-1 py-4">
+                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="w-5 h-5">🏠</div>
+                    <span>HOME</span>
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="w-5 h-5">👤</div>
+                    <span>PROFILE</span>
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="w-5 h-5">ℹ️</div>
+                    <span>ABOUT US</span>
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="w-5 h-5">✈️</div>
+                    <span>PLANS</span>
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="w-5 h-5">💬</div>
+                    <span>MESSAGE</span>
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="w-5 h-5">💳</div>
+                    <span>PAYMENT</span>
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="w-5 h-5">📅</div>
+                    <span>SCHEDULE</span>
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="w-5 h-5">🛒</div>
+                    <span>MY CART</span>
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="w-5 h-5">🎯</div>
+                    <span>PROMOTION</span>
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="w-5 h-5">🎧</div>
+                    <span>SUPPORT</span>
+                  </a>
+                  <button
+                    onClick={onThemeToggle}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="w-5 h-5">
+                      {isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                    </div>
+                    <span>THEME</span>
+                  </button>
+                  <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="w-5 h-5">⚙️</div>
+                    <span>SETTINGS</span>
+                  </a>
                 </nav>
+                <div className="p-4 border-t border-white/10">
+                  <p className="text-sm opacity-60">App Version - v2.0</p>
+                </div>
               </div>
             </SheetContent>
           </Sheet>
