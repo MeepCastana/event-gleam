@@ -1,7 +1,6 @@
 import * as React from "react";
 import { motion, useAnimation, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-
 export interface BottomDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,7 +12,6 @@ export interface BottomDrawerProps {
   onExpand?: () => void;
   onContract?: () => void;
 }
-
 export function BottomDrawer({
   isOpen,
   onClose,
@@ -33,7 +31,6 @@ export function BottomDrawer({
   const initialHeightPx = initialHeight / 100 * windowHeight;
   const maxHeightPx = maxHeight / 100 * windowHeight;
   const snapThresholdPx = (maxHeightPx - initialHeightPx) * snapThreshold / 100;
-
   React.useEffect(() => {
     if (isOpen) {
       controls.start({
@@ -46,7 +43,6 @@ export function BottomDrawer({
       });
     }
   }, [isOpen, controls, initialHeightPx, windowHeight]);
-
   const handleDragEnd = (_: any, info: PanInfo) => {
     const yPosition = info.point.y;
     const dragDistance = info.offset.y;
@@ -79,34 +75,24 @@ export function BottomDrawer({
       onContract?.();
     }
   };
-
   return <AnimatePresence>
-      {isOpen && <motion.div 
-        initial={{
-          y: windowHeight
-        }} 
-        animate={controls} 
-        exit={{
-          y: windowHeight
-        }} 
-        drag="y" 
-        dragConstraints={{
-          top: windowHeight - maxHeightPx,
-          bottom: windowHeight - initialHeightPx
-        }} 
-        dragElastic={0.2} 
-        onDragEnd={handleDragEnd} 
-        className={cn("fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-[20px] shadow-lg", className)} 
-        style={{
-          height: `${maxHeight}vh`
-        }}>
+      {isOpen && <motion.div initial={{
+      y: windowHeight
+    }} animate={controls} exit={{
+      y: windowHeight
+    }} drag="y" dragConstraints={{
+      top: windowHeight - maxHeightPx,
+      bottom: windowHeight - initialHeightPx
+    }} dragElastic={0.2} onDragEnd={handleDragEnd} className={cn("fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-[20px] shadow-lg", className)} style={{
+      height: `${maxHeight}vh`
+    }}>
           {/* Drag Handle */}
           <div className="absolute top-0 left-0 right-0 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none backdrop-blur-lg bg-white/10 rounded-t-[20px] border-t border-white/10">
             <div className="w-12 h-1.5 bg-white/30 rounded-full" />
           </div>
           
           {/* Content Area */}
-          <div className="h-full pt-8 overflow-y-auto overscroll-contain backdrop-blur-lg">
+          <div className="h-full pt-8 overflow-y-auto overscroll-contain backdrop-blur-lg rounded-t-2xl">
             {children}
           </div>
         </motion.div>}
