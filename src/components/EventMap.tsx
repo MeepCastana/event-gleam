@@ -59,6 +59,24 @@ const EventMap = () => {
         { lat: 46.0177, lng: 23.5804, weight: 1.0 }, // Alba Iulia (74k)
         { lat: 45.8667, lng: 22.9167, weight: 1.0 }, // Deva (61k)
         { lat: 44.1733, lng: 28.6383, weight: 1.4 }, // Constanța (283k)
+
+        // European cities
+        { lat: 51.5074, lng: -0.1278, weight: 1.8 }, // London
+        { lat: 48.8566, lng: 2.3522, weight: 1.7 },  // Paris
+        { lat: 52.5200, lng: 13.4050, weight: 1.6 }, // Berlin
+        { lat: 41.9028, lng: 12.4964, weight: 1.5 }, // Rome
+        { lat: 52.3676, lng: 4.9041, weight: 1.4 },  // Amsterdam
+        { lat: 48.2082, lng: 16.3738, weight: 1.3 }, // Vienna
+        { lat: 40.4168, lng: -3.7038, weight: 1.6 }, // Madrid
+        { lat: 59.9139, lng: 10.7522, weight: 1.2 }, // Oslo
+
+        // US cities
+        { lat: 40.7128, lng: -74.0060, weight: 1.9 }, // New York
+        { lat: 34.0522, lng: -118.2437, weight: 1.8 }, // Los Angeles
+        { lat: 41.8781, lng: -87.6298, weight: 1.7 }, // Chicago
+        { lat: 29.7604, lng: -95.3698, weight: 1.6 }, // Houston
+        { lat: 39.9526, lng: -75.1652, weight: 1.5 }, // Philadelphia
+        { lat: 37.7749, lng: -122.4194, weight: 1.6 }, // San Francisco
       ];
 
       // Generate cluster points around each city
@@ -188,6 +206,12 @@ const EventMap = () => {
           ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
           : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims'
       );
+
+      // Re-add heatmap layer when style is loaded
+      map.current.once('style.load', () => {
+        console.log('Style loaded, re-adding heatmap...');
+        updateHeatmap();
+      });
     }
   };
 
