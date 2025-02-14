@@ -10,6 +10,7 @@ import { useMapInitialization } from '@/hooks/useMapInitialization';
 import { useHeatmap } from '@/hooks/useHeatmap';
 import { useMapTheme } from '@/hooks/useMapTheme';
 import { useMapControls } from '@/hooks/useMapControls';
+import type { Feature, Point } from 'geojson';
 
 interface HeatspotInfo {
   cityName: string;
@@ -60,8 +61,11 @@ const EventMap = () => {
     map.current.on('click', 'heatmap-layer', (e) => {
       if (!e.features?.[0]) return;
 
-      const coordinates = e.features[0].geometry.coordinates.slice() as [number, number];
-      const intensity = e.features[0].properties?.weight || 0;
+      const feature = e.features[0] as Feature<Point>;
+      if (!feature.geometry.coordinates) return;
+
+      const coordinates = feature.geometry.coordinates.slice() as [number, number];
+      const intensity = feature.properties?.weight || 0;
 
       // Find the closest city
       const cities = [
@@ -112,7 +116,7 @@ const EventMap = () => {
     hideGeolocateControl();
 
     // Hide after any style changes
-    map.current.on('style.load', hideGeolocateControl);
+    map.current.on('style.load', () => hideGeolocateControl());
 
     return () => {
       clearInterval(interval);
