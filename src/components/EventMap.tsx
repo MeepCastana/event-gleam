@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -6,11 +5,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Drawer } from "vaul";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const {
     toast
   } = useToast();
@@ -238,34 +238,37 @@ const EventMap = () => {
       {/* Map */}
       <div ref={mapContainer} className="absolute inset-0" />
 
-      {/* Bottom Drawer */}
-      <Drawer.Root>
-        <Drawer.Trigger asChild>
-          <div className="fixed bottom-0 left-0 right-0 glass rounded-t-3xl cursor-pointer">
+      {/* Expandable Bottom Panel */}
+      <Collapsible
+        open={isExpanded}
+        onOpenChange={setIsExpanded}
+        className="fixed bottom-0 left-0 right-0 z-10"
+      >
+        <CollapsibleTrigger asChild>
+          <div className="glass rounded-t-3xl cursor-pointer transition-all duration-300">
             <div className="p-6">
               <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
               <h2 className="text-xl font-semibold mb-4">
                 Nearby Events
               </h2>
-              <div className="space-y-4 min-h-[100px]">
-                {/* Preview content */}
+              <div className={`space-y-4 min-h-[100px] transition-all duration-300 ${isExpanded ? 'max-h-[60vh]' : 'max-h-[100px]'} overflow-hidden`}>
+                {/* Event cards will go here */}
+                <div className="h-20 glass rounded-xl" />
+                <div className="h-20 glass rounded-xl" />
+                <div className="h-20 glass rounded-xl" />
               </div>
             </div>
           </div>
-        </Drawer.Trigger>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40" />
-        <Drawer.Content className="fixed bottom-0 left-0 right-0 glass rounded-t-3xl">
-          <div className="p-6">
-            <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-4">
-              Nearby Events
-            </h2>
-            <div className="space-y-4 min-h-[200px] max-h-[80vh] overflow-y-auto">
-              {/* Event cards will go here */}
-            </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="animate-accordion-down">
+          <div className="glass px-6 pb-6 space-y-4">
+            <div className="h-20 glass rounded-xl" />
+            <div className="h-20 glass rounded-xl" />
+            <div className="h-20 glass rounded-xl" />
+            <div className="h-20 glass rounded-xl" />
           </div>
-        </Drawer.Content>
-      </Drawer.Root>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 };
