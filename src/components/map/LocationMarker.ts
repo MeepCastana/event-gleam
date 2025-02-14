@@ -7,7 +7,7 @@ export interface LocationMarkerProps {
   map: mapboxgl.Map;
 }
 
-export const createLocationMarker = ({ arrowColor = '#1A1F2C', dotSize = 200, map }: LocationMarkerProps) => {
+export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 200, map }: LocationMarkerProps) => {
   const size = dotSize;
   
   return {
@@ -27,34 +27,32 @@ export const createLocationMarker = ({ arrowColor = '#1A1F2C', dotSize = 200, ma
       // Clear the canvas
       context.clearRect(0, 0, this.width, this.height);
 
-      // Calculate center and size for the play icon
+      // Calculate center and scale for the marker
       const centerX = this.width / 2;
       const centerY = this.height / 2;
-      const iconSize = size * 0.4; // Slightly larger for better visibility
+      const scale = size / 63; // The original SVG is 63x63
 
-      // Rotate the context 90 degrees to point the play icon downward
+      // Move to center and scale the drawing
       context.save();
       context.translate(centerX, centerY);
-      context.rotate(Math.PI / 2); // 90 degrees in radians
-      context.translate(-centerX, -centerY);
+      context.scale(scale, scale);
+      context.translate(-31.5, -31.5); // Center of 63x63
 
-      // Draw the play icon shape
+      // Draw the marker path
       context.beginPath();
-      context.moveTo(centerX - iconSize * 0.5, centerY - iconSize * 0.5);
-      context.lineTo(centerX + iconSize * 0.5, centerY);
-      context.lineTo(centerX - iconSize * 0.5, centerY + iconSize * 0.5);
+      context.moveTo(23.70577136594, 9.3230854637602);
+      context.arc(31.5, 9.3230854637602, 9, -2.498091544796509, -0.6435011087932844, true);
+      context.lineTo(59.70577136594, 44.67691453624);
+      context.arc(51.91154273188, 58.17691453624, 9, -0.6435011087932844, -2.498091544796509, true);
+      context.lineTo(11.08845726812, 58.17691453624);
+      context.arc(3.29422863406, 44.67691453624, 9, -2.498091544796509, -0.6435011087932844, true);
       context.closePath();
 
-      // Fill with light color
-      context.fillStyle = '#F6F6F7';
+      // Fill with blue color
+      context.fillStyle = arrowColor;
       context.fill();
 
-      // Draw border
-      context.lineWidth = 4;
-      context.strokeStyle = arrowColor;
-      context.stroke();
-
-      // Restore the context rotation
+      // Restore the context
       context.restore();
 
       this.data = context.getImageData(0, 0, this.width, this.height).data;
