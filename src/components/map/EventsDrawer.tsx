@@ -1,9 +1,9 @@
-
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
-import { Activity, MapPin, Thermometer, Clock } from "lucide-react";
-import { motion } from "framer-motion";
+import { Activity, MapPin, Thermometer, Clock, ChevronLeft, ChevronRight, Users, TrendingUp, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 interface HeatspotInfo {
   cityName: string;
@@ -35,6 +35,14 @@ export const EventsDrawer = ({
   const [locationDetails, setLocationDetails] = useState<LocationDetails>({
     loading: false
   });
+  const [activeTab, setActiveTab] = useState<'info' | 'trends' | 'alerts'>('info');
+  const [historicalData] = useState([
+    { date: new Date(2024, 1, 1), value: 1.2 },
+    { date: new Date(2024, 1, 2), value: 1.4 },
+    { date: new Date(2024, 1, 3), value: 1.8 },
+    { date: new Date(2024, 1, 4), value: 1.3 },
+    { date: new Date(2024, 1, 5), value: 1.6 },
+  ]);
 
   const getIntensityColor = (intensity: number) => {
     if (intensity > 1.5) return 'text-red-400';
@@ -100,6 +108,132 @@ export const EventsDrawer = ({
     fetchLocationDetails();
   }, [heatspotInfo]);
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'info':
+        return (
+          <div className="grid grid-cols-2 gap-4">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="p-4 rounded-lg bg-white/5 border border-white/10 space-y-2"
+            >
+              <div className="flex items-center gap-2 text-zinc-400">
+                <MapPin size={16} />
+                <span className="text-sm font-medium">Location</span>
+              </div>
+              {locationDetails.loading ? (
+                <motion.div 
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="h-4 bg-white/10 rounded w-3/4"
+                />
+              ) : (
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">{locationDetails.street}</p>
+                  <p className="text-sm text-zinc-400">{locationDetails.district}</p>
+                </div>
+              )}
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="p-4 rounded-lg bg-white/5 border border-white/10 space-y-2"
+            >
+              <div className="flex items-center gap-2 text-zinc-400">
+                <Thermometer size={16} />
+                <span className="text-sm font-medium">Activity Level</span>
+              </div>
+              <div className="space-y-1">
+                <p className={`text-sm font-medium ${getIntensityColor(heatspotInfo?.intensity || 0)}`}>
+                  {heatspotInfo?.intensity && (
+                    heatspotInfo.intensity > 1.5 ? 'High' : heatspotInfo.intensity > 1 ? 'Medium' : 'Low'
+                  )}
+                </p>
+                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${getIntensityPercentage(heatspotInfo?.intensity || 0)}%` }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                    className={`h-full ${getIntensityColor(heatspotInfo?.intensity || 0)} opacity-80`}
+                  />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        );
+      case 'trends':
+        return (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+          >
+            <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+              <h3 className="text-sm font-medium text-zinc-400 mb-4">Activity Trend (Last 5 Days)</h3>
+              <div className="h-32 relative">
+                <div className="absolute inset-0 flex items-end justify-between">
+                  {historicalData.map((data, index) => (
+                    <div key={index} className="flex flex-col items-center gap-2 flex-1">
+                      <motion.div 
+                        initial={{ height: 0 }}
+                        animate={{ height: `${(data.value / 2) * 100}%` }}
+                        transition={{ delay: index * 0.1 }}
+                        className={`w-2 rounded-full ${getIntensityColor(data.value)}`}
+                      />
+                      <span className="text-xs text-zinc-400 rotate-45 origin-left translate-y-4">
+                        {format(data.date, 'MMM d')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-zinc-400">Average Activity</span>
+                <span className="font-medium">1.46</span>
+              </div>
+            </div>
+          </motion.div>
+        );
+      case 'alerts':
+        return (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-3"
+          >
+            <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+              <div className="flex items-start gap-3">
+                <AlertTriangle size={16} className="text-red-400 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-medium text-red-400">High Activity Alert</h3>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    This location has shown increased activity in the last 24 hours.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+              <div className="flex items-start gap-3">
+                <Users size={16} className="text-yellow-400 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-medium text-yellow-400">Crowded Area</h3>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    This area typically experiences high foot traffic during these hours.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        );
+    }
+  };
+
   return (
     <BottomDrawer 
       isOpen={true}
@@ -142,56 +276,36 @@ export const EventsDrawer = ({
               </motion.div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="p-4 rounded-lg bg-white/5 border border-white/10 space-y-2"
+            <div className="flex items-center justify-center gap-2 p-1 bg-white/5 rounded-lg">
+              <button
+                onClick={() => setActiveTab('info')}
+                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'info' ? 'bg-white/10' : 'hover:bg-white/5'
+                }`}
               >
-                <div className="flex items-center gap-2 text-zinc-400">
-                  <MapPin size={16} />
-                  <span className="text-sm font-medium">Location</span>
-                </div>
-                {locationDetails.loading ? (
-                  <motion.div 
-                    animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="h-4 bg-white/10 rounded w-3/4"
-                  />
-                ) : (
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{locationDetails.street}</p>
-                    <p className="text-sm text-zinc-400">{locationDetails.district}</p>
-                  </div>
-                )}
-              </motion.div>
-
-              <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="p-4 rounded-lg bg-white/5 border border-white/10 space-y-2"
+                Info
+              </button>
+              <button
+                onClick={() => setActiveTab('trends')}
+                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'trends' ? 'bg-white/10' : 'hover:bg-white/5'
+                }`}
               >
-                <div className="flex items-center gap-2 text-zinc-400">
-                  <Thermometer size={16} />
-                  <span className="text-sm font-medium">Activity Level</span>
-                </div>
-                <div className="space-y-1">
-                  <p className={`text-sm font-medium ${getIntensityColor(heatspotInfo.intensity)}`}>
-                    {heatspotInfo.intensity > 1.5 ? 'High' : heatspotInfo.intensity > 1 ? 'Medium' : 'Low'}
-                  </p>
-                  <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${getIntensityPercentage(heatspotInfo.intensity)}%` }}
-                      transition={{ delay: 0.3, duration: 0.5 }}
-                      className={`h-full ${getIntensityColor(heatspotInfo.intensity)} opacity-80`}
-                    />
-                  </div>
-                </div>
-              </motion.div>
+                Trends
+              </button>
+              <button
+                onClick={() => setActiveTab('alerts')}
+                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'alerts' ? 'bg-white/10' : 'hover:bg-white/5'
+                }`}
+              >
+                Alerts
+              </button>
             </div>
+
+            <AnimatePresence mode="wait">
+              {renderTabContent()}
+            </AnimatePresence>
           </motion.div>
         ) : (
           <motion.div 
