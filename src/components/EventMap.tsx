@@ -5,12 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "vaul";
+import * as Drawer from "vaul";
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -243,20 +238,21 @@ const EventMap = () => {
       <div ref={mapContainer} className="absolute inset-0" />
 
       {/* Bottom Drawer */}
-      <Drawer.Root direction="bottom" dismissible>
-        <DrawerContent className="fixed bottom-0 left-0 right-0 glass rounded-t-3xl">
-          <div className="p-6">
-            <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-            <DrawerHeader>
-              <DrawerTitle className="text-xl font-semibold mb-4">
+      <Drawer.Root>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 bg-black/40" />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 glass rounded-t-3xl">
+            <div className="p-6">
+              <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-4">
                 Nearby Events
-              </DrawerTitle>
-            </DrawerHeader>
-            <div className="space-y-4 min-h-[200px] max-h-[80vh] overflow-y-auto">
-              {/* Event cards will go here */}
+              </h2>
+              <div className="space-y-4 min-h-[200px] max-h-[80vh] overflow-y-auto">
+                {/* Event cards will go here */}
+              </div>
             </div>
-          </div>
-        </DrawerContent>
+          </Drawer.Content>
+        </Drawer.Portal>
       </Drawer.Root>
     </div>
   );
