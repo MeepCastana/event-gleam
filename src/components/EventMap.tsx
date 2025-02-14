@@ -245,27 +245,25 @@ const EventMap = () => {
         className="fixed bottom-0 left-0 right-0 z-10"
       >
         <CollapsibleTrigger asChild>
-          <div className="glass rounded-t-3xl cursor-pointer transition-all duration-300">
-            <div className="p-6">
-              <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-4">
-                Nearby Events
-              </h2>
-              <div className={`space-y-4 min-h-[100px] transition-all duration-300 ${isExpanded ? 'max-h-[60vh]' : 'max-h-[100px]'} overflow-hidden`}>
-                {/* Event cards will go here */}
-                <div className="h-20 glass rounded-xl" />
-                <div className="h-20 glass rounded-xl" />
-                <div className="h-20 glass rounded-xl" />
-              </div>
+          <div className={`glass rounded-t-[32px] cursor-pointer transition-all duration-300 ${isExpanded ? 'pb-4' : 'pb-2'}`}>
+            <div className="p-4">
+              <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-2" />
             </div>
           </div>
         </CollapsibleTrigger>
-        <CollapsibleContent className="animate-accordion-down">
-          <div className="glass px-6 pb-6 space-y-4">
-            <div className="h-20 glass rounded-xl" />
-            <div className="h-20 glass rounded-xl" />
-            <div className="h-20 glass rounded-xl" />
-            <div className="h-20 glass rounded-xl" />
+        <CollapsibleContent className="slide-up">
+          <div className="glass px-6 pb-6 space-y-4 rounded-t-[32px] -mt-[32px] pt-8">
+            <h2 className="text-xl font-semibold mb-4">
+              Nearby Events
+            </h2>
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="h-20 glass rounded-xl" />
+              <div className="h-20 glass rounded-xl" />
+              <div className="h-20 glass rounded-xl" />
+              <div className="h-20 glass rounded-xl" />
+              <div className="h-20 glass rounded-xl" />
+              <div className="h-20 glass rounded-xl" />
+            </div>
           </div>
         </CollapsibleContent>
       </Collapsible>
