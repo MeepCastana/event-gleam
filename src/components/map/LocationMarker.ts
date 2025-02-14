@@ -7,7 +7,7 @@ export interface LocationMarkerProps {
   map: mapboxgl.Map;
 }
 
-export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 200, map }: LocationMarkerProps) => {
+export const createLocationMarker = ({ arrowColor = '#1A1F2C', dotSize = 200, map }: LocationMarkerProps) => {
   const size = dotSize;
   
   return {
@@ -21,56 +21,32 @@ export const createLocationMarker = ({ arrowColor = '#4287f5', dotSize = 200, ma
       this.context = canvas.getContext('2d');
     },
     render: function () {
-      const duration = 1000;
-      const t = performance.now() % duration / duration;
-      const radius = size / 2 * 0.3;
-      const outerRadius = size / 2 * 0.7 * t + radius;
       const context = this.context;
-
       if (!context) return false;
 
       // Clear the canvas
       context.clearRect(0, 0, this.width, this.height);
 
-      // Draw the outer circle (pulsing effect)
+      // Calculate center and size for the triangle
+      const centerX = this.width / 2;
+      const centerY = this.height / 2;
+      const triangleSize = size * 0.3; // Adjust size of triangle
+
+      // Draw the location triangle
       context.beginPath();
-      context.arc(this.width / 2, this.height / 2, outerRadius, 0, Math.PI * 2);
-      context.fillStyle = `rgba(66, 135, 245, ${1 - t})`;
+      context.moveTo(centerX, centerY - triangleSize);
+      context.lineTo(centerX - triangleSize, centerY + triangleSize * 0.5);
+      context.lineTo(centerX + triangleSize, centerY + triangleSize * 0.5);
+      context.closePath();
+
+      // Fill with light color
+      context.fillStyle = '#F6F6F7';
       context.fill();
 
-      // Draw the inner circle (location dot)
-      context.beginPath();
-      context.arc(this.width / 2, this.height / 2, radius, 0, Math.PI * 2);
-      context.fillStyle = arrowColor;
-      context.strokeStyle = 'white';
-      context.lineWidth = 2 + 4 * (1 - t);
-      context.fill();
+      // Draw border
+      context.lineWidth = 4;
+      context.strokeStyle = arrowColor;
       context.stroke();
-
-      // Draw the direction arrow
-      if (window.deviceHeading !== undefined) {
-        const arrowLength = radius * 2;
-        const centerX = this.width / 2;
-        const centerY = this.height / 2;
-        
-        context.save();
-        context.translate(centerX, centerY);
-        context.rotate((window.deviceHeading * Math.PI) / 180);
-        
-        context.beginPath();
-        context.moveTo(0, -radius - arrowLength);
-        context.lineTo(-radius / 2, -radius);
-        context.lineTo(radius / 2, -radius);
-        context.closePath();
-        
-        context.fillStyle = arrowColor;
-        context.fill();
-        context.strokeStyle = 'white';
-        context.lineWidth = 2;
-        context.stroke();
-        
-        context.restore();
-      }
 
       this.data = context.getImageData(0, 0, this.width, this.height).data;
       map.triggerRepaint();
