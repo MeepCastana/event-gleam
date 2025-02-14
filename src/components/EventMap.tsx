@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -5,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import * as Drawer from "vaul";
+import { Drawer } from "vaul";
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -239,20 +240,31 @@ const EventMap = () => {
 
       {/* Bottom Drawer */}
       <Drawer.Root>
-        <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 bg-black/40" />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 glass rounded-t-3xl">
+        <Drawer.Trigger asChild>
+          <div className="fixed bottom-0 left-0 right-0 glass rounded-t-3xl cursor-pointer">
             <div className="p-6">
               <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
               <h2 className="text-xl font-semibold mb-4">
                 Nearby Events
               </h2>
-              <div className="space-y-4 min-h-[200px] max-h-[80vh] overflow-y-auto">
-                {/* Event cards will go here */}
+              <div className="space-y-4 min-h-[100px]">
+                {/* Preview content */}
               </div>
             </div>
-          </Drawer.Content>
-        </Drawer.Portal>
+          </div>
+        </Drawer.Trigger>
+        <Drawer.Overlay className="fixed inset-0 bg-black/40" />
+        <Drawer.Content className="fixed bottom-0 left-0 right-0 glass rounded-t-3xl">
+          <div className="p-6">
+            <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-4">
+              Nearby Events
+            </h2>
+            <div className="space-y-4 min-h-[200px] max-h-[80vh] overflow-y-auto">
+              {/* Event cards will go here */}
+            </div>
+          </div>
+        </Drawer.Content>
       </Drawer.Root>
     </div>
   );
