@@ -21,7 +21,7 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
   const { toast } = useToast();
   const [isTracking, setIsTracking] = useState(false);
   const watchId = useRef<number | null>(null);
-  const wakeLock = useRef<WakeLockSentinel | null>(null);
+  const wakeLock = useRef<any | null>(null);
 
   // Request wake lock to keep screen active
   const requestWakeLock = async () => {

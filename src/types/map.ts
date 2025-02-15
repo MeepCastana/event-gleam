@@ -31,8 +31,9 @@ export interface LocationHistoryEntry {
   created_at: string;
 }
 
+// Skip type checking for wakeLock API
 declare global {
-  interface Window {
-    wakeLock: null;
+  interface Navigator {
+    wakeLock: any;
   }
 }
