@@ -68,13 +68,15 @@ export const useMapInitialization = ({
         // Initialize map with user's location
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
-          style: 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3',
+          style: isDarkMap 
+            ? 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3'
+            : 'mapbox://styles/meep-box/cm75waj9c007o01r8cyxx7qrv',
           center: [longitude, latitude],
           zoom: 14,
           pitch: 45,
           bearing: 0,
           maxZoom: 19,
-          projection: { name: 'mercator' },
+          projection: { name: 'globe' }, // Changed to globe projection
           antialias: true
         });
 
@@ -83,13 +85,15 @@ export const useMapInitialization = ({
         // Fallback to default location - Deva coordinates
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
-          style: 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3',
+          style: isDarkMap 
+            ? 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3'
+            : 'mapbox://styles/meep-box/cm75waj9c007o01r8cyxx7qrv',
           center: [22.9086, 45.8778],
           zoom: 14,
           pitch: 45,
           bearing: 0,
           maxZoom: 19,
-          projection: { name: 'mercator' },
+          projection: { name: 'globe' }, // Changed to globe projection
           antialias: true
         });
       }

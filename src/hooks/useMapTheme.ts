@@ -24,7 +24,10 @@ export const useMapTheme = ({ map, updateHeatmap }: UseMapThemeProps) => {
         updateHeatmap();
       });
       
-      map.current.setStyle('mapbox://styles/meep-box/cm75w4ure009601r00el4cof3');
+      map.current.setStyle(newTheme 
+        ? 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3'
+        : 'mapbox://styles/meep-box/cm75waj9c007o01r8cyxx7qrv'
+      );
     }
   };
 
