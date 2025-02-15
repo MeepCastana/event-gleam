@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -24,56 +23,49 @@ const EventMap = () => {
   const [isVisibleOnHeatmap, setIsVisibleOnHeatmap] = useState(true);
   const autoStartAttempted = useRef(false);
 
+  useEffect(() => {
+    if (mapContainer.current && !map.current) {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [25.6, 45.9], // Center on Romania
+        zoom: 6.5 // Show most of Romania
+      });
+
+      map.current.on('load', () => {
+        setMapLoaded(true);
+      });
+    }
+  }, []);
+
   const { updateHeatmap } = useHeatmap(map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded, isVisibleOnHeatmap);
   const { isDarkMap, toggleTheme } = useMapTheme({ map, updateHeatmap });
 
-  // Enable location updates always, regardless of heatmap visibility
-  useLocationUpdates({ userId, enabled: mapLoaded });
+  const { startTracking, stopTracking, isTracking, locationUpdates } = useLocationTracking(userId);
+  const { initializeLocationUpdates } = useLocationUpdates(userId, locationUpdates);
+  const { initializeMap } = useMapInitialization(map, mapLoaded, locationControlRef);
 
-  useMapInitialization({
-    mapContainer,
-    map,
-    locationControlRef,
-    isDarkMap,
-    setMapLoaded,
-    updateHeatmap
-  });
+  useEffect(() => {
+    if (mapLoaded) {
+      initializeMap();
+      initializeLocationUpdates();
+    }
+  }, [mapLoaded, initializeMap, initializeLocationUpdates]);
 
-  // Setup location tracking with proper map instance
-  const { isTracking, startTracking } = useLocationTracking({
-    map: map.current,
-    mapLoaded,
-    userId
-  });
+  useEffect(() => {
+    if (mapLoaded && !autoStartAttempted.current) {
+      autoStartAttempted.current = true;
+      startTracking();
+    }
+  }, [mapLoaded, startTracking]);
 
   const handleVisibilityToggle = () => {
-    setIsVisibleOnHeatmap(prev => !prev);
+    setIsVisibleOnHeatmap(!isVisibleOnHeatmap);
   };
 
   const handleDrawerClose = () => {
     setIsDrawerExpanded(false);
-    setSelectedHeatspot(undefined);
   };
-
-  // Single auto-start effect that only runs once when conditions are met
-  useEffect(() => {
-    if (mapLoaded && !isTracking && map.current && userId && !autoStartAttempted.current) {
-      console.log('Attempting to auto-start location tracking...');
-      autoStartAttempted.current = true;
-      startTracking();
-    }
-  }, [mapLoaded, isTracking, userId]);
-
-  // Call updateHeatmap when map is loaded and periodically
-  useEffect(() => {
-    if (mapLoaded) {
-      console.log('Map loaded, updating heatmap...');
-      updateHeatmap();
-      
-      const interval = setInterval(updateHeatmap, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [mapLoaded, updateHeatmap]);
 
   return (
     <div className="relative w-full h-screen">
