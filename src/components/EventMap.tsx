@@ -58,6 +58,14 @@ const EventMap = () => {
     setSelectedHeatspot(undefined);
   };
 
+  // Auto-start tracking when map is loaded
+  useEffect(() => {
+    if (mapLoaded && !isTracking && map.current && userId) {
+      console.log('Map loaded, auto-starting location tracking...');
+      startTracking();
+    }
+  }, [mapLoaded, isTracking, userId]);
+
   // Ensure map is loaded before allowing tracking
   useEffect(() => {
     if (!mapLoaded && isTracking) {
