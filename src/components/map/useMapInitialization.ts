@@ -1,3 +1,4 @@
+
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -69,11 +70,11 @@ export const useMapInitialization = ({
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: isDarkMap 
-            ? 'mapbox://styles/mapbox/standard-dark-v1'
-            : 'mapbox://styles/mapbox/standard-v1',
+            ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+            : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
           center: [longitude, latitude],
           zoom: 14,
-          pitch: 45, // Initial 3D perspective
+          pitch: 45,
           bearing: 0,
           maxZoom: 19,
           projection: { name: 'mercator' },
@@ -86,11 +87,11 @@ export const useMapInitialization = ({
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: isDarkMap 
-            ? 'mapbox://styles/mapbox/standard-dark-v1'
-            : 'mapbox://styles/mapbox/standard-v1',
+            ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+            : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
           center: [22.9086, 45.8778],
           zoom: 14,
-          pitch: 45, // Initial 3D perspective
+          pitch: 45,
           bearing: 0,
           maxZoom: 19,
           projection: { name: 'mercator' },
