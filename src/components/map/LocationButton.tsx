@@ -1,5 +1,4 @@
 
-import { Button } from "@/components/ui/button";
 import { Navigation } from "lucide-react";
 
 interface LocationButtonProps {
