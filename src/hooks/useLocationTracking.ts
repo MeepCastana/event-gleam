@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -7,7 +8,6 @@ import { supabase } from '@/integrations/supabase/client';
 declare global {
   interface Window {
     deviceHeading?: number;
-    wakeLock?: WakeLockSentinel | null;
   }
 }
 
@@ -21,36 +21,18 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
   const { toast } = useToast();
   const [isTracking, setIsTracking] = useState(false);
   const watchId = useRef<number | null>(null);
-  const wakeLock = useRef<any | null>(null);
-
-  // Request wake lock to keep screen active
-  const requestWakeLock = async () => {
-    try {
-      if ('wakeLock' in navigator) {
-        wakeLock.current = await navigator.wakeLock.request('screen');
-        console.log('Wake Lock is active');
-      }
-    } catch (err) {
-      console.error('Wake Lock error:', err);
-    }
-  };
-
-  // Release wake lock when not needed
-  const releaseWakeLock = async () => {
-    if (wakeLock.current) {
-      try {
-        await wakeLock.current.release();
-        wakeLock.current = null;
-        console.log('Wake Lock released');
-      } catch (err) {
-        console.error('Wake Lock release error:', err);
-      }
-    }
-  };
 
   // Store location in Supabase
   const storeLocation = async (position: GeolocationPosition) => {
-    if (!userId) return;
+    if (!userId) {
+      console.error('No user ID available');
+      toast({
+        variant: "destructive",
+        title: "Authentication Error",
+        description: "Please log in to track your location"
+      });
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -68,6 +50,11 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
 
       if (error) {
         console.error('Error storing location:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to store location data"
+        });
       }
     } catch (error) {
       console.error('Error in storeLocation:', error);
@@ -76,6 +63,15 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
 
   // Start location tracking
   const startTracking = async () => {
+    if (!userId) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Please log in to start tracking"
+      });
+      return;
+    }
+
     if (!navigator.geolocation) {
       toast({
         variant: "destructive",
@@ -86,8 +82,25 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
     }
 
     try {
-      // Request wake lock first
-      await requestWakeLock();
+      // Update tracking settings first
+      const { error: settingsError } = await supabase
+        .from('tracking_settings')
+        .upsert({
+          user_id: userId,
+          status: 'active',
+          high_accuracy: true,
+          background_enabled: true
+        });
+
+      if (settingsError) {
+        console.error('Error updating tracking settings:', settingsError);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update tracking settings"
+        });
+        return;
+      }
 
       // Start watching position
       watchId.current = navigator.geolocation.watchPosition(
@@ -158,19 +171,6 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
         }
       );
 
-      // Update tracking settings in database
-      if (userId) {
-        await supabase
-          .from('tracking_settings')
-          .upsert({
-            user_id: userId,
-            status: 'active',
-            high_accuracy: true,
-            wake_lock_enabled: true,
-            background_enabled: true
-          });
-      }
-
       setIsTracking(true);
     } catch (error) {
       console.error('Error starting tracking:', error);
@@ -189,14 +189,16 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
       watchId.current = null;
     }
 
-    await releaseWakeLock();
-
     // Update tracking settings in database
     if (userId) {
-      await supabase
+      const { error } = await supabase
         .from('tracking_settings')
         .update({ status: 'stopped' })
         .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error updating tracking settings:', error);
+      }
     }
 
     setIsTracking(false);
@@ -208,7 +210,6 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
       if (watchId.current !== null) {
         navigator.geolocation.clearWatch(watchId.current);
       }
-      releaseWakeLock();
     };
   }, []);
 
