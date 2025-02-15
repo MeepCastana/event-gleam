@@ -25,24 +25,7 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
   // Store location in Supabase
   const storeLocation = async (position: GeolocationPosition) => {
     if (!userId) {
-      console.error('No user ID available');
-      toast({
-        variant: "destructive",
-        title: "Authentication Error",
-        description: "Please log in to track your location"
-      });
-      return;
-    }
-
-    // Check current session before making request
-    const session = await supabase.auth.getSession();
-    if (!session.data.session) {
-      console.error('No active session');
-      toast({
-        variant: "destructive",
-        title: "Authentication Error",
-        description: "Your session has expired. Please log in again."
-      });
+      console.error('No anonymous ID available');
       return;
     }
 
@@ -73,18 +56,6 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
   const updateTrackingSettings = async (status: 'active' | 'stopped') => {
     if (!userId) return;
 
-    // Check current session before making request
-    const session = await supabase.auth.getSession();
-    if (!session.data.session) {
-      console.error('No active session');
-      toast({
-        variant: "destructive",
-        title: "Authentication Error",
-        description: "Your session has expired. Please log in again."
-      });
-      return;
-    }
-
     const { error } = await supabase
       .from('tracking_settings')
       .upsert({
@@ -109,8 +80,8 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
     if (!userId) {
       toast({
         variant: "destructive",
-        title: "Authentication Required",
-        description: "Please log in to start tracking"
+        title: "Error",
+        description: "Could not generate anonymous ID"
       });
       return;
     }
