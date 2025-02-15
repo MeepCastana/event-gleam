@@ -1,3 +1,4 @@
+
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -396,7 +397,17 @@ export const useMapInitialization = ({
         try {
           // Clean up geolocation control first
           if (locationControlRef.current) {
-            locationControlRef.current.off('geolocate');
+            // Remove the geolocate event handler
+            locationControlRef.current.off('geolocate', () => {
+              if (map.current) {
+                if (map.current.getLayer('search-location')) {
+                  map.current.removeLayer('search-location');
+                }
+                if (map.current.getSource('search-location')) {
+                  map.current.removeSource('search-location');
+                }
+              }
+            });
             map.current.removeControl(locationControlRef.current);
             locationControlRef.current = null;
           }
@@ -410,32 +421,32 @@ export const useMapInitialization = ({
               }
             });
 
-          const sources = map.current.getStyle().sources || {};
-          Object.keys(sources).forEach(sourceId => {
-            if (map.current?.getSource(sourceId)) {
-              map.current.removeSource(sourceId);
-            }
-          });
+            const sources = map.current.getStyle().sources || {};
+            Object.keys(sources).forEach(sourceId => {
+              if (map.current?.getSource(sourceId)) {
+                map.current.removeSource(sourceId);
+              }
+            });
+          }
+        } catch (e) {
+          console.warn('Error cleaning up map resources:', e);
         }
-      } catch (e) {
-        console.warn('Error cleaning up map resources:', e);
       }
-    }
 
-    // Then cleanup other resources
-    if (cleanup && !isDestroying) {
-      cleanup();
-    }
-
-    // Finally remove the map
-    if (map.current) {
-      try {
-        map.current.remove();
-      } catch (e) {
-        console.warn('Error removing map:', e);
+      // Then cleanup other resources
+      if (cleanup && !isDestroying) {
+        cleanup();
       }
-    }
-    map.current = null;
-  };
-}, []);
+
+      // Finally remove the map
+      if (map.current) {
+        try {
+          map.current.remove();
+        } catch (e) {
+          console.warn('Error removing map:', e);
+        }
+      }
+      map.current = null;
+    };
+  }, []);
 };
