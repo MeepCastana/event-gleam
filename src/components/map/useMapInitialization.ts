@@ -1,4 +1,3 @@
-
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -76,7 +75,6 @@ export const useMapInitialization = ({
           zoom: 14,
           maxZoom: 19,
           projection: { name: 'mercator' },
-          optimizeForTerrain: true,
           antialias: true
         });
 
@@ -92,7 +90,6 @@ export const useMapInitialization = ({
           zoom: 14,
           maxZoom: 19,
           projection: { name: 'mercator' },
-          optimizeForTerrain: true,
           antialias: true
         });
       }
