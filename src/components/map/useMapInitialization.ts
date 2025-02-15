@@ -1,3 +1,4 @@
+
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -21,6 +22,70 @@ export const useMapInitialization = ({
   updateHeatmap
 }: UseMapInitializationProps) => {
   const { toast } = useToast();
+
+  const openExternalNavigation = (lat: number, lng: number, name: string = 'Destination') => {
+    // Create the navigation menu element
+    const menuElement = document.createElement('div');
+    menuElement.className = `fixed z-50 p-4 rounded-lg shadow-lg ${isDarkMap ? 'bg-zinc-800 text-white' : 'bg-white text-black'}`;
+    menuElement.style.minWidth = '200px';
+
+    // Encode the destination for URLs
+    const encodedName = encodeURIComponent(name);
+    const appleUrl = `maps://?q=${lat},${lng}&ll=${lat},${lng}`;
+    const googleUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    const wazeUrl = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+    
+    // Create menu items
+    const buttons = [
+      { text: 'Apple Maps', url: appleUrl, icon: '🗺️' },
+      { text: 'Google Maps', url: googleUrl, icon: '🌎' },
+      { text: 'Waze', url: wazeUrl, icon: '🚗' }
+    ].map(({ text, url, icon }) => {
+      const button = document.createElement('button');
+      button.className = `w-full px-4 py-2 mb-2 rounded flex items-center gap-2 ${
+        isDarkMap 
+          ? 'hover:bg-zinc-700 text-white' 
+          : 'hover:bg-gray-100 text-gray-900'
+      }`;
+      button.innerHTML = `<span class="text-lg">${icon}</span> ${text}`;
+      button.onclick = (e) => {
+        e.stopPropagation();
+        window.open(url, '_blank');
+        document.body.removeChild(menuElement);
+      };
+      return button;
+    });
+
+    // Add buttons to menu
+    buttons.forEach(button => menuElement.appendChild(button));
+
+    // Add close button
+    const closeButton = document.createElement('button');
+    closeButton.className = `w-full px-4 py-2 rounded ${
+      isDarkMap 
+        ? 'bg-zinc-700 hover:bg-zinc-600 text-white' 
+        : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+    }`;
+    closeButton.textContent = 'Cancel';
+    closeButton.onclick = () => document.body.removeChild(menuElement);
+    menuElement.appendChild(closeButton);
+
+    // Position the menu near the click location
+    document.body.appendChild(menuElement);
+    
+    // Close menu when clicking outside
+    const closeOnClickOutside = (e: MouseEvent) => {
+      if (!menuElement.contains(e.target as Node)) {
+        document.body.removeChild(menuElement);
+        document.removeEventListener('click', closeOnClickOutside);
+      }
+    };
+    
+    // Delay adding the click listener to prevent immediate closure
+    setTimeout(() => {
+      document.addEventListener('click', closeOnClickOutside);
+    }, 100);
+  };
 
   const initializeMap = async () => {
     if (!mapContainer.current || map.current) return;
@@ -69,31 +134,31 @@ export const useMapInitialization = ({
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: isDarkMap 
-            ? 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3'
-            : 'mapbox://styles/meep-box/cm75waj9c007o01r8cyxx7qrv',
+            ? 'mapbox://styles/mapbox/navigation-night-v1'
+            : 'mapbox://styles/mapbox/navigation-day-v1',
           center: [longitude, latitude],
           zoom: 14,
           pitch: 45,
           bearing: 0,
           maxZoom: 19,
-          projection: { name: 'globe' }, // Changed to globe projection
+          projection: { name: 'globe' },
           antialias: true
         });
 
       } catch (locationError) {
         console.warn('Could not get initial location, using default:', locationError);
-        // Fallback to default location - Deva coordinates
+        // Fallback to default location
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: isDarkMap 
-            ? 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3'
-            : 'mapbox://styles/meep-box/cm75waj9c007o01r8cyxx7qrv',
+            ? 'mapbox://styles/mapbox/navigation-night-v1'
+            : 'mapbox://styles/mapbox/navigation-day-v1',
           center: [22.9086, 45.8778],
           zoom: 14,
           pitch: 45,
           bearing: 0,
           maxZoom: 19,
-          projection: { name: 'globe' }, // Changed to globe projection
+          projection: { name: 'globe' },
           antialias: true
         });
       }
@@ -110,7 +175,59 @@ export const useMapInitialization = ({
         showUserLocation: true
       });
 
-      // Add control in custom position (top-left)
+      // Add navigation control
+      const navigationControl = new mapboxgl.NavigationControl({
+        showCompass: true,
+        showZoom: true,
+        visualizePitch: true
+      });
+      map.current.addControl(navigationControl, 'top-left');
+
+      // Handle long press to show navigation options
+      let pressTimer: NodeJS.Timeout | null = null;
+      let pressStartLocation: { x: number; y: number } | null = null;
+      const moveThreshold = 10; // pixels
+
+      map.current.on('mousedown', (e) => {
+        pressStartLocation = { x: e.point.x, y: e.point.y };
+        
+        pressTimer = setTimeout(() => {
+          const { lng, lat } = e.lngLat;
+          
+          // Check if we clicked on a POI
+          const features = map.current?.queryRenderedFeatures(e.point, {
+            layers: ['filtered-pois']
+          });
+
+          const poiName = features?.[0]?.properties?.name || 'Selected Location';
+          openExternalNavigation(lat, lng, poiName);
+        }, 500); // 500ms hold time
+      });
+
+      map.current.on('mousemove', (e) => {
+        if (pressStartLocation) {
+          const dx = Math.abs(e.point.x - pressStartLocation.x);
+          const dy = Math.abs(e.point.y - pressStartLocation.y);
+          
+          // If moved more than threshold, cancel the long press
+          if (dx > moveThreshold || dy > moveThreshold) {
+            if (pressTimer) {
+              clearTimeout(pressTimer);
+              pressTimer = null;
+            }
+          }
+        }
+      });
+
+      map.current.on('mouseup', () => {
+        if (pressTimer) {
+          clearTimeout(pressTimer);
+          pressTimer = null;
+        }
+        pressStartLocation = null;
+      });
+
+      // Add location control in custom position (top-left)
       map.current.addControl(locationControlRef.current, 'top-left');
 
       // Add navigation control for easier zooming
@@ -345,8 +462,9 @@ export const useMapInitialization = ({
 
       return () => {
         clearInterval(updateInterval);
-        style.remove();
-        map.current?.remove();
+        if (map.current) {
+          map.current.remove();
+        }
       };
 
     } catch (error) {
