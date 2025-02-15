@@ -125,26 +125,27 @@ export const useHeatmap = (
               'interpolate',
               ['linear'],
               ['get', 'weight', ['properties']],
-              0, 0.1,  // Reduced minimum weight
-              1.5, 1   // Reduced maximum weight and adjusted scale
+              0, 0.05,  // Even lower minimum weight
+              0.2, 0.2, // Single user weight
+              1.5, 1    // Multiple users maximum
             ],
             'heatmap-intensity': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, 0.7,  // Reduced base intensity
-              9, 2
+              0, 0.4,   // Further reduced base intensity
+              9, 1.5    // Lower maximum intensity
             ],
             'heatmap-color': [
               'interpolate',
               ['linear'],
               ['heatmap-density'],
               0, 'rgba(0,0,0,0)',
-              0.2, 'rgba(150,150,255,0.2)',  // Much lighter blue
-              0.4, 'rgba(100,255,100,0.3)',  // Lighter green
-              0.6, 'rgba(255,255,0,0.4)',    // Lighter yellow
-              0.8, 'rgba(255,150,0,0.5)',    // Lighter orange
-              1, 'rgba(255,0,0,0.6)'         // Lighter red
+              0.1, 'rgba(150,150,255,0.1)',  // Very light blue
+              0.3, 'rgba(100,255,100,0.2)',  // Very light green
+              0.5, 'rgba(255,255,0,0.3)',    // Very light yellow
+              0.7, 'rgba(255,150,0,0.4)',    // Light orange
+              1, 'rgba(255,0,0,0.5)'         // Light red, only for multiple users
             ],
             'heatmap-radius': [
               'interpolate',
@@ -153,7 +154,7 @@ export const useHeatmap = (
               0, heatmapRadius,
               9, heatmapRadius * 2
             ],
-            'heatmap-opacity': 0.7  // Slightly reduced opacity
+            'heatmap-opacity': 0.6  // Further reduced opacity
           }
         });
       }

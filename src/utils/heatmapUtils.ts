@@ -1,3 +1,4 @@
+
 interface HeatPoint {
   latitude: number;
   longitude: number;
@@ -18,7 +19,7 @@ export const calculateHeatmapWeight = (points: HeatPoint[], radius: number = 100
     // For single user, keep weight very low (0.2)
     // Only increase significantly when multiple users are present
     const weight = nearbyPoints.length === 1 
-      ? 0.2  // Single user
+      ? 0.2  // Single user - keep very low
       : Math.min(nearbyPoints.length * 0.15, 1.5); // Multiple users, capped at 1.5
     
     const key = `${point.latitude.toFixed(4)},${point.longitude.toFixed(4)}`;
