@@ -30,42 +30,6 @@ export type Database = {
         }
         Relationships: []
       }
-      points_of_interest: {
-        Row: {
-          category: Database["public"]["Enums"]["poi_category"]
-          created_at: string
-          description: string | null
-          id: string
-          latitude: number
-          longitude: number
-          name: string
-          rating: number | null
-          updated_at: string
-        }
-        Insert: {
-          category: Database["public"]["Enums"]["poi_category"]
-          created_at?: string
-          description?: string | null
-          id?: string
-          latitude: number
-          longitude: number
-          name: string
-          rating?: number | null
-          updated_at?: string
-        }
-        Update: {
-          category?: Database["public"]["Enums"]["poi_category"]
-          created_at?: string
-          description?: string | null
-          id?: string
-          latitude?: number
-          longitude?: number
-          name?: string
-          rating?: number | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       tracking_settings: {
         Row: {
           background_enabled: boolean
@@ -146,7 +110,6 @@ export type Database = {
       }
     }
     Enums: {
-      poi_category: "bar" | "restaurant" | "hotel" | "plaza" | "mall"
       tracking_status: "active" | "paused" | "stopped"
     }
     CompositeTypes: {
