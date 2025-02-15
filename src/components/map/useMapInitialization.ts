@@ -66,12 +66,12 @@ export const useMapInitialization = ({
 
         const { latitude, longitude } = position.coords;
 
-        // Initialize map with user's location
+        // Initialize map with user's location and POI layer enabled
         map.current = new mapboxgl.Map({
           container: mapContainer.current!,
           style: isDarkMap 
-            ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
-            : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
+            ? 'mapbox://styles/mapbox/dark-v11'  // Changed to standard Mapbox style that includes POIs
+            : 'mapbox://styles/mapbox/light-v11', // Changed to standard Mapbox style that includes POIs
           center: [longitude, latitude],
           zoom: 14
         });
@@ -82,8 +82,8 @@ export const useMapInitialization = ({
         map.current = new mapboxgl.Map({
           container: mapContainer.current!,
           style: isDarkMap 
-            ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
-            : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
+            ? 'mapbox://styles/mapbox/dark-v11'  // Changed to standard Mapbox style that includes POIs
+            : 'mapbox://styles/mapbox/light-v11', // Changed to standard Mapbox style that includes POIs
           center: [0, 0],
           zoom: 2
         });
@@ -135,6 +135,54 @@ export const useMapInitialization = ({
       // Set up map event handlers
       map.current.on('load', () => {
         console.log('Map loaded, enabling location tracking...');
+        
+        // Ensure POI layers are visible and interactive
+        if (map.current) {
+          // Add 3D buildings for better context
+          const layers = map.current.getStyle().layers;
+          const labelLayerId = layers.find(
+            (layer) => layer.type === 'symbol' && layer.layout && layer.layout['text-field']
+          )?.id;
+
+          map.current.addLayer(
+            {
+              'id': '3d-buildings',
+              'source': 'composite',
+              'source-layer': 'building',
+              'filter': ['==', 'extrude', 'true'],
+              'type': 'fill-extrusion',
+              'minzoom': 14,
+              'paint': {
+                'fill-extrusion-color': isDarkMap ? '#2a2a2a' : '#aaa',
+                'fill-extrusion-height': [
+                  'interpolate',
+                  ['linear'],
+                  ['zoom'],
+                  15,
+                  0,
+                  15.05,
+                  ['get', 'height']
+                ],
+                'fill-extrusion-base': [
+                  'interpolate',
+                  ['linear'],
+                  ['zoom'],
+                  15,
+                  0,
+                  15.05,
+                  ['get', 'min_height']
+                ],
+                'fill-extrusion-opacity': 0.6
+              }
+            },
+            labelLayerId
+          );
+
+          // Enhance POI visibility
+          map.current.setLayoutProperty('poi-label', 'visibility', 'visible');
+          map.current.setLayoutProperty('poi-label', 'text-size', 14);
+        }
+
         setMapLoaded(true);
         updateHeatmap();
         
