@@ -1,5 +1,5 @@
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Search, ArrowLeft } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -24,8 +24,21 @@ export const SearchBox = ({ isDarkMode, onLocationSelect }: SearchBoxProps) => {
   const [inputValue, setInputValue] = useState('');
   const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+          inputRef.current && !inputRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const debouncedSearch = useCallback(
     debounce(async (query: string) => {
       if (!query.trim()) {
@@ -94,6 +107,8 @@ export const SearchBox = ({ isDarkMode, onLocationSelect }: SearchBoxProps) => {
     setSelectedPlace(null);
     setIsSearching(false);
     inputRef.current?.blur();
+    // Trigger onLocationSelect with null coordinates to reset the marker
+    onLocationSelect(0, 0);
   };
 
   return (
@@ -116,7 +131,7 @@ export const SearchBox = ({ isDarkMode, onLocationSelect }: SearchBoxProps) => {
         <Input
           ref={inputRef}
           value={inputValue}
-          className="w-full pl-12 bg-white/5 border-none placeholder:text-inherit/60 rounded-full focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
+          className="w-full h-9 pl-12 bg-white/5 border-none placeholder:text-inherit/60 rounded-full focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
           placeholder="Search location"
           onChange={handleSearch}
           onFocus={() => setIsSearching(true)}
@@ -124,6 +139,7 @@ export const SearchBox = ({ isDarkMode, onLocationSelect }: SearchBoxProps) => {
       </div>
       {showResults && results.length > 0 && (
         <div 
+          ref={dropdownRef}
           className={`absolute mt-2 w-full rounded-lg shadow-lg overflow-hidden z-50 ${
             isDarkMode 
               ? 'bg-zinc-700/90 border border-white/10' 
@@ -133,7 +149,7 @@ export const SearchBox = ({ isDarkMode, onLocationSelect }: SearchBoxProps) => {
           {results.map((result, index) => (
             <button
               key={index}
-              className={`w-full px-4 py-3 text-left transition-colors ${
+              className={`w-full px-4 py-2.5 text-left transition-colors ${
                 isDarkMode
                   ? 'hover:bg-zinc-700/70 text-white'
                   : 'hover:bg-zinc-900/70 text-white'
