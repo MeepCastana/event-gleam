@@ -30,26 +30,71 @@ export type Database = {
         }
         Relationships: []
       }
+      tracking_settings: {
+        Row: {
+          background_enabled: boolean
+          created_at: string
+          high_accuracy: boolean
+          status: Database["public"]["Enums"]["tracking_status"]
+          updated_at: string
+          user_id: string
+          wake_lock_enabled: boolean
+        }
+        Insert: {
+          background_enabled?: boolean
+          created_at?: string
+          high_accuracy?: boolean
+          status?: Database["public"]["Enums"]["tracking_status"]
+          updated_at?: string
+          user_id: string
+          wake_lock_enabled?: boolean
+        }
+        Update: {
+          background_enabled?: boolean
+          created_at?: string
+          high_accuracy?: boolean
+          status?: Database["public"]["Enums"]["tracking_status"]
+          updated_at?: string
+          user_id?: string
+          wake_lock_enabled?: boolean
+        }
+        Relationships: []
+      }
       user_locations: {
         Row: {
+          accuracy: number | null
+          altitude: number | null
           created_at: string
+          heading: number | null
           id: string
           latitude: number
           longitude: number
+          source: string | null
+          speed: number | null
           user_id: string
         }
         Insert: {
+          accuracy?: number | null
+          altitude?: number | null
           created_at?: string
+          heading?: number | null
           id?: string
           latitude: number
           longitude: number
+          source?: string | null
+          speed?: number | null
           user_id: string
         }
         Update: {
+          accuracy?: number | null
+          altitude?: number | null
           created_at?: string
+          heading?: number | null
           id?: string
           latitude?: number
           longitude?: number
+          source?: string | null
+          speed?: number | null
           user_id?: string
         }
         Relationships: []
@@ -65,7 +110,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      tracking_status: "active" | "paused" | "stopped"
     }
     CompositeTypes: {
       [_ in never]: never
