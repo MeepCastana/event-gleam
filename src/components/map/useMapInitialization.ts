@@ -196,17 +196,17 @@ export const useMapInitialization = ({
                 'fire_station', 'fire-station-15',
                 [
                   'match',
-                  ['get', 'type'],
-                  'Bar', 'bar-15',
-                  'Restaurant', 'restaurant-15',
-                  'Hotel', 'lodging-15',
-                  ['match', 
-                    ['get', 'maki'],
-                    'shopping', 'shop-15',
-                    'mall', 'shop-15',
-                    'department_store', 'shop-15',
-                    'clothing-store-15'  // fallback for other shopping types
-                  ]
+                  ['get', "maki"],
+                  'bar', 'bar-15',
+                  'restaurant', 'restaurant-15',
+                  'lodging', 'lodging-15',
+                  'mall', 'shop-15',
+                  'shopping', 'shop-15',
+                  'department_store', 'shop-15',
+                  'hospital', 'hospital-15',
+                  'police', 'police-15',
+                  'fire_station', 'fire-station-15',
+                  'clothing-store-15'  // fallback
                 ]
               ],
               'icon-size': 1.5,
@@ -228,7 +228,18 @@ export const useMapInitialization = ({
               'icon-opacity': 1,
               'icon-color': isDarkMap ? '#ffffff' : '#000000'
             },
-            'filter': poiFilter
+            'filter': [
+              "any",
+              ["==", ["get", "class"], "hospital"],
+              ["==", ["get", "class"], "police"],
+              ["==", ["get", "class"], "fire_station"],
+              ["==", ["get", "maki"], "bar"],
+              ["==", ["get", "maki"], "restaurant"],
+              ["==", ["get", "maki"], "lodging"],
+              ["==", ["get", "maki"], "shopping"],
+              ["==", ["get", "maki"], "mall"],
+              ["in", ["get", "type"], ["literal", ["Bar", "Restaurant", "Hotel", "Plaza", "Mall", "Shopping Mall", "Shopping Center"]]]
+            ]
           });
 
           // Log POIs when clicking on them
