@@ -1,3 +1,4 @@
+
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -76,7 +77,7 @@ export const useMapInitialization = ({
           pitch: 45,
           bearing: 0,
           maxZoom: 19,
-          projection: { name: 'globe' }, // Changed to globe projection
+          projection: { name: 'globe' },
           antialias: true
         });
 
@@ -93,7 +94,7 @@ export const useMapInitialization = ({
           pitch: 45,
           bearing: 0,
           maxZoom: 19,
-          projection: { name: 'globe' }, // Changed to globe projection
+          projection: { name: 'globe' },
           antialias: true
         });
       }
@@ -101,9 +102,7 @@ export const useMapInitialization = ({
       // Initialize location control with custom position
       locationControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
+          enableHighAccuracy: true
         },
         trackUserLocation: true,
         showAccuracyCircle: false,
@@ -112,6 +111,18 @@ export const useMapInitialization = ({
 
       // Add control in custom position (top-left)
       map.current.addControl(locationControlRef.current, 'top-left');
+
+      // Clean up any search markers when the geolocate control triggers
+      locationControlRef.current.on('geolocate', () => {
+        if (map.current) {
+          if (map.current.getLayer('search-location')) {
+            map.current.removeLayer('search-location');
+          }
+          if (map.current.getSource('search-location')) {
+            map.current.removeSource('search-location');
+          }
+        }
+      });
 
       // Add navigation control for easier zooming
       map.current.addControl(
@@ -179,6 +190,14 @@ export const useMapInitialization = ({
         console.log('Map loaded, enabling location tracking...');
         
         if (map.current) {
+          // Remove any existing search markers on load
+          if (map.current.getLayer('search-location')) {
+            map.current.removeLayer('search-location');
+          }
+          if (map.current.getSource('search-location')) {
+            map.current.removeSource('search-location');
+          }
+
           // Add POI layer with filtered data
           map.current.addLayer({
             'id': 'filtered-pois',
