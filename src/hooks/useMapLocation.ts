@@ -47,8 +47,8 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
         const { latitude, longitude } = position.coords;
         console.log("New location received:", latitude, longitude);
 
-        const flyToOptions = {
-          center: [longitude, latitude],
+        const flyToOptions: mapboxgl.FlyToOptions = {
+          center: [longitude, latitude] as [number, number],
           zoom: 14,
           duration: 1000,
           essential: true
