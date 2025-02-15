@@ -1,0 +1,37 @@
+
+import { CityInfo } from '@/types/map';
+
+export const cities: CityInfo[] = [
+  { lat: 44.4268, lng: 26.1025, weight: 2.0, name: "Bucharest" },
+  { lat: 45.7489, lng: 21.2087, weight: 1.5, name: "Timișoara" },
+  { lat: 46.7712, lng: 23.6236, weight: 1.5, name: "Cluj-Napoca" },
+  { lat: 47.1585, lng: 27.6014, weight: 1.5, name: "Iași" },
+  { lat: 44.3178, lng: 23.7945, weight: 1.4, name: "Craiova" },
+  { lat: 45.6427, lng: 25.5887, weight: 1.3, name: "Brașov" },
+  { lat: 44.4323, lng: 26.1063, weight: 1.3, name: "Sector 2" },
+  { lat: 47.6458, lng: 26.2499, weight: 1.2, name: "Suceava" },
+  { lat: 45.4371, lng: 28.0500, weight: 1.2, name: "Galați" },
+  { lat: 44.4268, lng: 26.1025, weight: 1.2, name: "Sector 3" },
+  { lat: 45.2652, lng: 27.9750, weight: 1.1, name: "Brăila" },
+  { lat: 46.5455, lng: 24.5627, weight: 1.1, name: "Târgu Mureș" },
+  { lat: 45.7489, lng: 21.2087, weight: 1.1, name: "Baia Mare" },
+  { lat: 44.9371, lng: 26.0300, weight: 1.0, name: "Ploiești" },
+  { lat: 47.7484, lng: 22.8784, weight: 1.0, name: "Satu Mare" },
+  { lat: 46.0177, lng: 23.5804, weight: 1.0, name: "Alba Iulia" },
+  { lat: 45.8667, lng: 22.9167, weight: 1.0, name: "Deva" },
+  { lat: 44.1733, lng: 28.6383, weight: 1.4, name: "Constanța" },
+  { lat: 51.5074, lng: -0.1278, weight: 1.8, name: "London" },
+  { lat: 48.8566, lng: 2.3522, weight: 1.7, name: "Paris" },
+  { lat: 52.5200, lng: 13.4050, weight: 1.6, name: "Berlin" },
+  { lat: 41.9028, lng: 12.4964, weight: 1.5, name: "Rome" },
+  { lat: 52.3676, lng: 4.9041, weight: 1.4, name: "Amsterdam" },
+  { lat: 48.2082, lng: 16.3738, weight: 1.3, name: "Vienna" },
+  { lat: 40.4168, lng: -3.7038, weight: 1.6, name: "Madrid" },
+  { lat: 59.9139, lng: 10.7522, weight: 1.2, name: "Oslo" },
+  { lat: 40.7128, lng: -74.0060, weight: 1.9, name: "New York" },
+  { lat: 34.0522, lng: -118.2437, weight: 1.8, name: "Los Angeles" },
+  { lat: 41.8781, lng: -87.6298, weight: 1.7, name: "Chicago" },
+  { lat: 29.7604, lng: -95.3698, weight: 1.6, name: "Houston" },
+  { lat: 39.9526, lng: -75.1652, weight: 1.5, name: "Philadelphia" },
+  { lat: 37.7749, lng: -122.4194, weight: 1.6, name: "San Francisco" }
+];
