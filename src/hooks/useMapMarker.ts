@@ -8,30 +8,41 @@ export const useMapMarker = (map: mapboxgl.Map | null, mapLoaded: boolean) => {
     if (!map || !mapLoaded) return;
 
     try {
-      // Clean up existing search marker layers and sources first
+      // Always clean up existing search marker first
+      removeSearchMarker(map);
+
+      // If coordinates are 0,0 or not provided, just return after cleanup
+      if (longitude === 0 && latitude === 0) {
+        return;
+      }
+
+      // Only add marker if we have valid coordinates from search
+      if (longitude !== 0 && latitude !== 0) {
+        // Wait for map style to be loaded before adding images and layers
+        if (!map.isStyleLoaded()) {
+          map.once('style.load', () => {
+            addMarker(map, longitude, latitude);
+          });
+          return;
+        }
+
+        addMarker(map, longitude, latitude);
+      }
+    } catch (error) {
+      console.error('Error updating location on map:', error);
+    }
+  };
+
+  const removeSearchMarker = (map: mapboxgl.Map) => {
+    try {
       if (map.getLayer('search-location')) {
         map.removeLayer('search-location');
       }
       if (map.getSource('search-location')) {
         map.removeSource('search-location');
       }
-
-      // If coordinates are 0,0 or not provided, just clean up and return
-      if (longitude === 0 && latitude === 0) {
-        return;
-      }
-
-      // Wait for map style to be loaded before adding images and layers
-      if (!map.isStyleLoaded()) {
-        map.once('style.load', () => {
-          addMarker(map, longitude, latitude);
-        });
-        return;
-      }
-
-      addMarker(map, longitude, latitude);
     } catch (error) {
-      console.error('Error updating location on map:', error);
+      console.error('Error removing search marker:', error);
     }
   };
 
@@ -91,14 +102,8 @@ export const useMapMarker = (map: mapboxgl.Map | null, mapLoaded: boolean) => {
       if (!map) return;
       
       try {
-        // Safely remove layer if it exists
-        if (map.getStyle() && map.getLayer('search-location')) {
-          map.removeLayer('search-location');
-        }
-        
-        // Safely remove source if it exists
-        if (map.getStyle() && map.getSource('search-location')) {
-          map.removeSource('search-location');
+        if (map.getStyle()) {
+          removeSearchMarker(map);
         }
       } catch (e) {
         console.warn('Error cleaning up map marker:', e);
