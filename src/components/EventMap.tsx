@@ -48,6 +48,16 @@ const EventMap = () => {
       return;
     }
 
+    // Ensure map is fully rendered
+    if (!map.current.loaded()) {
+      toast({
+        variant: "destructive",
+        title: "Map Not Ready",
+        description: "Please wait for the map to fully load."
+      });
+      return;
+    }
+
     if (!navigator.geolocation) {
       toast({
         variant: "destructive",
@@ -74,20 +84,34 @@ const EventMap = () => {
       }
     });
 
+    // Force a map repaint before getting location
+    map.current.repaint = true;
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         console.log("User Location:", latitude, longitude);
 
-        if (map.current) {
-          map.current.flyTo({
-            center: [longitude, latitude], // Mapbox uses [lng, lat] format
-            zoom: 14,
-            duration: 1000,
-            essential: true
-          });
+        if (map.current && map.current.loaded()) {
+          // Ensure map style is loaded
+          if (!map.current.isStyleLoaded()) {
+            map.current.once('style.load', () => {
+              map.current?.flyTo({
+                center: [longitude, latitude],
+                zoom: 14,
+                duration: 1000,
+                essential: true
+              });
+            });
+          } else {
+            map.current.flyTo({
+              center: [longitude, latitude],
+              zoom: 14,
+              duration: 1000,
+              essential: true
+            });
+          }
           
-          // Success toast
           toast({
             title: "Location Found",
             description: "Centering map on your location.",
@@ -118,7 +142,7 @@ const EventMap = () => {
       },
       {
         enableHighAccuracy: true,
-        timeout: 30000, // Increased timeout to 30 seconds
+        timeout: 30000,
         maximumAge: 0
       }
     );
