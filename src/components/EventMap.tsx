@@ -21,13 +21,14 @@ const EventMap = () => {
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
   const userId = useAnonymousId();
   const [selectedHeatspot, setSelectedHeatspot] = useState<HeatspotInfo | undefined>();
+  const [isVisibleOnHeatmap, setIsVisibleOnHeatmap] = useState(true);
   const autoStartAttempted = useRef(false);
 
-  const { updateHeatmap } = useHeatmap(map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded);
+  const { updateHeatmap } = useHeatmap(map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded, isVisibleOnHeatmap);
   const { isDarkMap, toggleTheme } = useMapTheme({ map, updateHeatmap });
   const { centerOnLocation } = useMapLocation({ map, locationControlRef });
 
-  // Enable location updates
+  // Enable location updates always, regardless of heatmap visibility
   useLocationUpdates({ userId, enabled: mapLoaded });
 
   useMapInitialization({
@@ -40,18 +41,14 @@ const EventMap = () => {
   });
 
   // Setup location tracking with proper map instance
-  const { isTracking, startTracking, stopTracking } = useLocationTracking({
+  const { isTracking, startTracking } = useLocationTracking({
     map: map.current,
     mapLoaded,
     userId
   });
 
-  const handleTrackingToggle = () => {
-    if (isTracking) {
-      stopTracking();
-    } else if (map.current && mapLoaded) {
-      startTracking();
-    }
+  const handleVisibilityToggle = () => {
+    setIsVisibleOnHeatmap(prev => !prev);
   };
 
   const handleDrawerClose = () => {
@@ -86,8 +83,8 @@ const EventMap = () => {
         isDarkMode={isDarkMap}
         onThemeToggle={toggleTheme}
         onLocationClick={centerOnLocation}
-        isTracking={isTracking}
-        onTrackingToggle={handleTrackingToggle}
+        isTracking={isVisibleOnHeatmap}
+        onTrackingToggle={handleVisibilityToggle}
       />
       <div ref={mapContainer} className="absolute inset-0" />
       <EventsDrawer 

@@ -10,7 +10,8 @@ export const useHeatmap = (
   map: MutableRefObject<mapboxgl.Map | null>,
   mapLoaded: boolean,
   setSelectedHeatspot: (heatspot: HeatspotInfo | undefined) => void,
-  setIsDrawerExpanded: (expanded: boolean) => void
+  setIsDrawerExpanded: (expanded: boolean) => void,
+  isVisibleOnHeatmap: boolean = true
 ) => {
   const updateHeatmap = useCallback(async () => {
     if (!map.current || !mapLoaded) return;
@@ -50,17 +51,20 @@ export const useHeatmap = (
         return points;
       });
 
+      // Only include user location if visibility is enabled
+      const userPoints = isVisibleOnHeatmap ? (locations?.map(loc => ({
+        type: "Feature" as const,
+        properties: {
+          weight: 1
+        },
+        geometry: {
+          type: "Point" as const,
+          coordinates: [loc.longitude, loc.latitude]
+        }
+      })) || []) : [];
+
       const points = [
-        ...(locations?.map(loc => ({
-          type: "Feature" as const,
-          properties: {
-            weight: 1
-          },
-          geometry: {
-            type: "Point" as const,
-            coordinates: [loc.longitude, loc.latitude]
-          }
-        })) || []),
+        ...userPoints,
         ...testPoints
       ];
 
@@ -130,7 +134,7 @@ export const useHeatmap = (
     } catch (error) {
       console.error('Error updating heatmap:', error);
     }
-  }, [map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded]);
+  }, [map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded, isVisibleOnHeatmap]);
 
   return { updateHeatmap, cities };
 };
