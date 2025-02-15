@@ -4,6 +4,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { MapHeader } from './map/MapHeader';
 import { EventsDrawer } from './map/EventsDrawer';
+import { PointsOfInterest } from './map/PointsOfInterest';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { useAnonymousId } from '@/hooks/useAnonymousId';
 import { useLocationUpdates } from '@/hooks/useLocationUpdates';
@@ -85,6 +86,7 @@ const EventMap = () => {
         onTrackingToggle={handleVisibilityToggle}
       />
       <div ref={mapContainer} className="absolute inset-0" />
+      <PointsOfInterest map={map.current} mapLoaded={mapLoaded} />
       <EventsDrawer 
         menuStyle={isDarkMap ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'}
         isDrawerExpanded={isDrawerExpanded}
