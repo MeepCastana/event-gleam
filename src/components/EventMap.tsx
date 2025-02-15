@@ -31,24 +31,51 @@ const EventMap = () => {
 
   const centerOnLocation = () => {
     if (!locationControlRef.current || !map.current) return;
-    
+
+    if (!navigator.geolocation) {
+      toast({
+        variant: "destructive",
+        title: "Location Not Supported",
+        description: "Your browser does not support location services."
+      });
+      return;
+    }
+
+    navigator.permissions.query({ name: "geolocation" }).then((result) => {
+      if (result.state === "denied") {
+        toast({
+          variant: "destructive",
+          title: "Location Blocked",
+          description: "You have blocked location access. Enable it in your browser settings."
+        });
+        return;
+      }
+    });
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        console.log("User Location:", latitude, longitude);
+
         map.current?.flyTo({
-          center: [longitude, latitude],
+          center: [longitude, latitude], // Mapbox uses [lng, lat] format
           zoom: 14,
           duration: 1000,
           essential: true
         });
       },
       (error) => {
-        console.error('Error getting location:', error);
+        console.error("Location Error:", error.code, error.message);
         toast({
           variant: "destructive",
           title: "Location Error",
-          description: "Unable to get your location. Please enable location services."
+          description: `Error Code ${error.code}: ${error.message}`
         });
+      },
+      {
+        enableHighAccuracy: true, // Forces GPS
+        timeout: 10000, // 10-second timeout
+        maximumAge: 0 // Ensures fresh location
       }
     );
   };
