@@ -1,4 +1,3 @@
-
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -137,6 +136,29 @@ export const useMapInitialization = ({
         .mapboxgl-ctrl-group button.mapboxgl-ctrl-geolocate:not(.mapboxgl-ctrl-geolocate-active):not(.mapboxgl-ctrl-geolocate-background) .mapboxgl-ctrl-icon {
           opacity: 0.8;
         }
+        .mapboxgl-popup-content {
+          padding: 0 !important;
+          border-radius: 12px !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          overflow: hidden;
+        }
+        .mapboxgl-popup-close-button {
+          padding: 4px 8px !important;
+          color: ${isDarkMap ? '#fff' : '#000'} !important;
+          font-size: 16px !important;
+          opacity: 0.7;
+          z-index: 1;
+        }
+        .mapboxgl-popup-close-button:hover {
+          opacity: 1;
+          background: none !important;
+        }
+        .dark-theme-popup .mapboxgl-popup-tip {
+          border-top-color: rgba(24, 24, 27, 0.95) !important;
+        }
+        .light-theme-popup .mapboxgl-popup-tip {
+          border-top-color: rgba(255, 255, 255, 0.95) !important;
+        }
       `;
       document.head.appendChild(style);
 
@@ -194,16 +216,77 @@ export const useMapInitialization = ({
           // Log POIs when clicking on them
           map.current.on('click', 'poi-label', (e) => {
             if (e.features && e.features[0]) {
-              const poi = e.features[0];
-              console.log('Clicked POI:', poi.properties);
+              const poi = e.features[0].properties;
+              console.log('Clicked POI:', poi);
               
-              // Show a popup with POI information
-              new mapboxgl.Popup()
+              // Get emoji based on POI type
+              let emoji = '📍'; // default marker
+              const type = poi.type?.toLowerCase() || '';
+              
+              if (type.includes('bar') || type.includes('pub')) {
+                emoji = '🍺';
+              } else if (type.includes('restaurant') || type.includes('food')) {
+                emoji = '🍽️';
+              } else if (type.includes('hotel') || type.includes('hostel')) {
+                emoji = '🏨';
+              } else if (type.includes('mall') || type.includes('shopping')) {
+                emoji = '🛍️';
+              } else if (type.includes('plaza') || type.includes('square')) {
+                emoji = '🏛️';
+              } else if (type.includes('cafe') || type.includes('coffee')) {
+                emoji = '☕';
+              } else if (type.includes('park')) {
+                emoji = '🌳';
+              } else if (type.includes('hospital') || type.includes('clinic')) {
+                emoji = '🏥';
+              } else if (type.includes('school') || type.includes('university')) {
+                emoji = '🎓';
+              } else if (type.includes('church') || type.includes('cathedral')) {
+                emoji = '⛪';
+              }
+
+              // Create popup with styled content
+              new mapboxgl.Popup({
+                closeButton: true,
+                closeOnClick: true,
+                maxWidth: '300px',
+                className: isDarkMap ? 'dark-theme-popup' : 'light-theme-popup'
+              })
                 .setLngLat(e.lngLat)
                 .setHTML(`
-                  <div style="color: ${isDarkMap ? '#fff' : '#000'}; padding: 8px;">
-                    <h3 style="margin: 0 0 4px 0; font-weight: 600;">${poi.properties.name}</h3>
-                    <p style="margin: 0; opacity: 0.7;">${poi.properties.type}</p>
+                  <div style="
+                    padding: 12px;
+                    background-color: ${isDarkMap ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)'};
+                    color: ${isDarkMap ? '#fff' : '#000'};
+                    border-radius: 8px;
+                    font-family: system-ui, -apple-system, sans-serif;
+                    backdrop-filter: blur(8px);
+                  ">
+                    <div style="font-size: 24px; margin-bottom: 8px; text-align: center;">
+                      ${emoji}
+                    </div>
+                    <h3 style="
+                      margin: 0 0 8px 0;
+                      font-weight: 600;
+                      font-size: 16px;
+                      text-align: center;
+                    ">${poi.name || 'Unnamed Location'}</h3>
+                    ${poi.type ? `
+                      <p style="
+                        margin: 0 0 8px 0;
+                        opacity: 0.7;
+                        font-size: 14px;
+                        text-align: center;
+                      ">${poi.type}</p>
+                    ` : ''}
+                    ${poi.address ? `
+                      <p style="
+                        margin: 0;
+                        font-size: 13px;
+                        opacity: 0.6;
+                        text-align: center;
+                      ">${poi.address}</p>
+                    ` : ''}
                   </div>
                 `)
                 .addTo(map.current!);
