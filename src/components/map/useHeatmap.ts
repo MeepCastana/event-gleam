@@ -50,16 +50,16 @@ export const useHeatmap = (
       // Only include random test points if showRandomPoints is true
       const testPoints = showRandomPoints ? cities.flatMap(city => {
         const points = [];
-        const numPoints = Math.floor(city.weight * 10);
+        const numPoints = Math.floor(city.weight * 15); // Increased from 10 to 15 for more points
         for (let i = 0; i < numPoints; i++) {
-          const radiusFactor = city.weight > 1 ? 0.015 : 0.025;
+          const radiusFactor = city.weight > 1 ? 0.025 : 0.035; // Increased spread
           const latOffset = (Math.random() - 0.5) * radiusFactor;
           const lngOffset = (Math.random() - 0.5) * radiusFactor;
           
           points.push({
             type: "Feature" as const,
             properties: {
-              weight: city.weight * (0.3 + Math.random() * 0.7)
+              weight: city.weight * (0.4 + Math.random() * 0.8) // Increased weight range
             },
             geometry: {
               type: "Point" as const,
@@ -141,20 +141,20 @@ export const useHeatmap = (
               ['linear'],
               ['heatmap-density'],
               0, 'rgba(0,0,0,0)',
-              0.1, 'rgba(150,150,255,0.1)',  // Very light blue
-              0.3, 'rgba(100,255,100,0.2)',  // Very light green
-              0.5, 'rgba(255,255,0,0.3)',    // Very light yellow
-              0.7, 'rgba(255,150,0,0.4)',    // Light orange
-              1, 'rgba(255,0,0,0.5)'         // Light red, only for multiple users
+              0.1, 'rgba(150,150,255,0.05)',  // Very light blue, more transparent
+              0.3, 'rgba(100,255,100,0.1)',   // Very light green, more transparent
+              0.5, 'rgba(255,255,0,0.15)',    // Very light yellow, more transparent
+              0.7, 'rgba(255,150,0,0.2)',     // Light orange, more transparent
+              1, 'rgba(255,0,0,0.25)'         // Light red, more transparent
             ],
             'heatmap-radius': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, heatmapRadius,
-              9, heatmapRadius * 2
+              0, heatmapRadius * 1.5, // Increased base radius
+              9, heatmapRadius * 3    // Increased maximum radius
             ],
-            'heatmap-opacity': 0.6  // Further reduced opacity
+            'heatmap-opacity': 1  // Increased to full opacity since individual colors are more transparent
           }
         });
       }
