@@ -1,5 +1,5 @@
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import mapboxgl from 'mapbox-gl';
 
@@ -12,8 +12,12 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
   const { toast } = useToast();
   const isLocating = useRef(false);
 
+  const simulateTabSwitch = () => {
+    console.log("Simulating tab switch...");
+    document.dispatchEvent(new Event("visibilitychange"));
+  };
+
   const centerOnLocation = useCallback(() => {
-    // Prevent multiple concurrent location requests
     if (isLocating.current) return;
 
     if (!map.current) {
@@ -32,17 +36,11 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
 
     isLocating.current = true;
 
-    // Clear the flag after 5 seconds in case of any issues
-    setTimeout(() => {
-      isLocating.current = false;
-    }, 5000);
-
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         console.log("New location received:", latitude, longitude);
 
-        // Always center on the new position
         map.current?.flyTo({
           center: [longitude, latitude],
           zoom: 14,
@@ -51,6 +49,9 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
         });
 
         isLocating.current = false;
+
+        // Trigger a fake tab switch after centering
+        setTimeout(simulateTabSwitch, 100);
       },
       (error) => {
         console.error("Location Error:", error);
@@ -64,10 +65,27 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
       {
         enableHighAccuracy: true,
         timeout: 3000,
-        maximumAge: 0 // Always get a fresh position
+        maximumAge: 0
       }
     );
   }, [map, toast]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        console.log("Tab hidden");
+      } else {
+        console.log("Tab visible again, refreshing location...");
+        centerOnLocation(); // Re-run location function on tab switch
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [centerOnLocation]);
 
   return { centerOnLocation };
 };
