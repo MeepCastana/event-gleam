@@ -10,11 +10,14 @@ interface UseMapLocationProps {
 
 export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps) => {
   const { toast } = useToast();
-  const lastLocation = useRef<{ latitude: number | null; longitude: number | null }>({ latitude: null, longitude: null });
+  const isLocating = useRef(false);
 
   const centerOnLocation = useCallback(() => {
-    if (!locationControlRef.current || !map.current) {
-      console.log("Map or location control not initialized");
+    // Prevent multiple concurrent location requests
+    if (isLocating.current) return;
+
+    if (!map.current) {
+      console.log("Map not initialized");
       return;
     }
 
@@ -27,45 +30,44 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
       return;
     }
 
-    // Instead of triggering both, we'll only use getCurrentPosition
+    isLocating.current = true;
+
+    // Clear the flag after 5 seconds in case of any issues
+    setTimeout(() => {
+      isLocating.current = false;
+    }, 5000);
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        console.log("New location received:", latitude, longitude);
 
-        if (
-          lastLocation.current.latitude === latitude &&
-          lastLocation.current.longitude === longitude
-        ) {
-          console.log("Location unchanged. Skipping re-center.");
-          return;
-        }
-
-        console.log("User Location Updated:", latitude, longitude);
-
-        lastLocation.current = { latitude, longitude };
-
+        // Always center on the new position
         map.current?.flyTo({
           center: [longitude, latitude],
           zoom: 14,
           duration: 1000,
           essential: true
         });
+
+        isLocating.current = false;
       },
       (error) => {
-        console.error("Location Error:", error.code, error.message);
+        console.error("Location Error:", error);
         toast({
           variant: "destructive",
           title: "Location Error",
-          description: `Error Code ${error.code}: ${error.message}`
+          description: "Unable to get your location. Please ensure location services are enabled."
         });
+        isLocating.current = false;
       },
       {
         enableHighAccuracy: true,
-        timeout: 5000, // Reduced timeout to 5 seconds
-        maximumAge: 1000 // Reduced maximum age to 1 second
+        timeout: 3000,
+        maximumAge: 0 // Always get a fresh position
       }
     );
-  }, [locationControlRef, map, toast]);
+  }, [map, toast]);
 
   return { centerOnLocation };
 };
