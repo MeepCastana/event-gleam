@@ -108,8 +108,8 @@ export const useMapInitialization = ({
       const style = document.createElement('style');
       style.textContent = `
         .mapboxgl-ctrl-top-left {
-          top: 75px !important;
-          left: 13px !important;
+          top: 80px !important;
+          left: 15px !important;
         }
         .mapboxgl-ctrl-group {
           background-color: ${isDarkMap ? 'rgba(63, 63, 70, 0.9)' : 'rgba(24, 24, 27, 0.95)'} !important;
