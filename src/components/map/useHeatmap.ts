@@ -125,36 +125,36 @@ export const useHeatmap = (
               'interpolate',
               ['linear'],
               ['get', 'weight', ['properties']],
-              0, 0.05,  // Even lower minimum weight
-              0.2, 0.2, // Single user weight
-              1.5, 1    // Multiple users maximum
+              0, 0.05,
+              0.2, 0.2,
+              1.5, 1
             ],
             'heatmap-intensity': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, 0.4,   // Further reduced base intensity
-              9, 1.5    // Lower maximum intensity
+              0, 0.4,
+              9, 1.5
             ],
             'heatmap-color': [
               'interpolate',
               ['linear'],
               ['heatmap-density'],
-              0, 'rgba(0,0,0,0)',
-              0.1, 'rgba(150,150,255,0.05)',  // Very light blue, more transparent
-              0.3, 'rgba(100,255,100,0.1)',   // Very light green, more transparent
-              0.5, 'rgba(255,255,0,0.15)',    // Very light yellow, more transparent
-              0.7, 'rgba(255,150,0,0.2)',     // Light orange, more transparent
-              1, 'rgba(255,0,0,0.25)'         // Light red, more transparent
+              0, 'rgb(0,0,0)',
+              0.1, 'rgb(150,150,255)',  // Bright blue, no opacity
+              0.3, 'rgb(100,255,100)',  // Bright green, no opacity
+              0.5, 'rgb(255,255,0)',    // Bright yellow, no opacity
+              0.7, 'rgb(255,150,0)',    // Bright orange, no opacity
+              1, 'rgb(255,0,0)'         // Bright red, no opacity
             ],
             'heatmap-radius': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, heatmapRadius * 1.5, // Increased base radius
-              9, heatmapRadius * 3    // Increased maximum radius
+              0, heatmapRadius * 1.5,
+              9, heatmapRadius * 3
             ],
-            'heatmap-opacity': 1  // Increased to full opacity since individual colors are more transparent
+            'heatmap-opacity': 1
           }
         });
       }
