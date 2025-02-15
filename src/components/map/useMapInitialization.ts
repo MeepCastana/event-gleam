@@ -131,7 +131,7 @@ export const useMapInitialization = ({
           left: 15px !important;
         }
         .mapboxgl-ctrl-group {
-          background-color: ${isDarkMap ? 'rgba(63, 63, 70, 0.9)' : 'rgba(24, 24, 27, 0.95)'} !important;
+          background-color: ${isDarkMap ? '#18181B' : '#404046'} !important;
           border: 1px solid rgba(255, 255, 255, 0.1) !important;
           backdrop-filter: blur(8px);
         }
@@ -156,7 +156,7 @@ export const useMapInitialization = ({
         }
         .mapboxgl-popup-close-button {
           padding: 4px 8px !important;
-          color: ${isDarkMap ? '#fff' : '#000'} !important;
+          color: ${isDarkMap ? '#fff' : '#fff'} !important;
           font-size: 16px !important;
           opacity: 0.7;
           z-index: 1;
@@ -166,10 +166,10 @@ export const useMapInitialization = ({
           background: none !important;
         }
         .dark-theme-popup .mapboxgl-popup-tip {
-          border-top-color: rgba(24, 24, 27, 0.95) !important;
+          border-top-color: ${isDarkMap ? '#18181B' : '#404046'} !important;
         }
         .light-theme-popup .mapboxgl-popup-tip {
-          border-top-color: rgba(255, 255, 255, 0.95) !important;
+          border-top-color: ${isDarkMap ? '#18181B' : '#404046'} !important;
         }
       `;
       document.head.appendChild(style);
