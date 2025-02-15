@@ -89,7 +89,7 @@ export const useMapInitialization = ({
         });
       }
 
-      // Initialize location control
+      // Initialize location control with custom position
       locationControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: {
           enableHighAccuracy: true,
@@ -101,7 +101,30 @@ export const useMapInitialization = ({
         showUserLocation: true
       });
 
-      map.current.addControl(locationControlRef.current);
+      // Add control in custom position (top-left, 80px from top)
+      map.current.addControl(locationControlRef.current, 'top-left');
+
+      // Add custom CSS to position the geolocate control
+      const style = document.createElement('style');
+      style.textContent = `
+        .mapboxgl-ctrl-top-left {
+          top: 80px !important;
+          left: 24px !important;
+        }
+        .mapboxgl-ctrl-group {
+          background-color: ${isDarkMap ? 'rgba(63, 63, 70, 0.9)' : 'rgba(24, 24, 27, 0.95)'} !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          backdrop-filter: blur(8px);
+        }
+        .mapboxgl-ctrl-group button {
+          width: 40px !important;
+          height: 40px !important;
+        }
+        .mapboxgl-ctrl-icon {
+          filter: invert(1);
+        }
+      `;
+      document.head.appendChild(style);
 
       // Set up map event handlers
       map.current.on('load', () => {
@@ -120,6 +143,7 @@ export const useMapInitialization = ({
 
       return () => {
         clearInterval(updateInterval);
+        style.remove();
         map.current?.remove();
       };
 
