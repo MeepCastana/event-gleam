@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -41,16 +42,14 @@ const EventMap = () => {
   const { updateHeatmap } = useHeatmap(map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded, isVisibleOnHeatmap);
   const { isDarkMap, toggleTheme } = useMapTheme({ map, updateHeatmap });
 
-  const { startTracking, stopTracking, isTracking, locationUpdates } = useLocationTracking(userId);
-  const { initializeLocationUpdates } = useLocationUpdates(userId, locationUpdates);
-  const { initializeMap } = useMapInitialization(map, mapLoaded, locationControlRef);
+  const { startTracking, stopTracking, isTracking } = useLocationTracking(userId);
+  const { initializeLocationUpdates } = useLocationUpdates({ userId, enabled: mapLoaded });
 
   useEffect(() => {
     if (mapLoaded) {
-      initializeMap();
       initializeLocationUpdates();
     }
-  }, [mapLoaded, initializeMap, initializeLocationUpdates]);
+  }, [mapLoaded, initializeLocationUpdates]);
 
   useEffect(() => {
     if (mapLoaded && !autoStartAttempted.current) {
