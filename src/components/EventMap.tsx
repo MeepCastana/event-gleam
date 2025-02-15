@@ -24,23 +24,17 @@ const EventMap = () => {
   const [isVisibleOnHeatmap, setIsVisibleOnHeatmap] = useState(true);
   const autoStartAttempted = useRef(false);
 
-  useEffect(() => {
-    if (mapContainer.current && !map.current) {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: [25.6, 45.9], // Center on Romania
-        zoom: 6.5 // Show most of Romania
-      });
-
-      map.current.on('load', () => {
-        setMapLoaded(true);
-      });
-    }
-  }, []);
-
   const { updateHeatmap } = useHeatmap(map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded, isVisibleOnHeatmap);
   const { isDarkMap, toggleTheme } = useMapTheme({ map, updateHeatmap });
+
+  useMapInitialization({
+    mapContainer,
+    map,
+    locationControlRef,
+    isDarkMap,
+    setMapLoaded,
+    updateHeatmap
+  });
 
   const { startTracking, stopTracking, isTracking } = useLocationTracking(userId);
   const { initializeLocationUpdates } = useLocationUpdates({ userId, enabled: mapLoaded });
