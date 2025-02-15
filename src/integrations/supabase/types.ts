@@ -32,34 +32,31 @@ export type Database = {
       }
       business_reviews: {
         Row: {
-          anonymous_id: string | null
           business_id: string
           comment: string | null
           created_at: string
           id: string
           rating: number
           updated_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
-          anonymous_id?: string | null
           business_id: string
           comment?: string | null
           created_at?: string
           id?: string
           rating: number
           updated_at?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
-          anonymous_id?: string | null
           business_id?: string
           comment?: string | null
           created_at?: string
           id?: string
           rating?: number
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {

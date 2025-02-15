@@ -1,21 +1,10 @@
+
 import { Business, BusinessReview, SpecialOffer } from "@/types/business";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Star, MapPin, Phone, Globe, Mail, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
-import { ReviewForm } from "./ReviewForm";
-import { SpecialOfferForm } from "./SpecialOfferForm";
-import { PlusCircle } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { BusinessRegistrationForm } from "./BusinessRegistrationForm";
 
 interface BusinessDrawerProps {
   business: Business | null;
@@ -23,9 +12,6 @@ interface BusinessDrawerProps {
 }
 
 export const BusinessDrawer = ({ business, onClose }: BusinessDrawerProps) => {
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [showOfferForm, setShowOfferForm] = useState(false);
-  
   const { data: reviews } = useQuery({
     queryKey: ['business-reviews', business?.id],
     queryFn: async (): Promise<BusinessReview[]> => {
@@ -121,20 +107,10 @@ export const BusinessDrawer = ({ business, onClose }: BusinessDrawerProps) => {
 
           {offers && offers.length > 0 && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  Special Offers
-                </h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowOfferForm(true)}
-                >
-                  <PlusCircle className="w-4 h-4 mr-2" />
-                  Add Offer
-                </Button>
-              </div>
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Special Offers
+              </h3>
               <div className="space-y-4">
                 {offers.map((offer) => (
                   <div
@@ -152,80 +128,37 @@ export const BusinessDrawer = ({ business, onClose }: BusinessDrawerProps) => {
             </div>
           )}
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Reviews</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowReviewForm(true)}
-              >
-                <PlusCircle className="w-4 h-4 mr-2" />
-                Add Review
-              </Button>
-            </div>
-            
-            {showReviewForm && (
-              <div className="border rounded-lg p-4 bg-muted/50">
-                <ReviewForm
-                  businessId={business.id}
-                  onSuccess={() => {
-                    setShowReviewForm(false);
-                  }}
-                />
-              </div>
-            )}
-
+          {reviews && reviews.length > 0 && (
             <div className="space-y-4">
-              {reviews && reviews.length > 0 && reviews.map((review) => (
-                <div key={review.id} className="p-4 border rounded-lg">
-                  <div className="flex items-center gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-4 h-4 ${
-                          star <= review.rating
-                            ? 'text-yellow-400 fill-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
+              <h3 className="text-lg font-semibold">Reviews</h3>
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <div key={review.id} className="p-4 border rounded-lg">
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-4 h-4 ${
+                            star <= review.rating
+                              ? 'text-yellow-400 fill-yellow-400'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    {review.comment && (
+                      <p className="mt-2 text-gray-600">{review.comment}</p>
+                    )}
+                    <p className="text-xs text-gray-400 mt-2">
+                      {new Date(review.created_at).toLocaleDateString()}
+                    </p>
                   </div>
-                  {review.comment && (
-                    <p className="mt-2 text-gray-600">{review.comment}</p>
-                  )}
-                  <p className="text-xs text-gray-400 mt-2">
-                    {new Date(review.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {showOfferForm && (
-            <div className="border rounded-lg p-4 bg-muted/50">
-              <h4 className="font-semibold mb-4">Add Special Offer</h4>
-              <SpecialOfferForm
-                businessId={business.id}
-                onSuccess={() => {
-                  setShowOfferForm(false);
-                }}
-              />
+                ))}
+              </div>
             </div>
           )}
 
           <div className="flex justify-end gap-4 pt-4">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline">Register New Business</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Register a New Business</DialogTitle>
-                </DialogHeader>
-                <BusinessRegistrationForm onSuccess={onClose} />
-              </DialogContent>
-            </Dialog>
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>
