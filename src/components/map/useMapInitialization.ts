@@ -1,4 +1,3 @@
-
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -70,31 +69,31 @@ export const useMapInitialization = ({
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: isDarkMap 
-            ? 'mapbox://styles/mapbox/navigation-night-v1'
-            : 'mapbox://styles/mapbox/navigation-day-v1',
+            ? 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3'
+            : 'mapbox://styles/meep-box/cm75waj9c007o01r8cyxx7qrv',
           center: [longitude, latitude],
           zoom: 14,
           pitch: 45,
           bearing: 0,
           maxZoom: 19,
-          projection: { name: 'globe' },
+          projection: { name: 'globe' }, // Changed to globe projection
           antialias: true
         });
 
       } catch (locationError) {
         console.warn('Could not get initial location, using default:', locationError);
-        // Fallback to default location
+        // Fallback to default location - Deva coordinates
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: isDarkMap 
-            ? 'mapbox://styles/mapbox/navigation-night-v1'
-            : 'mapbox://styles/mapbox/navigation-day-v1',
+            ? 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3'
+            : 'mapbox://styles/meep-box/cm75waj9c007o01r8cyxx7qrv',
           center: [22.9086, 45.8778],
           zoom: 14,
           pitch: 45,
           bearing: 0,
           maxZoom: 19,
-          projection: { name: 'globe' },
+          projection: { name: 'globe' }, // Changed to globe projection
           antialias: true
         });
       }
@@ -111,110 +110,18 @@ export const useMapInitialization = ({
         showUserLocation: true
       });
 
-      // Add navigation control
-      const navigationControl = new mapboxgl.NavigationControl({
-        showCompass: true,
-        showZoom: true,
-        visualizePitch: true
-      });
-      map.current.addControl(navigationControl, 'top-left');
-
-      // Add directions control
-      const directions = new mapboxgl.Directions({
-        accessToken: mapboxToken,
-        unit: 'metric',
-        profile: 'mapbox/walking',
-        alternatives: true,
-        congestion: true,
-        language: 'en',
-        steps: true,
-        controls: {
-          inputs: false,
-          instructions: true,
-          profileSwitcher: true
-        },
-        styles: [
-          {
-            id: 'directions-route-line',
-            type: 'line',
-            source: 'directions',
-            layout: {
-              'line-join': 'round',
-              'line-cap': 'round'
-            },
-            paint: {
-              'line-color': '#4287f5',
-              'line-width': 5,
-              'line-opacity': 0.8
-            },
-            filter: ['all', ['in', '$type', 'LineString']]
-          }
-        ]
-      });
-      map.current.addControl(directions, 'top-right');
-
-      // Handle long press to set destination
-      let pressTimer: NodeJS.Timeout | null = null;
-      let isDragging = false;
-
-      map.current.on('mousedown', (e) => {
-        if (isDragging) return;
-        
-        pressTimer = setTimeout(() => {
-          const { lng, lat } = e.lngLat;
-          
-          // Get user's current location
-          if (locationControlRef.current) {
-            const userLocation = locationControlRef.current._lastKnownPosition;
-            
-            if (userLocation) {
-              const { coords } = userLocation;
-              
-              // Set origin (user location) and destination (clicked point)
-              directions.setOrigin([coords.longitude, coords.latitude]);
-              directions.setDestination([lng, lat]);
-
-              // Create a marker at the destination
-              new mapboxgl.Marker({ color: '#4287f5' })
-                .setLngLat([lng, lat])
-                .addTo(map.current!);
-
-              toast({
-                title: "Navigation Started",
-                description: "Route has been calculated to your selected destination.",
-              });
-            } else {
-              toast({
-                variant: "destructive",
-                title: "Location Required",
-                description: "Please enable location services to use navigation.",
-              });
-            }
-          }
-        }, 500); // 500ms hold time
-      });
-
-      map.current.on('mouseup', () => {
-        if (pressTimer) {
-          clearTimeout(pressTimer);
-          pressTimer = null;
-        }
-      });
-
-      map.current.on('dragstart', () => {
-        isDragging = true;
-        if (pressTimer) {
-          clearTimeout(pressTimer);
-          pressTimer = null;
-        }
-      });
-
-      map.current.on('dragend', () => {
-        isDragging = false;
-      });
-
-      // Add location control in custom position (top-left)
+      // Add control in custom position (top-left)
       map.current.addControl(locationControlRef.current, 'top-left');
+
+      // Add navigation control for easier zooming
+      map.current.addControl(
+        new mapboxgl.NavigationControl({
+          showCompass: true,
+          showZoom: true,
+          visualizePitch: true
+        }),
+        'top-left'
+      );
 
       // Add custom CSS to position the controls
       const style = document.createElement('style');
@@ -264,14 +171,6 @@ export const useMapInitialization = ({
         .light-theme-popup .mapboxgl-popup-tip {
           border-top-color: rgba(255, 255, 255, 0.95) !important;
         }
-        .mapbox-directions-component {
-          background: ${isDarkMap ? 'rgba(63, 63, 70, 0.9)' : 'rgba(24, 24, 27, 0.95)'} !important;
-          color: ${isDarkMap ? '#fff' : '#fff'} !important;
-        }
-        .directions-control-directions {
-          max-height: 300px;
-          overflow-y: auto;
-        }
       `;
       document.head.appendChild(style);
 
@@ -280,6 +179,7 @@ export const useMapInitialization = ({
         console.log('Map loaded, enabling location tracking...');
         
         if (map.current) {
+          // Add POI layer with filtered data
           map.current.addLayer({
             'id': 'filtered-pois',
             'type': 'symbol',
@@ -342,6 +242,92 @@ export const useMapInitialization = ({
               ["==", ["get", "maki"], "mall"],
               ["in", ["get", "type"], ["literal", ["Bar", "Restaurant", "Hotel", "Plaza", "Mall", "Shopping Mall", "Shopping Center"]]]
             ]
+          });
+
+          // Log POIs when clicking on them
+          map.current.on('click', 'filtered-pois', (e) => {
+            if (e.features && e.features[0]) {
+              const poi = e.features[0].properties;
+              console.log('Clicked POI:', poi);
+              
+              // Get emoji based on POI type
+              let emoji = '📍'; // default marker
+              const type = poi.type?.toLowerCase() || '';
+              const poiClass = poi.class?.toLowerCase() || '';
+              
+              if (poiClass === 'hospital' || type.includes('hospital')) {
+                emoji = '🏥';
+              } else if (poiClass === 'police' || type.includes('police')) {
+                emoji = '👮';
+              } else if (poiClass === 'fire_station' || type.includes('fire')) {
+                emoji = '🚒';
+              } else if (type.includes('bar') || type.includes('pub')) {
+                emoji = '🍺';
+              } else if (type.includes('restaurant') || type.includes('food')) {
+                emoji = '🍽️';
+              } else if (type.includes('hotel') || type.includes('hostel')) {
+                emoji = '🏨';
+              } else if (type.includes('mall') || type.includes('shopping')) {
+                emoji = '🛍️';
+              } else if (type.includes('plaza') || type.includes('square')) {
+                emoji = '🏛️';
+              }
+
+              // Create popup with styled content
+              new mapboxgl.Popup({
+                closeButton: true,
+                closeOnClick: true,
+                maxWidth: '300px',
+                className: isDarkMap ? 'dark-theme-popup' : 'light-theme-popup'
+              })
+                .setLngLat(e.lngLat)
+                .setHTML(`
+                  <div style="
+                    padding: 12px;
+                    background-color: ${isDarkMap ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)'};
+                    color: ${isDarkMap ? '#fff' : '#000'};
+                    border-radius: 8px;
+                    font-family: system-ui, -apple-system, sans-serif;
+                    backdrop-filter: blur(8px);
+                  ">
+                    <div style="font-size: 24px; margin-bottom: 8px; text-align: center;">
+                      ${emoji}
+                    </div>
+                    <h3 style="
+                      margin: 0 0 8px 0;
+                      font-weight: 600;
+                      font-size: 16px;
+                      text-align: center;
+                    ">${poi.name || 'Unnamed Location'}</h3>
+                    ${poi.type ? `
+                      <p style="
+                        margin: 0 0 8px 0;
+                        opacity: 0.7;
+                        font-size: 14px;
+                        text-align: center;
+                      ">${poi.type}</p>
+                    ` : ''}
+                    ${poi.address ? `
+                      <p style="
+                        margin: 0;
+                        font-size: 13px;
+                        opacity: 0.6;
+                        text-align: center;
+                      ">${poi.address}</p>
+                    ` : ''}
+                  </div>
+                `)
+                .addTo(map.current!);
+            }
+          });
+
+          // Change cursor when hovering over POIs
+          map.current.on('mouseenter', 'filtered-pois', () => {
+            if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+          });
+          
+          map.current.on('mouseleave', 'filtered-pois', () => {
+            if (map.current) map.current.getCanvas().style.cursor = '';
           });
         }
 
