@@ -26,6 +26,9 @@ export interface LocationHistoryEntry {
   accuracy?: number;
   speed?: number;
   heading?: number;
+  user_id: string;
+  id: string;
+  created_at: string;
 }
 
 declare global {
