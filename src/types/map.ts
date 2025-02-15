@@ -31,23 +31,8 @@ export interface LocationHistoryEntry {
   created_at: string;
 }
 
-export interface WakeLockSentinel extends EventTarget {
-  readonly released: boolean;
-  release(): Promise<void>;
-  addEventListener(
-    type: 'release',
-    listener: (this: WakeLockSentinel, ev: Event) => any,
-    options?: boolean | AddEventListenerOptions
-  ): void;
-  removeEventListener(
-    type: 'release',
-    listener: (this: WakeLockSentinel, ev: Event) => any,
-    options?: boolean | EventListenerOptions
-  ): void;
-}
-
 declare global {
   interface Window {
-    wakeLock?: WakeLockSentinel | null;
+    wakeLock: null;
   }
 }
