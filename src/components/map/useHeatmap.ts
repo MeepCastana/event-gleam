@@ -5,6 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { HeatspotInfo } from '@/types/map';
 import { cities } from './heatmap/citiesData';
 import { useHeatmapInteractions } from './heatmap/useHeatmapInteractions';
+import { calculateHeatmapWeight, calculateHeatmapRadius } from '@/utils/heatmapUtils';
+
+interface UserLocation {
+  latitude: number;
+  longitude: number;
+  user_id: string;
+}
 
 export const useHeatmap = (
   map: MutableRefObject<mapboxgl.Map | null>,
@@ -21,10 +28,24 @@ export const useHeatmap = (
       console.log('Updating heatmap...');
       const { data: locations, error } = await supabase
         .from('user_locations')
-        .select('latitude, longitude')
+        .select('latitude, longitude, user_id')
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
 
       if (error) throw error;
+
+      // Process user locations
+      const userPoints = isVisibleOnHeatmap ? (locations?.map(loc => ({
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        userId: loc.user_id,
+        weight: 0.3 // Initial low weight
+      })) || []) : [];
+
+      // Calculate weights based on proximity
+      const weightedUserPoints = calculateHeatmapWeight(userPoints);
+      
+      // Calculate dynamic radius based on user count
+      const heatmapRadius = calculateHeatmapRadius(userPoints);
 
       // Only include random test points if showRandomPoints is true
       const testPoints = showRandomPoints ? cities.flatMap(city => {
@@ -34,12 +55,11 @@ export const useHeatmap = (
           const radiusFactor = city.weight > 1 ? 0.015 : 0.025;
           const latOffset = (Math.random() - 0.5) * radiusFactor;
           const lngOffset = (Math.random() - 0.5) * radiusFactor;
-          const randomWeight = city.weight * (0.3 + Math.random() * 0.7);
           
           points.push({
             type: "Feature" as const,
             properties: {
-              weight: randomWeight
+              weight: city.weight * (0.3 + Math.random() * 0.7)
             },
             geometry: {
               type: "Point" as const,
@@ -53,20 +73,20 @@ export const useHeatmap = (
         return points;
       }) : [];
 
-      // Only include user location if visibility is enabled
-      const userPoints = isVisibleOnHeatmap ? (locations?.map(loc => ({
+      // Convert weighted user points to GeoJSON
+      const userGeoPoints = weightedUserPoints.map(point => ({
         type: "Feature" as const,
         properties: {
-          weight: 1
+          weight: point.weight
         },
         geometry: {
           type: "Point" as const,
-          coordinates: [loc.longitude, loc.latitude]
+          coordinates: [point.longitude, point.latitude]
         }
-      })) || []) : [];
+      }));
 
       const points = [
-        ...userPoints,
+        ...userGeoPoints,
         ...testPoints
       ];
 
@@ -77,6 +97,15 @@ export const useHeatmap = (
           type: "FeatureCollection",
           features: points
         });
+
+        // Update heatmap radius
+        map.current.setPaintProperty('heatmap-layer', 'heatmap-radius', [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          0, heatmapRadius,
+          9, heatmapRadius * 2
+        ]);
       } else if (mapLoaded) {
         console.log('Adding new source and layer');
         map.current.addSource('heatmap-source', {
@@ -121,8 +150,8 @@ export const useHeatmap = (
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, 10,
-              9, 25
+              0, heatmapRadius,
+              9, heatmapRadius * 2
             ],
             'heatmap-opacity': 0.8
           }
