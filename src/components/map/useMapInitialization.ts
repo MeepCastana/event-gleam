@@ -1,3 +1,4 @@
+
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -69,11 +70,11 @@ export const useMapInitialization = ({
         map.current = new mapboxgl.Map({
           container: mapContainer.current!,
           style: isDarkMap 
-            ? 'mapbox://styles/mapbox/navigation-night-v1'  // Changed to navigation style for better POI visibility
-            : 'mapbox://styles/mapbox/navigation-day-v1',   // Changed to navigation style for better POI visibility
+            ? 'mapbox://styles/mapbox/navigation-night-v1'
+            : 'mapbox://styles/mapbox/navigation-day-v1',
           center: [longitude, latitude],
           zoom: 14,
-          maxZoom: 19  // Allow closer zoom to see more POIs
+          maxZoom: 19
         });
 
       } catch (locationError) {
@@ -84,7 +85,7 @@ export const useMapInitialization = ({
           style: isDarkMap 
             ? 'mapbox://styles/mapbox/navigation-night-v1'
             : 'mapbox://styles/mapbox/navigation-day-v1',
-          center: [22.9086, 45.8778], // Deva coordinates
+          center: [22.9086, 45.8778],
           zoom: 14,
           maxZoom: 19
         });
@@ -167,54 +168,50 @@ export const useMapInitialization = ({
         console.log('Map loaded, enabling location tracking...');
         
         if (map.current) {
-          // Ensure all POI layers are visible
-          map.current.setLayoutProperty('poi-label', 'visibility', 'visible');
-          map.current.setLayoutProperty('poi-label', 'text-size', 14);
-          map.current.setLayoutProperty('poi-label', 'text-anchor', 'top');
-          map.current.setLayoutProperty('poi-label', 'text-offset', [0, 1]);
-          
-          // Add 3D buildings
-          const layers = map.current.getStyle().layers;
-          const labelLayerId = layers.find(
-            (layer) => layer.type === 'symbol' && layer.layout && layer.layout['text-field']
-          )?.id;
+          // Filter POI layer to show only specific types
+          const poiFilter = [
+            "any",
+            ["in", ["get", "class"], ["literal", ["hospital", "police", "fire_station"]]],
+            [
+              "in",
+              ["get", "type"],
+              ["literal", ["Bar", "Restaurant", "Hotel", "Plaza", "Mall", "Shopping Mall", "Shopping Center"]]
+            ]
+          ];
 
-          map.current.addLayer(
-            {
-              'id': '3d-buildings',
-              'source': 'composite',
-              'source-layer': 'building',
-              'filter': ['==', 'extrude', 'true'],
-              'type': 'fill-extrusion',
-              'minzoom': 14,
-              'paint': {
-                'fill-extrusion-color': isDarkMap ? '#2a2a2a' : '#aaa',
-                'fill-extrusion-height': [
-                  'interpolate',
-                  ['linear'],
-                  ['zoom'],
-                  15,
-                  0,
-                  15.05,
-                  ['get', 'height']
-                ],
-                'fill-extrusion-base': [
-                  'interpolate',
-                  ['linear'],
-                  ['zoom'],
-                  15,
-                  0,
-                  15.05,
-                  ['get', 'min_height']
-                ],
-                'fill-extrusion-opacity': 0.6
-              }
+          // Hide all POI layers first
+          map.current.setLayoutProperty('poi-label', 'visibility', 'none');
+
+          // Add custom POI layer with filtered data
+          map.current.addLayer({
+            'id': 'filtered-pois',
+            'type': 'symbol',
+            'source': 'composite',
+            'source-layer': 'poi_label',
+            'layout': {
+              'icon-image': [
+                'match',
+                ['get', 'class'],
+                'hospital', 'hospital',
+                'police', 'police',
+                'fire_station', 'fire-station',
+                ['get', 'maki']
+              ],
+              'icon-size': 1.2,
+              'text-field': ['get', 'name'],
+              'text-size': 14,
+              'text-offset': [0, 1.5],
+              'text-anchor': 'top',
+              'icon-allow-overlap': true,
+              'text-allow-overlap': false,
+              'text-optional': true,
+              'visibility': 'visible'
             },
-            labelLayerId
-          );
+            'filter': poiFilter
+          });
 
           // Log POIs when clicking on them
-          map.current.on('click', 'poi-label', (e) => {
+          map.current.on('click', 'filtered-pois', (e) => {
             if (e.features && e.features[0]) {
               const poi = e.features[0].properties;
               console.log('Clicked POI:', poi);
@@ -222,8 +219,15 @@ export const useMapInitialization = ({
               // Get emoji based on POI type
               let emoji = '📍'; // default marker
               const type = poi.type?.toLowerCase() || '';
+              const poiClass = poi.class?.toLowerCase() || '';
               
-              if (type.includes('bar') || type.includes('pub')) {
+              if (poiClass === 'hospital' || type.includes('hospital')) {
+                emoji = '🏥';
+              } else if (poiClass === 'police' || type.includes('police')) {
+                emoji = '👮';
+              } else if (poiClass === 'fire_station' || type.includes('fire')) {
+                emoji = '🚒';
+              } else if (type.includes('bar') || type.includes('pub')) {
                 emoji = '🍺';
               } else if (type.includes('restaurant') || type.includes('food')) {
                 emoji = '🍽️';
@@ -233,16 +237,6 @@ export const useMapInitialization = ({
                 emoji = '🛍️';
               } else if (type.includes('plaza') || type.includes('square')) {
                 emoji = '🏛️';
-              } else if (type.includes('cafe') || type.includes('coffee')) {
-                emoji = '☕';
-              } else if (type.includes('park')) {
-                emoji = '🌳';
-              } else if (type.includes('hospital') || type.includes('clinic')) {
-                emoji = '🏥';
-              } else if (type.includes('school') || type.includes('university')) {
-                emoji = '🎓';
-              } else if (type.includes('church') || type.includes('cathedral')) {
-                emoji = '⛪';
               }
 
               // Create popup with styled content
@@ -294,11 +288,11 @@ export const useMapInitialization = ({
           });
 
           // Change cursor when hovering over POIs
-          map.current.on('mouseenter', 'poi-label', () => {
+          map.current.on('mouseenter', 'filtered-pois', () => {
             if (map.current) map.current.getCanvas().style.cursor = 'pointer';
           });
           
-          map.current.on('mouseleave', 'poi-label', () => {
+          map.current.on('mouseleave', 'filtered-pois', () => {
             if (map.current) map.current.getCanvas().style.cursor = '';
           });
         }
