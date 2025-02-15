@@ -1,5 +1,5 @@
 
-import { useCallback, MutableRefObject } from 'react';
+import { useCallback, MutableRefObject, useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { supabase } from "@/integrations/supabase/client";
 import { HeatspotInfo } from '@/types/map';
@@ -28,6 +28,17 @@ export const useHeatmap = (
   isVisibleOnHeatmap: boolean = true,
   showRandomPoints: boolean = true
 ) => {
+  // Effect to handle test points visibility
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    const source = map.current.getSource('heatmap-source') as mapboxgl.GeoJSONSource;
+    if (source) {
+      // Trigger an update to refresh the points
+      updateHeatmap();
+    }
+  }, [showRandomPoints, mapLoaded]);
+
   const updateHeatmap = useCallback(async () => {
     if (!map.current || !mapLoaded) return;
 
@@ -51,7 +62,7 @@ export const useHeatmap = (
       // Calculate weights based on proximity
       const weightedUserPoints = calculateHeatmapWeight(userPoints);
 
-      // Fetch test heatspots from database if showRandomPoints is true
+      // Fetch test heatspots if showRandomPoints is true
       let testPoints: any[] = [];
       if (showRandomPoints) {
         const { data: testHeatspots, error: testError } = await supabase
@@ -62,6 +73,7 @@ export const useHeatmap = (
         if (testError) {
           console.error('Error fetching test heatspots:', testError);
         } else if (testHeatspots) {
+          console.log('Fetched test heatspots:', testHeatspots.length);
           testPoints = testHeatspots.map(spot => ({
             type: "Feature" as const,
             properties: {
@@ -100,7 +112,7 @@ export const useHeatmap = (
       ];
 
       if (map.current.getSource('heatmap-source')) {
-        console.log('Updating existing source');
+        console.log('Updating existing source with points:', points.length);
         const source = map.current.getSource('heatmap-source') as mapboxgl.GeoJSONSource;
         source.setData({
           type: "FeatureCollection",
