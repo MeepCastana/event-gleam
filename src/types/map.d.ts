@@ -12,6 +12,22 @@ export interface HeatspotInfo {
   intensity: number;
 }
 
+export interface GeofenceArea {
+  id: string;
+  name: string;
+  center: [number, number];
+  radius: number; // in meters
+}
+
+export interface LocationHistoryEntry {
+  latitude: number;
+  longitude: number;
+  timestamp: string;
+  accuracy?: number;
+  speed?: number;
+  heading?: number;
+}
+
 declare global {
   interface Navigator {
     wakeLock?: {
