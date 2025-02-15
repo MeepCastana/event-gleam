@@ -101,15 +101,15 @@ export const useMapInitialization = ({
         showUserLocation: true
       });
 
-      // Add control in custom position (top-left, 80px from top)
+      // Add control in custom position (top-left)
       map.current.addControl(locationControlRef.current, 'top-left');
 
       // Add custom CSS to position the geolocate control
       const style = document.createElement('style');
       style.textContent = `
         .mapboxgl-ctrl-top-left {
-          top: 80px !important;
-          left: 24px !important;
+          top: 64px !important;
+          left: 12px !important;
         }
         .mapboxgl-ctrl-group {
           background-color: ${isDarkMap ? 'rgba(63, 63, 70, 0.9)' : 'rgba(24, 24, 27, 0.95)'} !important;
@@ -117,11 +117,17 @@ export const useMapInitialization = ({
           backdrop-filter: blur(8px);
         }
         .mapboxgl-ctrl-group button {
-          width: 40px !important;
-          height: 40px !important;
+          width: 32px !important;
+          height: 32px !important;
         }
         .mapboxgl-ctrl-icon {
-          filter: invert(1);
+          filter: invert(1) sepia(1) saturate(5) hue-rotate(175deg);
+        }
+        .mapboxgl-ctrl-group button:focus:not(:focus-visible) {
+          background-color: transparent;
+        }
+        .mapboxgl-ctrl-group button.mapboxgl-ctrl-geolocate:not(.mapboxgl-ctrl-geolocate-active):not(.mapboxgl-ctrl-geolocate-background) .mapboxgl-ctrl-icon {
+          opacity: 0.8;
         }
       `;
       document.head.appendChild(style);
