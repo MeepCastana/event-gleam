@@ -34,22 +34,11 @@ export interface LocationHistoryEntry {
 declare global {
   interface Window {
     deviceHeading?: number;
+    wakeLock?: WakeLockSentinel | null;
   }
 }
 
-// Additional type declarations for the Wake Lock API
-interface WakeLock {
-  request(type: 'screen'): Promise<WakeLockSentinel>;
-}
-
-interface WakeLockSentinel extends EventTarget {
+interface WakeLockSentinel {
   readonly released: boolean;
   release(): Promise<void>;
-}
-
-// Extending Navigator type without redeclaring wakeLock
-declare global {
-  interface Navigator {
-    readonly wakeLock: WakeLock;
-  }
 }
