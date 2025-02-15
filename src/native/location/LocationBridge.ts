@@ -35,15 +35,28 @@ export const MIN_TIME = 30000; // 30 seconds
 export const requestLocationPermission = async (): Promise<boolean> => {
   if (window.ReactNativeWebView) {
     // We're in a WebView
-    try {
-      const response = await window.ReactNativeWebView.postMessage(
+    return new Promise((resolve) => {
+      const handleMessage = (event: MessageEvent) => {
+        try {
+          const response = JSON.parse(event.data);
+          if (response.type === 'PERMISSION_RESULT') {
+            window.removeEventListener('message', handleMessage);
+            resolve(response.granted);
+          }
+        } catch (error) {
+          console.error('Error parsing permission response:', error);
+          window.removeEventListener('message', handleMessage);
+          resolve(false);
+        }
+      };
+
+      window.addEventListener('message', handleMessage);
+      
+      // Send permission request to native side
+      window.ReactNativeWebView.postMessage(
         JSON.stringify({ type: 'REQUEST_LOCATION_PERMISSION' })
       );
-      return JSON.parse(response).granted;
-    } catch (error) {
-      console.error('Error requesting location permission:', error);
-      return false;
-    }
+    });
   }
   
   // Fallback to web permissions
@@ -55,4 +68,3 @@ export const requestLocationPermission = async (): Promise<boolean> => {
     return false;
   }
 };
-
