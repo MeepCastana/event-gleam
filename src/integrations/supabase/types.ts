@@ -193,6 +193,39 @@ export type Database = {
           },
         ]
       }
+      test_heatspots: {
+        Row: {
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          name: string | null
+          type: Database["public"]["Enums"]["heatspot_type"]
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          name?: string | null
+          type?: Database["public"]["Enums"]["heatspot_type"]
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string | null
+          type?: Database["public"]["Enums"]["heatspot_type"]
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       tracking_settings: {
         Row: {
           background_enabled: boolean
@@ -274,6 +307,7 @@ export type Database = {
     }
     Enums: {
       business_status: "pending" | "verified" | "rejected"
+      heatspot_type: "test" | "real"
       poi_category: "bar" | "restaurant" | "hotel" | "plaza" | "mall"
       tracking_status: "active" | "paused" | "stopped"
     }

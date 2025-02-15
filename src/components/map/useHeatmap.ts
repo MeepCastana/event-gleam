@@ -13,6 +13,13 @@ interface UserLocation {
   user_id: string;
 }
 
+interface TestHeatspot {
+  latitude: number;
+  longitude: number;
+  weight: number;
+  name: string;
+}
+
 export const useHeatmap = (
   map: MutableRefObject<mapboxgl.Map | null>,
   mapLoaded: boolean,
@@ -43,35 +50,37 @@ export const useHeatmap = (
 
       // Calculate weights based on proximity
       const weightedUserPoints = calculateHeatmapWeight(userPoints);
-      
-      // Calculate dynamic radius based on user count
-      const heatmapRadius = calculateHeatmapRadius(userPoints);
 
-      // Only include random test points if showRandomPoints is true
-      const testPoints = showRandomPoints ? cities.flatMap(city => {
-        const points = [];
-        const numPoints = Math.floor(city.weight * 15); // Increased from 10 to 15 for more points
-        for (let i = 0; i < numPoints; i++) {
-          const radiusFactor = city.weight > 1 ? 0.025 : 0.035; // Increased spread
-          const latOffset = (Math.random() - 0.5) * radiusFactor;
-          const lngOffset = (Math.random() - 0.5) * radiusFactor;
-          
-          points.push({
+      // Fetch test heatspots from database if showRandomPoints is true
+      let testPoints: any[] = [];
+      if (showRandomPoints) {
+        const { data: testHeatspots, error: testError } = await supabase
+          .from('test_heatspots')
+          .select('latitude, longitude, weight, name')
+          .eq('type', 'test');
+
+        if (testError) {
+          console.error('Error fetching test heatspots:', testError);
+        } else if (testHeatspots) {
+          testPoints = testHeatspots.map(spot => ({
             type: "Feature" as const,
             properties: {
-              weight: city.weight * (0.4 + Math.random() * 0.8) // Increased weight range
+              weight: spot.weight,
+              name: spot.name
             },
             geometry: {
               type: "Point" as const,
               coordinates: [
-                city.lng + lngOffset,
-                city.lat + latOffset
+                spot.longitude,
+                spot.latitude
               ]
             }
-          });
+          }));
         }
-        return points;
-      }) : [];
+      }
+      
+      // Calculate dynamic radius based on user count
+      const heatmapRadius = calculateHeatmapRadius(userPoints);
 
       // Convert weighted user points to GeoJSON
       const userGeoPoints = weightedUserPoints.map(point => ({
