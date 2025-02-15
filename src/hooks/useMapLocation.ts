@@ -27,10 +27,7 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
       return;
     }
 
-    // First trigger the geolocate control to update user location
-    locationControlRef.current.trigger();
-
-    // Then get the current position
+    // Instead of triggering both, we'll only use getCurrentPosition
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
@@ -64,8 +61,8 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 5000
+        timeout: 5000, // Reduced timeout to 5 seconds
+        maximumAge: 1000 // Reduced maximum age to 1 second
       }
     );
   }, [locationControlRef, map, toast]);
