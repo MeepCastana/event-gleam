@@ -38,17 +38,32 @@ const EventMap = () => {
     updateHeatmap
   });
 
-  // Setup location tracking
+  // Setup location tracking with proper map instance
   const { isTracking, startTracking, stopTracking } = useLocationTracking({
     map: map.current,
     mapLoaded,
     userId
   });
 
+  const handleTrackingToggle = () => {
+    if (isTracking) {
+      stopTracking();
+    } else if (map.current && mapLoaded) {
+      startTracking();
+    }
+  };
+
   const handleDrawerClose = () => {
     setIsDrawerExpanded(false);
     setSelectedHeatspot(undefined);
   };
+
+  // Ensure map is loaded before allowing tracking
+  useEffect(() => {
+    if (!mapLoaded && isTracking) {
+      stopTracking();
+    }
+  }, [mapLoaded, isTracking]);
 
   // Call updateHeatmap when map is loaded and periodically
   useEffect(() => {
@@ -69,7 +84,7 @@ const EventMap = () => {
         onThemeToggle={toggleTheme}
         onLocationClick={centerOnLocation}
         isTracking={isTracking}
-        onTrackingToggle={isTracking ? stopTracking : startTracking}
+        onTrackingToggle={handleTrackingToggle}
       />
       <div ref={mapContainer} className="absolute inset-0" />
       <EventsDrawer 
