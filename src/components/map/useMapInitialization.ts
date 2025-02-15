@@ -1,4 +1,3 @@
-
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -111,18 +110,6 @@ export const useMapInitialization = ({
 
       // Add control in custom position (top-left)
       map.current.addControl(locationControlRef.current, 'top-left');
-
-      // Clean up any search markers when the geolocate control triggers
-      locationControlRef.current.on('geolocate', () => {
-        if (map.current) {
-          if (map.current.getLayer('search-location')) {
-            map.current.removeLayer('search-location');
-          }
-          if (map.current.getSource('search-location')) {
-            map.current.removeSource('search-location');
-          }
-        }
-      });
 
       // Add navigation control for easier zooming
       map.current.addControl(
@@ -352,11 +339,6 @@ export const useMapInitialization = ({
 
         setMapLoaded(true);
         updateHeatmap();
-        
-        // Trigger location tracking automatically
-        setTimeout(() => {
-          locationControlRef.current?.trigger();
-        }, 1000);
       });
 
       // Update heatmap periodically
@@ -397,8 +379,8 @@ export const useMapInitialization = ({
         try {
           // Clean up geolocation control first
           if (locationControlRef.current) {
-            // Remove the geolocate event handler
-            locationControlRef.current.off('geolocate', () => {
+            // Store the cleanup function reference
+            const cleanupMarker = () => {
               if (map.current) {
                 if (map.current.getLayer('search-location')) {
                   map.current.removeLayer('search-location');
@@ -407,7 +389,10 @@ export const useMapInitialization = ({
                   map.current.removeSource('search-location');
                 }
               }
-            });
+            };
+
+            // Remove the event listener using the same function reference
+            locationControlRef.current.off('geolocate', cleanupMarker);
             map.current.removeControl(locationControlRef.current);
             locationControlRef.current = null;
           }
@@ -449,4 +434,6 @@ export const useMapInitialization = ({
       map.current = null;
     };
   }, []);
+
+  return useMapInitialization;
 };

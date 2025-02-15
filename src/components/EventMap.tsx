@@ -124,6 +124,30 @@ const EventMap = () => {
     }
   }, [mapLoaded, updateHeatmap]);
 
+  // Add event listener for geolocate to clean up search marker
+  useEffect(() => {
+    if (map.current && locationControlRef.current) {
+      const cleanupMarker = () => {
+        if (map.current) {
+          if (map.current.getLayer('search-location')) {
+            map.current.removeLayer('search-location');
+          }
+          if (map.current.getSource('search-location')) {
+            map.current.removeSource('search-location');
+          }
+        }
+      };
+
+      locationControlRef.current.on('geolocate', cleanupMarker);
+
+      return () => {
+        if (locationControlRef.current) {
+          locationControlRef.current.off('geolocate', cleanupMarker);
+        }
+      };
+    }
+  }, [map.current, locationControlRef.current]);
+
   return (
     <div className="relative w-full h-screen">
       <MapHeader 
