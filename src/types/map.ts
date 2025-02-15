@@ -35,15 +35,21 @@ declare global {
   interface Window {
     deviceHeading?: number;
   }
+}
 
+// Additional type declarations for the Wake Lock API
+interface WakeLock {
+  request(type: 'screen'): Promise<WakeLockSentinel>;
+}
+
+interface WakeLockSentinel extends EventTarget {
+  readonly released: boolean;
+  release(): Promise<void>;
+}
+
+// Extending Navigator type without redeclaring wakeLock
+declare global {
   interface Navigator {
-    readonly wakeLock?: {
-      request(type: 'screen'): Promise<WakeLockSentinel>;
-    };
-  }
-
-  interface WakeLockSentinel extends EventTarget {
-    readonly released: boolean;
-    release(): Promise<void>;
+    readonly wakeLock: WakeLock;
   }
 }
