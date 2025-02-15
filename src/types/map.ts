@@ -35,13 +35,15 @@ declare global {
   interface Window {
     deviceHeading?: number;
   }
-}
 
-// This adds WakeLock to the lib.dom.d.ts type definitions
-declare module "lib.dom" {
   interface Navigator {
     readonly wakeLock?: {
-      request(type: 'screen'): Promise<any>;
+      request(type: 'screen'): Promise<WakeLockSentinel>;
     };
+  }
+
+  interface WakeLockSentinel extends EventTarget {
+    readonly released: boolean;
+    release(): Promise<void>;
   }
 }
