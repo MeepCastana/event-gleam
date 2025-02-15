@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 const Index = () => {
   return (
-    <main className="relative min-h-screen">
+    <main className="fixed inset-0 w-full h-full">
       <EventMap />
       <Toaster />
     </main>
