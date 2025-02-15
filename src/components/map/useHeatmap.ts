@@ -11,7 +11,8 @@ export const useHeatmap = (
   mapLoaded: boolean,
   setSelectedHeatspot: (heatspot: HeatspotInfo | undefined) => void,
   setIsDrawerExpanded: (expanded: boolean) => void,
-  isVisibleOnHeatmap: boolean = true
+  isVisibleOnHeatmap: boolean = true,
+  showRandomPoints: boolean = true
 ) => {
   const updateHeatmap = useCallback(async () => {
     if (!map.current || !mapLoaded) return;
@@ -25,7 +26,8 @@ export const useHeatmap = (
 
       if (error) throw error;
 
-      const testPoints = cities.flatMap(city => {
+      // Only include random test points if showRandomPoints is true
+      const testPoints = showRandomPoints ? cities.flatMap(city => {
         const points = [];
         const numPoints = Math.floor(city.weight * 10);
         for (let i = 0; i < numPoints; i++) {
@@ -49,7 +51,7 @@ export const useHeatmap = (
           });
         }
         return points;
-      });
+      }) : [];
 
       // Only include user location if visibility is enabled
       const userPoints = isVisibleOnHeatmap ? (locations?.map(loc => ({
@@ -134,7 +136,7 @@ export const useHeatmap = (
     } catch (error) {
       console.error('Error updating heatmap:', error);
     }
-  }, [map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded, isVisibleOnHeatmap]);
+  }, [map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded, isVisibleOnHeatmap, showRandomPoints]);
 
   return { updateHeatmap, cities };
 };

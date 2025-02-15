@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -16,6 +15,8 @@ import { BusinessMarker } from './map/BusinessMarker';
 import { BusinessDrawer } from './business/BusinessDrawer';
 import { Business } from '@/types/business';
 import { useMapMarker } from '@/hooks/useMapMarker';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -28,14 +29,22 @@ const EventMap = () => {
   const [selectedHeatspot, setSelectedHeatspot] = useState<HeatspotInfo | undefined>();
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [isVisibleOnHeatmap, setIsVisibleOnHeatmap] = useState(true);
+  const [showRandomPoints, setShowRandomPoints] = useState(true);
   const autoStartAttempted = useRef(false);
 
-  const { updateHeatmap } = useHeatmap(map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded, isVisibleOnHeatmap);
+  const { updateHeatmap } = useHeatmap(
+    map, 
+    mapLoaded, 
+    setSelectedHeatspot, 
+    setIsDrawerExpanded, 
+    isVisibleOnHeatmap,
+    showRandomPoints
+  );
+
   const { isDarkMap, toggleTheme } = useMapTheme({ map, updateHeatmap });
   const { data: businesses } = useBusinesses();
   const { updateMarkerPosition } = useMapMarker(map.current, mapLoaded);
 
-  // Enable location updates always, regardless of heatmap visibility
   useLocationUpdates({ userId, enabled: mapLoaded });
 
   useMapInitialization({
@@ -56,6 +65,11 @@ const EventMap = () => {
 
   const handleVisibilityToggle = () => {
     setIsVisibleOnHeatmap(prev => !prev);
+  };
+
+  const handleRandomPointsToggle = (checked: boolean) => {
+    setShowRandomPoints(checked);
+    updateHeatmap();
   };
 
   const handleDrawerClose = () => {
@@ -160,6 +174,18 @@ const EventMap = () => {
         map={map}
       />
       <div ref={mapContainer} className="absolute inset-0" />
+      <div className="absolute bottom-24 right-4 p-4 rounded-lg backdrop-blur-md bg-zinc-900/90 border border-white/10">
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="random-points"
+            checked={showRandomPoints}
+            onCheckedChange={handleRandomPointsToggle}
+          />
+          <Label htmlFor="random-points" className="text-white text-sm">
+            Show Random Hotspots
+          </Label>
+        </div>
+      </div>
       <EventsDrawer 
         menuStyle={isDarkMap ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'}
         isDrawerExpanded={isDrawerExpanded}
