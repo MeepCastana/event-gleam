@@ -77,14 +77,7 @@ export const useMapInitialization = ({
           bearing: 0,
           maxZoom: 19,
           projection: { name: 'mercator' },
-          antialias: true,
-          fog: {
-            'range': [0.5, 10],
-            'color': isDarkMap ? '#242424' : '#ffffff',
-            'high-color': isDarkMap ? '#242424' : '#245cdf',
-            'space-color': isDarkMap ? '#000000' : '#000000',
-            'star-intensity': isDarkMap ? 0.8 : 0
-          }
+          antialias: true
         });
 
       } catch (locationError) {
@@ -101,14 +94,7 @@ export const useMapInitialization = ({
           bearing: 0,
           maxZoom: 19,
           projection: { name: 'mercator' },
-          antialias: true,
-          fog: {
-            'range': [0.5, 10],
-            'color': isDarkMap ? '#242424' : '#ffffff',
-            'high-color': isDarkMap ? '#242424' : '#245cdf',
-            'space-color': isDarkMap ? '#000000' : '#000000',
-            'star-intensity': isDarkMap ? 0.8 : 0
-          }
+          antialias: true
         });
       }
 
