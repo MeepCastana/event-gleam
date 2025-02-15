@@ -85,5 +85,17 @@ export const useMapMarker = (map: mapboxgl.Map | null, mapLoaded: boolean) => {
     });
   };
 
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (map?.getLayer('search-location')) {
+        map.removeLayer('search-location');
+      }
+      if (map?.getSource('search-location')) {
+        map.removeSource('search-location');
+      }
+    };
+  }, [map]);
+
   return { updateMarkerPosition };
 };

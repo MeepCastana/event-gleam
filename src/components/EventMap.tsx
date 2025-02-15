@@ -65,8 +65,19 @@ const EventMap = () => {
 
   // Handle search location selection
   const handleLocationSelect = (longitude: number, latitude: number) => {
-    if (mapLoaded && map.current) {
+    if (!mapLoaded || !map.current) return;
+    
+    // Only update marker position if coordinates are provided (not a reset)
+    if (longitude !== 0 && latitude !== 0) {
       updateMarkerPosition(longitude, latitude);
+    } else {
+      // If it's a reset (0,0), make sure to clean up the marker
+      if (map.current.getLayer('search-location')) {
+        map.current.removeLayer('search-location');
+      }
+      if (map.current.getSource('search-location')) {
+        map.current.removeSource('search-location');
+      }
     }
   };
 
