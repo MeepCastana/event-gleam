@@ -1,4 +1,3 @@
-
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -69,9 +68,7 @@ export const useMapInitialization = ({
         // Initialize map with user's location
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
-          style: isDarkMap 
-            ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
-            : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
+          style: 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3',
           center: [longitude, latitude],
           zoom: 14,
           pitch: 45,
@@ -86,9 +83,7 @@ export const useMapInitialization = ({
         // Fallback to default location - Deva coordinates
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
-          style: isDarkMap 
-            ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
-            : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
+          style: 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3',
           center: [22.9086, 45.8778],
           zoom: 14,
           pitch: 45,
