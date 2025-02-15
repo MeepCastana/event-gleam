@@ -107,7 +107,7 @@ export const SearchBox = ({ isDarkMode, onLocationSelect }: SearchBoxProps) => {
     setSelectedPlace(null);
     setIsSearching(false);
     inputRef.current?.blur();
-    // Trigger onLocationSelect with null coordinates to reset the marker
+    // Reset marker without flying to location
     onLocationSelect(0, 0);
   };
 

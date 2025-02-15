@@ -28,14 +28,15 @@ export const MapHeader = ({
   const [isSearching, setIsSearching] = useState(false);
 
   const handleLocationSelect = (lng: number, lat: number) => {
-    if (map.current) {
+    // Only fly to location if it's not a reset action (0,0)
+    if (map.current && (lng !== 0 || lat !== 0)) {
       map.current.flyTo({
         center: [lng, lat],
         zoom: 14,
         essential: true
       });
-      onLocationClick(lng, lat);
     }
+    onLocationClick(lng, lat);
   };
 
   return <>

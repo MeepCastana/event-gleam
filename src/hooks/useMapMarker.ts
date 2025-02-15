@@ -11,25 +11,31 @@ export const useMapMarker = (map: mapboxgl.Map | null, mapLoaded: boolean) => {
       // Only proceed if coordinates are valid (not 0,0)
       if (longitude === 0 && latitude === 0) {
         // Remove the marker layer and source if they exist
-        if (map.getLayer('location')) {
-          map.removeLayer('location');
+        if (map.getLayer('search-location')) {
+          map.removeLayer('search-location');
         }
-        if (map.getSource('location')) {
-          map.removeSource('location');
+        if (map.getSource('search-location')) {
+          map.removeSource('search-location');
         }
         return;
       }
 
-      if (!map.hasImage('pulsing-dot')) {
-        map.addImage('pulsing-dot', createLocationMarker({
-          arrowColor: '#4287f5',
-          dotSize: 60,
-          map
-        }), { pixelRatio: 2 });
+      // Create a pin marker for search results
+      if (!map.hasImage('pin-marker')) {
+        const pinImage = new Image();
+        pinImage.onload = () => {
+          if (map.hasImage('pin-marker')) return;
+          map.addImage('pin-marker', pinImage);
+        };
+        pinImage.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#4287f5"/>
+          </svg>
+        `);
       }
 
-      if (!map.getSource('location')) {
-        map.addSource('location', {
+      if (!map.getSource('search-location')) {
+        map.addSource('search-location', {
           type: 'geojson',
           data: {
             type: 'Point',
@@ -37,17 +43,18 @@ export const useMapMarker = (map: mapboxgl.Map | null, mapLoaded: boolean) => {
           }
         });
         map.addLayer({
-          id: 'location',
-          source: 'location',
+          id: 'search-location',
+          source: 'search-location',
           type: 'symbol',
           layout: {
-            'icon-image': 'pulsing-dot',
+            'icon-image': 'pin-marker',
+            'icon-size': 1,
             'icon-allow-overlap': true,
-            'icon-rotate': 0
+            'icon-anchor': 'bottom'
           }
         });
       } else {
-        const source = map.getSource('location') as mapboxgl.GeoJSONSource;
+        const source = map.getSource('search-location') as mapboxgl.GeoJSONSource;
         source.setData({
           type: 'Point',
           coordinates: [longitude, latitude]
