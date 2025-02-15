@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -15,7 +16,6 @@ import { BusinessMarker } from './map/BusinessMarker';
 import { BusinessDrawer } from './business/BusinessDrawer';
 import { Business } from '@/types/business';
 import { useMapMarker } from '@/hooks/useMapMarker';
-import { useHybridLocation } from '@/hooks/useHybridLocation';
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -44,9 +44,7 @@ const EventMap = () => {
   const { data: businesses } = useBusinesses();
   const { updateMarkerPosition } = useMapMarker(map.current, mapLoaded);
 
-  // Use both hooks during transition period
   useLocationUpdates({ userId, enabled: mapLoaded });
-  useHybridLocation({ userId, enabled: mapLoaded });
 
   useMapInitialization({
     mapContainer,
