@@ -8,6 +8,18 @@ export const useMapMarker = (map: mapboxgl.Map | null, mapLoaded: boolean) => {
     if (!map || !mapLoaded) return;
 
     try {
+      // Only proceed if coordinates are valid (not 0,0)
+      if (longitude === 0 && latitude === 0) {
+        // Remove the marker layer and source if they exist
+        if (map.getLayer('location')) {
+          map.removeLayer('location');
+        }
+        if (map.getSource('location')) {
+          map.removeSource('location');
+        }
+        return;
+      }
+
       if (!map.hasImage('pulsing-dot')) {
         map.addImage('pulsing-dot', createLocationMarker({
           arrowColor: '#4287f5',
@@ -41,6 +53,13 @@ export const useMapMarker = (map: mapboxgl.Map | null, mapLoaded: boolean) => {
           coordinates: [longitude, latitude]
         });
       }
+
+      // Fly to the location with appropriate zoom level
+      map.flyTo({
+        center: [longitude, latitude],
+        zoom: 14,
+        essential: true
+      });
     } catch (error) {
       console.error('Error updating location on map:', error);
     }

@@ -15,6 +15,7 @@ import { useBusinesses } from '@/hooks/useBusinesses';
 import { BusinessMarker } from './map/BusinessMarker';
 import { BusinessDrawer } from './business/BusinessDrawer';
 import { Business } from '@/types/business';
+import { useMapMarker } from '@/hooks/useMapMarker';
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -32,6 +33,7 @@ const EventMap = () => {
   const { updateHeatmap } = useHeatmap(map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded, isVisibleOnHeatmap);
   const { isDarkMap, toggleTheme } = useMapTheme({ map, updateHeatmap });
   const { data: businesses } = useBusinesses();
+  const { updateMarkerPosition } = useMapMarker(map.current, mapLoaded);
 
   // Enable location updates always, regardless of heatmap visibility
   useLocationUpdates({ userId, enabled: mapLoaded });
@@ -59,6 +61,13 @@ const EventMap = () => {
   const handleDrawerClose = () => {
     setIsDrawerExpanded(false);
     setSelectedHeatspot(undefined);
+  };
+
+  // Handle search location selection
+  const handleLocationSelect = (longitude: number, latitude: number) => {
+    if (mapLoaded && map.current) {
+      updateMarkerPosition(longitude, latitude);
+    }
   };
 
   // Update business markers when businesses data changes
@@ -110,19 +119,16 @@ const EventMap = () => {
         menuStyle={isDarkMap ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'} 
         isDarkMode={isDarkMap}
         onThemeToggle={toggleTheme}
-        onLocationClick={() => {}}
+        onLocationClick={handleLocationSelect}
         isTracking={isVisibleOnHeatmap}
-        onTrackingToggle={() => setIsVisibleOnHeatmap(prev => !prev)}
+        onTrackingToggle={handleVisibilityToggle}
         map={map}
       />
       <div ref={mapContainer} className="absolute inset-0" />
       <EventsDrawer 
         menuStyle={isDarkMap ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'}
         isDrawerExpanded={isDrawerExpanded}
-        onClose={() => {
-          setIsDrawerExpanded(false);
-          setSelectedHeatspot(undefined);
-        }}
+        onClose={handleDrawerClose}
         isDarkMode={isDarkMap}
         heatspotInfo={selectedHeatspot}
       />
