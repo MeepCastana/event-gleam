@@ -26,13 +26,27 @@ export const useMapTheme = ({ map, updateHeatmap }: UseMapThemeProps) => {
       const bearing = map.current.getBearing();
 
       // Update control styles before changing the map style
-      const mapControls = document.querySelector('.mapboxgl-ctrl-group');
-      if (mapControls) {
-        mapControls.setAttribute(
+      const mapControls = document.querySelectorAll('.mapboxgl-ctrl-group');
+      mapControls.forEach(control => {
+        control.setAttribute(
           'style',
           `background-color: ${newTheme ? 'rgba(63, 63, 70, 0.9)' : 'rgba(24, 24, 27, 0.95)'} !important`
         );
-      }
+
+        // Update specific control buttons
+        const zoomIn = control.querySelector('.mapboxgl-ctrl-zoom-in');
+        const zoomOut = control.querySelector('.mapboxgl-ctrl-zoom-out');
+        const compass = control.querySelector('.mapboxgl-ctrl-compass');
+        
+        [zoomIn, zoomOut, compass].forEach(button => {
+          if (button) {
+            button.setAttribute(
+              'style',
+              `background-color: ${newTheme ? 'rgba(63, 63, 70, 0.9)' : 'rgba(24, 24, 27, 0.95)'} !important`
+            );
+          }
+        });
+      });
 
       map.current.once('style.load', () => {
         // Restore the previous view state
