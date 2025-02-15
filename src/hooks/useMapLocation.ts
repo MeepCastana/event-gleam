@@ -1,5 +1,5 @@
 
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import mapboxgl from 'mapbox-gl';
 
@@ -12,8 +12,11 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
   const { toast } = useToast();
   const lastLocation = useRef<{ latitude: number | null; longitude: number | null }>({ latitude: null, longitude: null });
 
-  const centerOnLocation = () => {
-    if (!locationControlRef.current || !map.current) return;
+  const centerOnLocation = useCallback(() => {
+    if (!locationControlRef.current || !map.current) {
+      console.log("Map or location control not initialized");
+      return;
+    }
 
     if (!navigator.geolocation) {
       toast({
@@ -24,6 +27,10 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
       return;
     }
 
+    // First trigger the geolocate control to update user location
+    locationControlRef.current.trigger();
+
+    // Then get the current position
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
@@ -61,7 +68,7 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
         maximumAge: 5000
       }
     );
-  };
+  }, [locationControlRef, map, toast]);
 
   return { centerOnLocation };
 };
