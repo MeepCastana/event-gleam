@@ -24,6 +24,48 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
   const { storeLocation, updateTrackingSettings } = useLocationStorage();
   const { updateMarkerPosition } = useMapMarker(map, mapLoaded);
 
+  // Function to handle location updates
+  const handleLocationUpdate = async (position: GeolocationPosition) => {
+    if (!userId || !mapLoaded) return;
+
+    const { latitude, longitude, heading } = position.coords;
+    
+    if (heading !== null) {
+      window.deviceHeading = heading;
+    }
+    
+    // Update map marker
+    updateMarkerPosition(longitude, latitude);
+
+    // Store location in database
+    await storeLocation(position, userId);
+  };
+
+  // Handle location errors
+  const handleLocationError = (error: GeolocationPositionError) => {
+    console.error('Location Error:', error);
+    let errorMessage = "Unable to get your location. Please ensure location services are enabled.";
+    
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        errorMessage = "Location permission denied. Please enable location services in your browser settings.";
+        break;
+      case error.POSITION_UNAVAILABLE:
+        errorMessage = "Location information is unavailable. Please check your device's GPS.";
+        break;
+      case error.TIMEOUT:
+        errorMessage = "Location request timed out. Please try again.";
+        break;
+    }
+
+    toast({
+      variant: "destructive",
+      title: "Location Error",
+      description: errorMessage
+    });
+    stopTracking();
+  };
+
   // Start location tracking
   const startTracking = async () => {
     if (!userId) {
@@ -45,33 +87,31 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
     }
 
     try {
+      // Request permission first
+      const permission = await navigator.permissions.query({ name: 'geolocation' });
+      if (permission.state === 'denied') {
+        toast({
+          variant: "destructive",
+          title: "Location Access Denied",
+          description: "Please enable location services in your browser settings."
+        });
+        return;
+      }
+
       // Update tracking settings first
       await updateTrackingSettings(userId, 'active');
 
+      // Get initial position
+      navigator.geolocation.getCurrentPosition(
+        handleLocationUpdate,
+        handleLocationError,
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+
       // Start watching position
       watchId.current = navigator.geolocation.watchPosition(
-        async (position) => {
-          const { latitude, longitude, heading } = position.coords;
-          
-          if (heading !== null) {
-            window.deviceHeading = heading;
-          }
-          
-          // Update map marker
-          updateMarkerPosition(longitude, latitude);
-
-          // Store location in database
-          await storeLocation(position, userId);
-        },
-        (error) => {
-          console.error('Location Error:', error);
-          toast({
-            variant: "destructive",
-            title: "Location Error",
-            description: "Unable to get your location. Please ensure location services are enabled."
-          });
-          stopTracking();
-        },
+        handleLocationUpdate,
+        handleLocationError,
         {
           enableHighAccuracy: true,
           maximumAge: 0,
@@ -80,6 +120,11 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
       );
 
       setIsTracking(true);
+      
+      toast({
+        title: "Location Tracking Started",
+        description: "Your location is now being tracked."
+      });
     } catch (error) {
       console.error('Error starting tracking:', error);
       toast({
@@ -100,17 +145,33 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
     if (userId) {
       await updateTrackingSettings(userId, 'stopped');
     }
+    
     setIsTracking(false);
+    
+    toast({
+      title: "Location Tracking Stopped",
+      description: "Your location is no longer being tracked."
+    });
   };
 
-  // Cleanup on unmount
+  // Ensure tracking is stopped when component unmounts
   useEffect(() => {
     return () => {
       if (watchId.current !== null) {
         navigator.geolocation.clearWatch(watchId.current);
+        if (userId) {
+          updateTrackingSettings(userId, 'stopped').catch(console.error);
+        }
       }
     };
-  }, []);
+  }, [userId]);
+
+  // Ensure tracking is stopped if map becomes unavailable
+  useEffect(() => {
+    if (!mapLoaded && isTracking) {
+      stopTracking();
+    }
+  }, [mapLoaded]);
 
   return {
     isTracking,
