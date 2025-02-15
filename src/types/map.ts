@@ -47,9 +47,7 @@ export interface WakeLockSentinel extends EventTarget {
 }
 
 declare global {
-  interface Navigator {
-    wakeLock: {
-      request(type: 'screen'): Promise<WakeLockSentinel>;
-    };
+  interface Window {
+    wakeLock?: WakeLockSentinel | null;
   }
 }
