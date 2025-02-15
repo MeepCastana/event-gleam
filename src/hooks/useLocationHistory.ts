@@ -34,7 +34,10 @@ export const useLocationHistory = ({ userId }: UseLocationHistoryProps) => {
         timestamp: entry.created_at,
         accuracy: entry.accuracy || undefined,
         speed: entry.speed || undefined,
-        heading: entry.heading || undefined
+        heading: entry.heading || undefined,
+        user_id: entry.user_id,
+        id: entry.id,
+        created_at: entry.created_at
       }));
 
       setLocations(historyEntries);
