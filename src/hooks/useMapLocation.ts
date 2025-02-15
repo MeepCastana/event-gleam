@@ -47,23 +47,20 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
         const { latitude, longitude } = position.coords;
         console.log("New location received:", latitude, longitude);
 
+        const flyToOptions = {
+          center: [longitude, latitude],
+          zoom: 14,
+          duration: 1000,
+          essential: true
+        };
+
         // Ensure the map is properly loaded before attempting to fly to location
         if (map.current?.loaded()) {
-          map.current.flyTo({
-            center: [longitude, latitude],
-            zoom: 14,
-            duration: 1000,
-            essential: true
-          });
+          map.current.flyTo(flyToOptions);
         } else {
           // If map is not loaded, wait for it
           map.current?.once('load', () => {
-            map.current?.flyTo({
-              center: [longitude, latitude],
-              zoom: 14,
-              duration: 1000,
-              essential: true
-            });
+            map.current?.flyTo(flyToOptions);
           });
         }
 
@@ -71,11 +68,14 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
       },
       (error) => {
         console.error("Location Error:", error);
-        toast({
-          variant: "destructive",
-          title: "Location Error",
-          description: "Unable to get your location. Please ensure location services are enabled."
-        });
+        // Only show toast for actual errors, not when we successfully get the location
+        if (error.code !== 0) {
+          toast({
+            variant: "destructive",
+            title: "Location Error",
+            description: "Please ensure location services are enabled in your browser."
+          });
+        }
         isLocating.current = false;
       },
       {
