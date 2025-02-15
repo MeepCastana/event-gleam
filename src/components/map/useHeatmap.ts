@@ -140,12 +140,12 @@ export const useHeatmap = (
               'interpolate',
               ['linear'],
               ['heatmap-density'],
-              0, 'rgb(0,0,0)',
-              0.1, 'rgb(150,150,255)',  // Bright blue, no opacity
-              0.3, 'rgb(100,255,100)',  // Bright green, no opacity
-              0.5, 'rgb(255,255,0)',    // Bright yellow, no opacity
-              0.7, 'rgb(255,150,0)',    // Bright orange, no opacity
-              1, 'rgb(255,0,0)'         // Bright red, no opacity
+              0, 'rgba(0,0,0,0)',  // Keep base transparent
+              0.1, 'rgb(150,150,255)',  // Bright blue
+              0.3, 'rgb(100,255,100)',  // Bright green
+              0.5, 'rgb(255,255,0)',    // Bright yellow
+              0.7, 'rgb(255,150,0)',    // Bright orange
+              1, 'rgb(255,0,0)'         // Bright red
             ],
             'heatmap-radius': [
               'interpolate',
