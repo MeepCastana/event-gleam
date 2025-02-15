@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet";
 import { SearchBox } from "./SearchBox";
-import { Switch } from "@/components/ui/switch";
 import mapboxgl from 'mapbox-gl';
 
 interface MapHeaderProps {
@@ -15,8 +14,6 @@ interface MapHeaderProps {
   isTracking: boolean;
   onTrackingToggle: () => void;
   map: React.MutableRefObject<mapboxgl.Map | null>;
-  showRandomPoints: boolean;
-  onRandomPointsToggle: (checked: boolean) => void;
 }
 
 export const MapHeader = ({
@@ -26,9 +23,7 @@ export const MapHeader = ({
   isTracking,
   onTrackingToggle,
   map,
-  onLocationClick,
-  showRandomPoints,
-  onRandomPointsToggle
+  onLocationClick
 }: MapHeaderProps) => {
   const [isSearching, setIsSearching] = useState(false);
 
@@ -112,15 +107,6 @@ export const MapHeader = ({
                         {isTracking ? 'ON' : 'OFF'}
                       </div>
                     </button>
-                    <div className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors">
-                      <span className="font-medium">Random Hotspots</span>
-                      <Switch
-                        id="random-hotspots-toggle"
-                        checked={showRandomPoints}
-                        onCheckedChange={onRandomPointsToggle}
-                        aria-label="Toggle random hotspots"
-                      />
-                    </div>
                   </nav>
                   <div className="p-4 border-t border-white/10">
                     <p className="text-sm text-zinc-400">App Version - v2.0</p>

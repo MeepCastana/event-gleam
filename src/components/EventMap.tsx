@@ -172,10 +172,20 @@ const EventMap = () => {
         isTracking={isVisibleOnHeatmap}
         onTrackingToggle={handleVisibilityToggle}
         map={map}
-        showRandomPoints={showRandomPoints}
-        onRandomPointsToggle={handleRandomPointsToggle}
       />
       <div ref={mapContainer} className="absolute inset-0" />
+      <div className="absolute bottom-24 right-4 p-4 rounded-lg backdrop-blur-md bg-zinc-900/90 border border-white/10">
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="random-points"
+            checked={showRandomPoints}
+            onCheckedChange={handleRandomPointsToggle}
+          />
+          <Label htmlFor="random-points" className="text-white text-sm">
+            Show Random Hotspots
+          </Label>
+        </div>
+      </div>
       <EventsDrawer 
         menuStyle={isDarkMap ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'}
         isDrawerExpanded={isDrawerExpanded}
