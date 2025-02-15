@@ -13,6 +13,7 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
   const isLocating = useRef(false);
 
   const centerOnLocation = useCallback(() => {
+    // Prevent multiple concurrent location requests
     if (isLocating.current) return;
 
     if (!map.current) {
@@ -36,36 +37,18 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
       isLocating.current = false;
     }, 5000);
 
-    // First trigger geolocate control to update user location on map
-    if (locationControlRef.current) {
-      locationControlRef.current.trigger();
-    }
-
-    // Then get current position and center map
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         console.log("New location received:", latitude, longitude);
 
-        // Ensure the map is properly loaded before attempting to fly to location
-        if (map.current?.loaded()) {
-          map.current.flyTo({
-            center: [longitude, latitude],
-            zoom: 14,
-            duration: 1000,
-            essential: true
-          });
-        } else {
-          // If map is not loaded, wait for it
-          map.current?.once('load', () => {
-            map.current?.flyTo({
-              center: [longitude, latitude],
-              zoom: 14,
-              duration: 1000,
-              essential: true
-            });
-          });
-        }
+        // Always center on the new position
+        map.current?.flyTo({
+          center: [longitude, latitude],
+          zoom: 14,
+          duration: 1000,
+          essential: true
+        });
 
         isLocating.current = false;
       },
@@ -81,10 +64,10 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
       {
         enableHighAccuracy: true,
         timeout: 3000,
-        maximumAge: 0
+        maximumAge: 0 // Always get a fresh position
       }
     );
-  }, [map, locationControlRef, toast]);
+  }, [map, toast]);
 
   return { centerOnLocation };
 };
