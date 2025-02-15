@@ -1,3 +1,4 @@
+
 export interface CityInfo {
   lat: number;
   lng: number;
