@@ -16,6 +16,7 @@ const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const locationControlRef = useRef<mapboxgl.GeolocateControl | null>(null);
+  const lastLocation = useRef<{ latitude: number | null; longitude: number | null }>({ latitude: null, longitude: null });
   const [isDarkMap, setIsDarkMap] = useState(() => {
     const savedTheme = localStorage.getItem('mapTheme');
     return savedTheme === 'dark';
@@ -30,33 +31,7 @@ const EventMap = () => {
   useLocationUpdates({ userId, enabled: mapLoaded });
 
   const centerOnLocation = () => {
-    if (!mapLoaded) {
-      toast({
-        variant: "destructive",
-        title: "Map Not Ready",
-        description: "Please wait for the map to fully load."
-      });
-      return;
-    }
-
-    if (!map.current) {
-      toast({
-        variant: "destructive",
-        title: "Map Error",
-        description: "Map instance not found. Please refresh the page."
-      });
-      return;
-    }
-
-    // Ensure map is fully rendered
-    if (!map.current.loaded()) {
-      toast({
-        variant: "destructive",
-        title: "Map Not Ready",
-        description: "Please wait for the map to fully load."
-      });
-      return;
-    }
+    if (!locationControlRef.current || !map.current) return;
 
     if (!navigator.geolocation) {
       toast({
@@ -67,83 +42,42 @@ const EventMap = () => {
       return;
     }
 
-    // Show loading toast
-    toast({
-      title: "Getting Location",
-      description: "Please wait while we locate you..."
-    });
-
-    navigator.permissions.query({ name: "geolocation" }).then((result) => {
-      if (result.state === "denied") {
-        toast({
-          variant: "destructive",
-          title: "Location Blocked",
-          description: "You have blocked location access. Enable it in your browser settings."
-        });
-        return;
-      }
-    });
-
-    // Force a map repaint before getting location
-    map.current.repaint = true;
-
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        console.log("User Location:", latitude, longitude);
 
-        if (map.current && map.current.loaded()) {
-          // Ensure map style is loaded
-          if (!map.current.isStyleLoaded()) {
-            map.current.once('style.load', () => {
-              map.current?.flyTo({
-                center: [longitude, latitude],
-                zoom: 14,
-                duration: 1000,
-                essential: true
-              });
-            });
-          } else {
-            map.current.flyTo({
-              center: [longitude, latitude],
-              zoom: 14,
-              duration: 1000,
-              essential: true
-            });
-          }
-          
-          toast({
-            title: "Location Found",
-            description: "Centering map on your location.",
-          });
+        // Prevent re-centering if user hasn't moved
+        if (
+          lastLocation.current.latitude === latitude &&
+          lastLocation.current.longitude === longitude
+        ) {
+          console.log("Location unchanged. Skipping re-center.");
+          return;
         }
+
+        console.log("User Location Updated:", latitude, longitude);
+
+        lastLocation.current = { latitude, longitude }; // Store last location
+
+        map.current?.flyTo({
+          center: [longitude, latitude], // Correct Mapbox order
+          zoom: 14,
+          duration: 1000,
+          essential: true
+        });
       },
       (error) => {
         console.error("Location Error:", error.code, error.message);
-        let errorMessage = "Unable to get your location.";
-        
-        switch(error.code) {
-          case error.TIMEOUT:
-            errorMessage = "Location request timed out. Please try again.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = "Location information is unavailable.";
-            break;
-          case error.PERMISSION_DENIED:
-            errorMessage = "Location permission denied. Please check your browser settings.";
-            break;
-        }
-        
         toast({
           variant: "destructive",
           title: "Location Error",
-          description: errorMessage
+          description: `Error Code ${error.code}: ${error.message}`
         });
       },
       {
-        enableHighAccuracy: true,
-        timeout: 30000,
-        maximumAge: 0
+        enableHighAccuracy: true, // Use precise GPS
+        timeout: 10000, // 10 sec timeout
+        maximumAge: 5000 // Only refresh if the location is older than 5 seconds
       }
     );
   };
