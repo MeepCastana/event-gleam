@@ -1,6 +1,6 @@
+
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { useToast } from "@/components/ui/use-toast";
 import { useLocationStorage } from '@/utils/locationStorage';
 import { useMapMarker } from '@/hooks/useMapMarker';
 
@@ -17,7 +17,6 @@ interface UseLocationTrackingProps {
 }
 
 export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrackingProps) => {
-  const { toast } = useToast();
   const [isTracking, setIsTracking] = useState(false);
   const watchId = useRef<number | null>(null);
   const { storeLocation, updateTrackingSettings } = useLocationStorage();
@@ -76,45 +75,18 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
   // Handle location errors
   const handleLocationError = (error: GeolocationPositionError) => {
     console.error('Location Error:', error);
-    let errorMessage = "Unable to get your location. Please ensure location services are enabled.";
-    
-    switch (error.code) {
-      case error.PERMISSION_DENIED:
-        errorMessage = "Location permission denied. Please enable location services in your browser settings.";
-        break;
-      case error.POSITION_UNAVAILABLE:
-        errorMessage = "Location information is unavailable. Please check your device's GPS.";
-        break;
-      case error.TIMEOUT:
-        errorMessage = "Location request timed out. Please try again.";
-        break;
-    }
-
-    toast({
-      variant: "destructive",
-      title: "Location Error",
-      description: errorMessage
-    });
     stopTracking();
   };
 
   // Start location tracking
   const startTracking = async () => {
     if (!userId) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Could not generate anonymous ID"
-      });
+      console.error('No anonymous ID available');
       return;
     }
 
     if (!navigator.geolocation) {
-      toast({
-        variant: "destructive",
-        title: "Location Not Supported",
-        description: "Your browser does not support location services."
-      });
+      console.error('Geolocation is not supported by this browser');
       return;
     }
 
@@ -122,11 +94,7 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
       // Request permission first
       const permission = await navigator.permissions.query({ name: 'geolocation' });
       if (permission.state === 'denied') {
-        toast({
-          variant: "destructive",
-          title: "Location Access Denied",
-          description: "Please enable location services in your browser settings."
-        });
+        console.error('Location permission denied');
         return;
       }
 
@@ -152,18 +120,8 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
       );
 
       setIsTracking(true);
-      
-      toast({
-        title: "Location Tracking Started",
-        description: "Your location is now being tracked."
-      });
     } catch (error) {
       console.error('Error starting tracking:', error);
-      toast({
-        variant: "destructive",
-        title: "Tracking Error",
-        description: "Unable to start location tracking."
-      });
     }
   };
 
@@ -179,11 +137,6 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
     }
     
     setIsTracking(false);
-    
-    toast({
-      title: "Location Tracking Stopped",
-      description: "Your location is no longer being tracked."
-    });
   };
 
   // Ensure tracking is stopped when component unmounts
