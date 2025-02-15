@@ -1,6 +1,6 @@
 
 import { useState, useRef, useCallback } from 'react';
-import { Search } from 'lucide-react';
+import { Search, ArrowLeft } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import debounce from 'lodash/debounce';
@@ -21,9 +21,11 @@ export const SearchBox = ({ isDarkMode, onLocationSelect }: SearchBoxProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
-  // Debounced search function
   const debouncedSearch = useCallback(
     debounce(async (query: string) => {
       if (!query.trim()) {
@@ -69,26 +71,57 @@ export const SearchBox = ({ isDarkMode, onLocationSelect }: SearchBoxProps) => {
   );
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
     setIsSearching(true);
     setShowResults(true);
-    debouncedSearch(e.target.value);
+    setSelectedPlace(null);
+    debouncedSearch(value);
   };
 
   const handleResultClick = (result: SearchResult) => {
     onLocationSelect(result.center[0], result.center[1]);
     setShowResults(false);
     setResults([]);
+    setInputValue(result.place_name);
+    setSelectedPlace(result.place_name);
+  };
+
+  const handleReset = () => {
+    setInputValue('');
+    setShowResults(false);
+    setResults([]);
+    setSelectedPlace(null);
+    setIsSearching(false);
+    inputRef.current?.blur();
   };
 
   return (
     <div className="relative w-full">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-60" />
-      <Input
-        className="w-full pl-9 bg-white/5 border-none placeholder:text-inherit/60 rounded-full focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
-        placeholder="Search location"
-        onChange={handleSearch}
-        onFocus={() => setShowResults(true)}
-      />
+      <div className="flex items-center w-full">
+        <button
+          onClick={handleReset}
+          className={`absolute left-3 p-1 rounded-full transition-colors ${
+            isDarkMode 
+              ? 'hover:bg-white/10' 
+              : 'hover:bg-black/10'
+          }`}
+        >
+          {isSearching || selectedPlace ? (
+            <ArrowLeft className="w-4 h-4 opacity-60" />
+          ) : (
+            <Search className="w-4 h-4 opacity-60" />
+          )}
+        </button>
+        <Input
+          ref={inputRef}
+          value={inputValue}
+          className="w-full pl-12 bg-white/5 border-none placeholder:text-inherit/60 rounded-full focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
+          placeholder="Search location"
+          onChange={handleSearch}
+          onFocus={() => setIsSearching(true)}
+        />
+      </div>
       {showResults && results.length > 0 && (
         <div 
           className={`absolute mt-2 w-full rounded-lg shadow-lg overflow-hidden z-50 ${
