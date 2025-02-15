@@ -10,13 +10,17 @@ interface MapHeaderProps {
   isDarkMode: boolean;
   onThemeToggle: () => void;
   onLocationClick: () => void;
+  isTracking: boolean;
+  onTrackingToggle: () => void;
 }
 
 export const MapHeader = ({
   menuStyle,
   isDarkMode,
   onThemeToggle,
-  onLocationClick
+  onLocationClick,
+  isTracking,
+  onTrackingToggle
 }: MapHeaderProps) => {
   const [isSearching, setIsSearching] = useState(false);
   return <>
@@ -67,10 +71,28 @@ export const MapHeader = ({
                           {isDarkMode ? 'ON' : 'OFF'}
                         </div>
                       </button>
-                      <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
-                        <Settings className="w-5 h-5" />
-                        <span>SETTINGS</span>
-                      </a>
+                      <button 
+                        onClick={onTrackingToggle}
+                        className={`group w-full flex items-center justify-between px-4 py-3 transition-all duration-300 hover:bg-white/5`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-full transition-all duration-300 ${
+                            isTracking 
+                              ? 'bg-green-500/10 text-green-500' 
+                              : 'bg-zinc-500/10 text-zinc-400'
+                          }`}>
+                            <Settings className="w-4 h-4" />
+                          </div>
+                          <span className="font-medium">Location Tracking</span>
+                        </div>
+                        <div className={`text-xs px-2 py-1 rounded-full transition-all duration-300 ${
+                          isTracking 
+                            ? 'bg-green-500/10 text-green-500' 
+                            : 'bg-zinc-500/10 text-zinc-400'
+                        }`}>
+                          {isTracking ? 'ON' : 'OFF'}
+                        </div>
+                      </button>
                     </nav>
                     <div className="p-4 border-t border-white/10">
                       <p className="text-sm text-zinc-400">App Version - v2.0</p>
