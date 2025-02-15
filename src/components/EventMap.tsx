@@ -112,13 +112,17 @@ const EventMap = () => {
         onThemeToggle={toggleTheme}
         onLocationClick={() => {}}
         isTracking={isVisibleOnHeatmap}
-        onTrackingToggle={handleVisibilityToggle}
+        onTrackingToggle={() => setIsVisibleOnHeatmap(prev => !prev)}
+        map={map}
       />
       <div ref={mapContainer} className="absolute inset-0" />
       <EventsDrawer 
         menuStyle={isDarkMap ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'}
         isDrawerExpanded={isDrawerExpanded}
-        onClose={handleDrawerClose}
+        onClose={() => {
+          setIsDrawerExpanded(false);
+          setSelectedHeatspot(undefined);
+        }}
         isDarkMode={isDarkMap}
         heatspotInfo={selectedHeatspot}
       />

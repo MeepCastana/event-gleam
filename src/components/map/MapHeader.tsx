@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet";
 import { SearchBox } from "./SearchBox";
+import mapboxgl from 'mapbox-gl';
 
 interface MapHeaderProps {
   menuStyle: string;
@@ -12,6 +13,7 @@ interface MapHeaderProps {
   onLocationClick: () => void;
   isTracking: boolean;
   onTrackingToggle: () => void;
+  map: React.MutableRefObject<mapboxgl.Map | null>;
 }
 
 export const MapHeader = ({
@@ -19,13 +21,14 @@ export const MapHeader = ({
   isDarkMode,
   onThemeToggle,
   isTracking,
-  onTrackingToggle
+  onTrackingToggle,
+  map
 }: MapHeaderProps) => {
   const [isSearching, setIsSearching] = useState(false);
 
   const handleLocationSelect = (lng: number, lat: number) => {
-    if (window.map) {
-      window.map.flyTo({
+    if (map.current) {
+      map.current.flyTo({
         center: [lng, lat],
         zoom: 14,
         essential: true
