@@ -11,20 +11,27 @@ import { useMapInitialization } from './map/useMapInitialization';
 import { useHeatmap } from './map/useHeatmap';
 import { useMapTheme } from '@/hooks/useMapTheme';
 import { HeatspotInfo } from '@/types/map';
+import { useBusinesses } from '@/hooks/useBusinesses';
+import { BusinessMarker } from './map/BusinessMarker';
+import { BusinessDrawer } from './business/BusinessDrawer';
+import { Business } from '@/types/business';
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const locationControlRef = useRef<mapboxgl.GeolocateControl | null>(null);
+  const businessMarkersRef = useRef<BusinessMarker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
   const userId = useAnonymousId();
   const [selectedHeatspot, setSelectedHeatspot] = useState<HeatspotInfo | undefined>();
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [isVisibleOnHeatmap, setIsVisibleOnHeatmap] = useState(true);
   const autoStartAttempted = useRef(false);
 
   const { updateHeatmap } = useHeatmap(map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded, isVisibleOnHeatmap);
   const { isDarkMap, toggleTheme } = useMapTheme({ map, updateHeatmap });
+  const { data: businesses } = useBusinesses();
 
   // Enable location updates always, regardless of heatmap visibility
   useLocationUpdates({ userId, enabled: mapLoaded });
@@ -53,6 +60,29 @@ const EventMap = () => {
     setIsDrawerExpanded(false);
     setSelectedHeatspot(undefined);
   };
+
+  // Update business markers when businesses data changes
+  useEffect(() => {
+    if (!map.current || !businesses) return;
+
+    // Remove existing markers
+    businessMarkersRef.current.forEach(marker => marker.remove());
+    businessMarkersRef.current = [];
+
+    // Add new markers
+    businesses.forEach(business => {
+      const marker = new BusinessMarker(business, () => {
+        setSelectedBusiness(business);
+      });
+      marker.addTo(map.current!);
+      businessMarkersRef.current.push(marker);
+    });
+
+    return () => {
+      businessMarkersRef.current.forEach(marker => marker.remove());
+      businessMarkersRef.current = [];
+    };
+  }, [businesses, map.current]);
 
   // Single auto-start effect that only runs once when conditions are met
   useEffect(() => {
@@ -91,6 +121,10 @@ const EventMap = () => {
         onClose={handleDrawerClose}
         isDarkMode={isDarkMap}
         heatspotInfo={selectedHeatspot}
+      />
+      <BusinessDrawer 
+        business={selectedBusiness} 
+        onClose={() => setSelectedBusiness(null)} 
       />
     </div>
   );

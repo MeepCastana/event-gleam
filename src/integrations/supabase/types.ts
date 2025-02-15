@@ -30,6 +30,89 @@ export type Database = {
         }
         Relationships: []
       }
+      business_reviews: {
+        Row: {
+          business_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      businesses: {
+        Row: {
+          address: string
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          phone: string | null
+          status: Database["public"]["Enums"]["business_status"] | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          name: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["business_status"] | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["business_status"] | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       points_of_interest: {
         Row: {
           category: Database["public"]["Enums"]["poi_category"]
@@ -65,6 +148,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      special_offers: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string
+          end_date: string
+          id: string
+          start_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description: string
+          end_date: string
+          id?: string
+          start_date: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string
+          end_date?: string
+          id?: string
+          start_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "special_offers_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tracking_settings: {
         Row: {
@@ -146,6 +270,7 @@ export type Database = {
       }
     }
     Enums: {
+      business_status: "pending" | "verified" | "rejected"
       poi_category: "bar" | "restaurant" | "hotel" | "plaza" | "mall"
       tracking_status: "active" | "paused" | "stopped"
     }
