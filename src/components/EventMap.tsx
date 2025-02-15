@@ -15,8 +15,7 @@ import { BusinessMarker } from './map/BusinessMarker';
 import { BusinessDrawer } from './business/BusinessDrawer';
 import { Business } from '@/types/business';
 import { useMapMarker } from '@/hooks/useMapMarker';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { SidePanel } from './map/SidePanel';
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -174,18 +173,12 @@ const EventMap = () => {
         map={map}
       />
       <div ref={mapContainer} className="absolute inset-0" />
-      <div className="absolute bottom-24 right-4 p-4 rounded-lg backdrop-blur-md bg-zinc-900/90 border border-white/10">
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="random-points"
-            checked={showRandomPoints}
-            onCheckedChange={handleRandomPointsToggle}
-          />
-          <Label htmlFor="random-points" className="text-white text-sm">
-            Show Random Hotspots
-          </Label>
-        </div>
-      </div>
+      <SidePanel 
+        showRandomPoints={showRandomPoints}
+        onRandomPointsToggle={handleRandomPointsToggle}
+        isDarkMode={isDarkMap}
+        onThemeToggle={toggleTheme}
+      />
       <EventsDrawer 
         menuStyle={isDarkMap ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'}
         isDrawerExpanded={isDrawerExpanded}
