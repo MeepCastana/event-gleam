@@ -1,3 +1,4 @@
+
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -65,28 +66,34 @@ export const useMapInitialization = ({
 
         const { latitude, longitude } = position.coords;
 
-        // Initialize map with user's location and POI layer enabled
+        // Initialize map with user's location
         map.current = new mapboxgl.Map({
-          container: mapContainer.current!,
+          container: mapContainer.current,
           style: isDarkMap 
             ? 'mapbox://styles/mapbox/navigation-night-v1'
             : 'mapbox://styles/mapbox/navigation-day-v1',
           center: [longitude, latitude],
           zoom: 14,
-          maxZoom: 19
+          maxZoom: 19,
+          projection: { name: 'mercator' },
+          optimizeForTerrain: true,
+          antialias: true
         });
 
       } catch (locationError) {
         console.warn('Could not get initial location, using default:', locationError);
         // Fallback to default location - Deva coordinates
         map.current = new mapboxgl.Map({
-          container: mapContainer.current!,
+          container: mapContainer.current,
           style: isDarkMap 
             ? 'mapbox://styles/mapbox/navigation-night-v1'
             : 'mapbox://styles/mapbox/navigation-day-v1',
           center: [22.9086, 45.8778],
           zoom: 14,
-          maxZoom: 19
+          maxZoom: 19,
+          projection: { name: 'mercator' },
+          optimizeForTerrain: true,
+          antialias: true
         });
       }
 
@@ -107,7 +114,11 @@ export const useMapInitialization = ({
 
       // Add navigation control for easier zooming
       map.current.addControl(
-        new mapboxgl.NavigationControl(),
+        new mapboxgl.NavigationControl({
+          showCompass: true,
+          showZoom: true,
+          visualizePitch: true
+        }),
         'top-left'
       );
 
@@ -167,21 +178,7 @@ export const useMapInitialization = ({
         console.log('Map loaded, enabling location tracking...');
         
         if (map.current) {
-          // Filter POI layer to show only specific types
-          const poiFilter = [
-            "any",
-            ["in", ["get", "class"], ["literal", ["hospital", "police", "fire_station"]]],
-            [
-              "in",
-              ["get", "type"],
-              ["literal", ["Bar", "Restaurant", "Hotel", "Plaza", "Mall", "Shopping Mall", "Shopping Center"]]
-            ]
-          ];
-
-          // Hide all POI layers first
-          map.current.setLayoutProperty('poi-label', 'visibility', 'none');
-
-          // Add custom POI layer with filtered data
+          // Add POI layer with filtered data
           map.current.addLayer({
             'id': 'filtered-pois',
             'type': 'symbol',
@@ -189,14 +186,18 @@ export const useMapInitialization = ({
             'source-layer': 'poi_label',
             'layout': {
               'icon-image': [
-                'match',
-                ['get', 'class'],
-                'hospital', 'hospital-15',
-                'police', 'police-15',
-                'fire_station', 'fire-station-15',
+                'coalesce',
                 [
                   'match',
-                  ['get', "maki"],
+                  ['get', 'class'],
+                  'hospital', 'hospital-15',
+                  'police', 'police-15',
+                  'fire_station', 'fire-station-15',
+                  ['get', 'maki']
+                ],
+                [
+                  'match',
+                  ['get', 'maki'],
                   'bar', 'bar-15',
                   'restaurant', 'restaurant-15',
                   'lodging', 'lodging-15',
@@ -206,7 +207,7 @@ export const useMapInitialization = ({
                   'hospital', 'hospital-15',
                   'police', 'police-15',
                   'fire_station', 'fire-station-15',
-                  'clothing-store-15'  // fallback
+                  'clothing-store-15'
                 ]
               ],
               'icon-size': 1.5,
