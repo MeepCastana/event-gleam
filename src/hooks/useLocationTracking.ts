@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -23,12 +22,19 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
   const watchId = useRef<number | null>(null);
   const { storeLocation, updateTrackingSettings } = useLocationStorage();
   const { updateMarkerPosition } = useMapMarker(map, mapLoaded);
+  const lastUpdateTime = useRef<number>(Date.now());
+  const restartAttempts = useRef<number>(0);
+  const MAX_RESTART_ATTEMPTS = 3;
 
   // Function to handle location updates
   const handleLocationUpdate = async (position: GeolocationPosition) => {
     if (!userId || !mapLoaded) return;
 
     const { latitude, longitude, heading } = position.coords;
+    const currentTime = Date.now();
+    
+    // Update last successful update time
+    lastUpdateTime.current = currentTime;
     
     if (heading !== null) {
       window.deviceHeading = heading;
@@ -40,6 +46,32 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
     // Store location in database
     await storeLocation(position, userId);
   };
+
+  // Add watchdog timer to detect tracking interruptions
+  useEffect(() => {
+    if (!isTracking) return;
+
+    const watchdogInterval = setInterval(() => {
+      const timeSinceLastUpdate = Date.now() - lastUpdateTime.current;
+      
+      // If no updates for more than 10 seconds, try to restart tracking
+      if (timeSinceLastUpdate > 10000 && restartAttempts.current < MAX_RESTART_ATTEMPTS) {
+        console.log('Location updates stopped, attempting to restart tracking...');
+        stopTracking();
+        startTracking();
+        restartAttempts.current += 1;
+      }
+    }, 10000);
+
+    return () => clearInterval(watchdogInterval);
+  }, [isTracking]);
+
+  // Reset restart attempts when tracking is manually started
+  useEffect(() => {
+    if (isTracking) {
+      restartAttempts.current = 0;
+    }
+  }, [isTracking]);
 
   // Handle location errors
   const handleLocationError = (error: GeolocationPositionError) => {

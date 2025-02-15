@@ -37,7 +37,7 @@ export const useMapInitialization = ({
         toast({
           variant: "destructive",
           title: "Configuration Error",
-          description: "Mapbox token not found in configuration. Please make sure it's set in Supabase."
+          description: "Mapbox token not found in configuration."
         });
         return;
       }
@@ -54,76 +54,68 @@ export const useMapInitialization = ({
 
       mapboxgl.accessToken = mapboxToken;
 
-      // Initialize map with default location first
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current!,
-        style: isDarkMap 
-          ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
-          : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
-        center: [0, 0], // Default center
-        zoom: 2 // Default zoom
-      });
+      // First get user's location before initializing map
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          });
+        });
 
+        const { latitude, longitude } = position.coords;
+
+        // Initialize map with user's location
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current!,
+          style: isDarkMap 
+            ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+            : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
+          center: [longitude, latitude],
+          zoom: 14
+        });
+
+      } catch (locationError) {
+        console.warn('Could not get initial location, using default:', locationError);
+        // Fallback to default location
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current!,
+          style: isDarkMap 
+            ? 'mapbox://styles/meep-box/cm74hanck01sg01qxbdh782lk'
+            : 'mapbox://styles/meep-box/cm74r9wnp007t01r092kthims',
+          center: [0, 0],
+          zoom: 2
+        });
+      }
+
+      // Initialize location control
       locationControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: {
           enableHighAccuracy: true,
-          timeout: 2000,
+          timeout: 5000,
           maximumAge: 0
         },
         trackUserLocation: true,
         showAccuracyCircle: false,
-        showUserLocation: true,
-        fitBoundsOptions: {
-          animate: false
-        }
+        showUserLocation: true
       });
 
       map.current.addControl(locationControlRef.current);
 
-      const removeGeolocateControl = () => {
-        const geolocateControl = document.querySelector('.mapboxgl-ctrl-geolocate');
-        if (geolocateControl && geolocateControl.parentElement) {
-          geolocateControl.parentElement.remove();
-        }
-      };
-
-      map.current.on('style.load', () => {
-        console.log('Style loaded, updating heatmap...');
+      // Set up map event handlers
+      map.current.on('load', () => {
+        console.log('Map loaded, enabling location tracking...');
         setMapLoaded(true);
         updateHeatmap();
-        removeGeolocateControl();
+        
+        // Trigger location tracking automatically
+        setTimeout(() => {
+          locationControlRef.current?.trigger();
+        }, 1000);
       });
 
-      map.current.on('load', () => {
-        console.log('Map loaded, starting location tracking...');
-        removeGeolocateControl();
-
-        // Try to get location after map is loaded
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            map.current?.flyTo({
-              center: [longitude, latitude],
-              zoom: 14,
-              essential: true
-            });
-          },
-          (error) => {
-            console.error('Error getting initial location:', error);
-            toast({
-              variant: "destructive",
-              title: "Location Error",
-              description: "Unable to get your location. Please enable location services."
-            });
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 2000,
-            maximumAge: 0
-          }
-        );
-      });
-
+      // Update heatmap periodically
       const updateInterval = setInterval(updateHeatmap, 30000);
 
       return () => {
@@ -136,7 +128,7 @@ export const useMapInitialization = ({
       toast({
         variant: "destructive",
         title: "Error loading map",
-        description: "Please check the Mapbox configuration and try again"
+        description: "Please check your internet connection and try again"
       });
       return () => {};
     }
