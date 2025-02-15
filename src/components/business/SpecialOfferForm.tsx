@@ -46,10 +46,13 @@ export const SpecialOfferForm = ({ businessId, onSuccess }: SpecialOfferFormProp
     try {
       const { error } = await supabase
         .from('special_offers')
-        .insert([{
-          ...values,
+        .insert({
           business_id: businessId,
-        }]);
+          title: values.title,
+          description: values.description,
+          start_date: values.start_date,
+          end_date: values.end_date
+        });
 
       if (error) throw error;
 

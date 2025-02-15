@@ -1,3 +1,4 @@
+
 import { Sun, Moon, Locate } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "../business/SearchBar";

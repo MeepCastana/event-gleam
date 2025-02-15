@@ -53,7 +53,17 @@ export const BusinessRegistrationForm = ({ onSuccess }: BusinessRegistrationForm
     try {
       const { error } = await supabase
         .from('businesses')
-        .insert([values]);
+        .insert({
+          name: values.name,
+          description: values.description || null,
+          address: values.address,
+          latitude: values.latitude,
+          longitude: values.longitude,
+          phone: values.phone || null,
+          website: values.website || null,
+          email: values.email || null,
+          status: 'pending'
+        });
 
       if (error) throw error;
 
