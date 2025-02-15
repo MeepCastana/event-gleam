@@ -69,13 +69,43 @@ export const useMapInitialization = ({
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: isDarkMap 
-            ? 'mapbox://styles/mapbox/navigation-night-v1'
-            : 'mapbox://styles/mapbox/navigation-day-v1',
+            ? 'mapbox://styles/mapbox/dark-v11'
+            : 'mapbox://styles/mapbox/satellite-streets-v12',
           center: [longitude, latitude],
           zoom: 14,
+          pitch: 45, // Add initial pitch for 3D view
+          bearing: 0,
           maxZoom: 19,
           projection: { name: 'mercator' },
           antialias: true
+        });
+
+        // Add terrain and sky layers
+        map.current.on('style.load', () => {
+          // Add terrain source
+          map.current?.addSource('mapbox-dem', {
+            'type': 'raster-dem',
+            'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+            'tileSize': 512,
+            'maxzoom': 14
+          });
+          
+          // Add sky layer
+          map.current?.addLayer({
+            'id': 'sky',
+            'type': 'sky',
+            'paint': {
+              'sky-type': 'atmosphere',
+              'sky-atmosphere-sun': [0.0, 90.0],
+              'sky-atmosphere-color': '#ffffff'
+            }
+          });
+
+          // Enable terrain
+          map.current?.setTerrain({
+            'source': 'mapbox-dem',
+            'exaggeration': 1.5
+          });
         });
 
       } catch (locationError) {
@@ -84,13 +114,43 @@ export const useMapInitialization = ({
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: isDarkMap 
-            ? 'mapbox://styles/mapbox/navigation-night-v1'
-            : 'mapbox://styles/mapbox/navigation-day-v1',
+            ? 'mapbox://styles/mapbox/dark-v11'
+            : 'mapbox://styles/mapbox/satellite-streets-v12',
           center: [22.9086, 45.8778],
           zoom: 14,
+          pitch: 45, // Add initial pitch for 3D view
+          bearing: 0,
           maxZoom: 19,
           projection: { name: 'mercator' },
           antialias: true
+        });
+
+        // Add terrain and sky layers
+        map.current.on('style.load', () => {
+          // Add terrain source
+          map.current?.addSource('mapbox-dem', {
+            'type': 'raster-dem',
+            'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+            'tileSize': 512,
+            'maxzoom': 14
+          });
+          
+          // Add sky layer
+          map.current?.addLayer({
+            'id': 'sky',
+            'type': 'sky',
+            'paint': {
+              'sky-type': 'atmosphere',
+              'sky-atmosphere-sun': [0.0, 90.0],
+              'sky-atmosphere-color': '#ffffff'
+            }
+          });
+
+          // Enable terrain
+          map.current?.setTerrain({
+            'source': 'mapbox-dem',
+            'exaggeration': 1.5
+          });
         });
       }
 
