@@ -21,6 +21,7 @@ const EventMap = () => {
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
   const userId = useAnonymousId();
   const [selectedHeatspot, setSelectedHeatspot] = useState<HeatspotInfo | undefined>();
+  const autoStartAttempted = useRef(false);
 
   const { updateHeatmap } = useHeatmap(map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded);
   const { isDarkMap, toggleTheme } = useMapTheme({ map, updateHeatmap });
@@ -58,20 +59,14 @@ const EventMap = () => {
     setSelectedHeatspot(undefined);
   };
 
-  // Auto-start tracking when map is loaded
+  // Single auto-start effect that only runs once when conditions are met
   useEffect(() => {
-    if (mapLoaded && !isTracking && map.current && userId) {
-      console.log('Map loaded, auto-starting location tracking...');
+    if (mapLoaded && !isTracking && map.current && userId && !autoStartAttempted.current) {
+      console.log('Attempting to auto-start location tracking...');
+      autoStartAttempted.current = true;
       startTracking();
     }
   }, [mapLoaded, isTracking, userId]);
-
-  // Ensure map is loaded before allowing tracking
-  useEffect(() => {
-    if (!mapLoaded && isTracking) {
-      stopTracking();
-    }
-  }, [mapLoaded, isTracking]);
 
   // Call updateHeatmap when map is loaded and periodically
   useEffect(() => {
