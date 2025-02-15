@@ -127,7 +127,7 @@ export const SearchBox = ({ isDarkMode, onLocationSelect }: SearchBoxProps) => {
           className={`absolute mt-2 w-full rounded-lg shadow-lg overflow-hidden z-50 ${
             isDarkMode 
               ? 'bg-[#18181B] border border-white/10' 
-              : 'bg-[#404046] border border-white/10'
+              : 'bg-zinc-700/90 border border-white/10'
           }`}
         >
           {results.map((result, index) => (
@@ -136,7 +136,7 @@ export const SearchBox = ({ isDarkMode, onLocationSelect }: SearchBoxProps) => {
               className={`w-full px-4 py-3 text-left transition-colors ${
                 isDarkMode
                   ? 'hover:bg-[#18181B]/70 text-white'
-                  : 'hover:bg-[#404046]/70 text-white'
+                  : 'hover:bg-zinc-700/70 text-white'
               } ${index !== results.length - 1 ? 'border-b border-white/10' : ''}`}
               onClick={() => handleResultClick(result)}
             >
