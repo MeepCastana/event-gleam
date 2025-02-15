@@ -31,9 +31,17 @@ export interface LocationHistoryEntry {
   created_at: string;
 }
 
-// Skip type checking for wakeLock API
 declare global {
+  interface Window {
+    deviceHeading?: number;
+  }
+}
+
+// This adds WakeLock to the lib.dom.d.ts type definitions
+declare module "lib.dom" {
   interface Navigator {
-    wakeLock: any;
+    readonly wakeLock?: {
+      request(type: 'screen'): Promise<any>;
+    };
   }
 }
