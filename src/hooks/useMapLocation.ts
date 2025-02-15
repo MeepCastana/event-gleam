@@ -36,54 +36,82 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
       isLocating.current = false;
     }, 5000);
 
-    // First trigger geolocate control to update user location on map
-    if (locationControlRef.current) {
-      locationControlRef.current.trigger();
-    }
-
-    // Then get current position and center map
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        console.log("New location received:", latitude, longitude);
-
-        const flyToOptions: mapboxgl.AnimationOptions & mapboxgl.CameraOptions = {
-          center: [longitude, latitude] as [number, number],
-          zoom: 14,
-          duration: 1000,
-          essential: true
-        };
-
-        // Ensure the map is properly loaded before attempting to fly to location
+    // First ensure map is fully loaded
+    const ensureMapLoaded = () => {
+      return new Promise<void>((resolve) => {
         if (map.current?.loaded()) {
-          map.current.flyTo(flyToOptions);
+          resolve();
         } else {
-          // If map is not loaded, wait for it
-          map.current?.once('load', () => {
-            map.current?.flyTo(flyToOptions);
-          });
+          map.current?.once('load', () => resolve());
+        }
+      });
+    };
+
+    // Then proceed with location handling
+    const handleLocation = async () => {
+      try {
+        await ensureMapLoaded();
+        
+        // Trigger geolocate control to update user location on map
+        if (locationControlRef.current) {
+          locationControlRef.current.trigger();
         }
 
+        // Get current position
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            console.log("New location received:", latitude, longitude);
+
+            const flyToOptions: mapboxgl.AnimationOptions & mapboxgl.CameraOptions = {
+              center: [longitude, latitude] as [number, number],
+              zoom: 14,
+              duration: 1000,
+              essential: true
+            };
+
+            if (map.current) {
+              map.current.flyTo(flyToOptions);
+            }
+
+            isLocating.current = false;
+          },
+          (error) => {
+            console.error("Location Error:", error);
+            if (error.code === 1) {
+              toast({
+                variant: "destructive",
+                title: "Permission Denied",
+                description: "Please enable location services in your browser settings."
+              });
+            } else if (error.code === 2) {
+              toast({
+                variant: "destructive",
+                title: "Location Unavailable",
+                description: "Unable to determine your current position."
+              });
+            } else if (error.code === 3) {
+              toast({
+                variant: "destructive",
+                title: "Timeout",
+                description: "Location request took too long. Please try again."
+              });
+            }
+            isLocating.current = false;
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 5000, // Increased timeout
+            maximumAge: 0
+          }
+        );
+      } catch (error) {
+        console.error("Map operation error:", error);
         isLocating.current = false;
-      },
-      (error) => {
-        console.error("Location Error:", error);
-        // Only show toast for actual errors, not when we successfully get the location
-        if (error.code !== 0) {
-          toast({
-            variant: "destructive",
-            title: "Location Error",
-            description: "Please ensure location services are enabled in your browser."
-          });
-        }
-        isLocating.current = false;
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 3000,
-        maximumAge: 0
       }
-    );
+    };
+
+    handleLocation();
   }, [map, locationControlRef, toast]);
 
   return { centerOnLocation };
