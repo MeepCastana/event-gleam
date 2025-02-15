@@ -9,7 +9,6 @@ import { useAnonymousId } from '@/hooks/useAnonymousId';
 import { useLocationUpdates } from '@/hooks/useLocationUpdates';
 import { useMapInitialization } from './map/useMapInitialization';
 import { useHeatmap } from './map/useHeatmap';
-import { useMapLocation } from '@/hooks/useMapLocation';
 import { useMapTheme } from '@/hooks/useMapTheme';
 import { HeatspotInfo } from '@/types/map';
 
@@ -26,7 +25,6 @@ const EventMap = () => {
 
   const { updateHeatmap } = useHeatmap(map, mapLoaded, setSelectedHeatspot, setIsDrawerExpanded, isVisibleOnHeatmap);
   const { isDarkMap, toggleTheme } = useMapTheme({ map, updateHeatmap });
-  const { centerOnLocation } = useMapLocation({ map, locationControlRef });
 
   // Enable location updates always, regardless of heatmap visibility
   useLocationUpdates({ userId, enabled: mapLoaded });
@@ -82,7 +80,7 @@ const EventMap = () => {
         menuStyle={isDarkMap ? 'bg-zinc-700/90 text-zinc-100' : 'bg-zinc-900/95 text-zinc-100'} 
         isDarkMode={isDarkMap}
         onThemeToggle={toggleTheme}
-        onLocationClick={centerOnLocation}
+        onLocationClick={() => {}}
         isTracking={isVisibleOnHeatmap}
         onTrackingToggle={handleVisibilityToggle}
       />

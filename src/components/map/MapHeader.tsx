@@ -3,7 +3,6 @@ import { ArrowLeft, Menu, Search, Settings, Sun, Moon, User } from "lucide-react
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet";
-import { LocationButton } from "./LocationButton";
 
 interface MapHeaderProps {
   menuStyle: string;
@@ -18,7 +17,6 @@ export const MapHeader = ({
   menuStyle,
   isDarkMode,
   onThemeToggle,
-  onLocationClick,
   isTracking,
   onTrackingToggle
 }: MapHeaderProps) => {
@@ -108,9 +106,6 @@ export const MapHeader = ({
             </div>
           </div>
         </div>
-      </div>
-      <div className="absolute top-20 left-6 w-10 z-10 my-[10px]">
-        <LocationButton onClick={onLocationClick} isDarkMode={isDarkMode} />
       </div>
     </>;
 };
