@@ -38,7 +38,7 @@ export const useHeatmap = (
         latitude: loc.latitude,
         longitude: loc.longitude,
         userId: loc.user_id,
-        weight: 0.3 // Initial low weight
+        weight: 0.2 // Lower initial weight for single users
       })) || []) : [];
 
       // Calculate weights based on proximity
@@ -125,26 +125,26 @@ export const useHeatmap = (
               'interpolate',
               ['linear'],
               ['get', 'weight', ['properties']],
-              0, 0.3,
-              2, 1.5
+              0, 0.1,  // Reduced minimum weight
+              1.5, 1   // Reduced maximum weight and adjusted scale
             ],
             'heatmap-intensity': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              0, 1,
-              9, 3
+              0, 0.7,  // Reduced base intensity
+              9, 2
             ],
             'heatmap-color': [
               'interpolate',
               ['linear'],
               ['heatmap-density'],
               0, 'rgba(0,0,0,0)',
-              0.2, 'rgba(150,150,255,0.4)',
-              0.4, 'rgba(0,255,0,0.5)',
-              0.6, 'rgba(255,255,0,0.6)',
-              0.8, 'rgba(255,150,0,0.7)',
-              1, 'rgba(255,0,0,0.8)'
+              0.2, 'rgba(150,150,255,0.2)',  // Much lighter blue
+              0.4, 'rgba(100,255,100,0.3)',  // Lighter green
+              0.6, 'rgba(255,255,0,0.4)',    // Lighter yellow
+              0.8, 'rgba(255,150,0,0.5)',    // Lighter orange
+              1, 'rgba(255,0,0,0.6)'         // Lighter red
             ],
             'heatmap-radius': [
               'interpolate',
@@ -153,7 +153,7 @@ export const useHeatmap = (
               0, heatmapRadius,
               9, heatmapRadius * 2
             ],
-            'heatmap-opacity': 0.8
+            'heatmap-opacity': 0.7  // Slightly reduced opacity
           }
         });
       }
