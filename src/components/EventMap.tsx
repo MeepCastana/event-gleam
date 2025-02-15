@@ -30,7 +30,14 @@ const EventMap = () => {
   useLocationUpdates({ userId, enabled: mapLoaded });
 
   const centerOnLocation = () => {
-    if (!locationControlRef.current || !map.current) return;
+    if (!mapLoaded) {
+      toast({
+        variant: "destructive",
+        title: "Map Not Ready",
+        description: "Please wait for the map to fully load."
+      });
+      return;
+    }
 
     if (!navigator.geolocation) {
       toast({
@@ -57,12 +64,14 @@ const EventMap = () => {
         const { latitude, longitude } = position.coords;
         console.log("User Location:", latitude, longitude);
 
-        map.current?.flyTo({
-          center: [longitude, latitude], // Mapbox uses [lng, lat] format
-          zoom: 14,
-          duration: 1000,
-          essential: true
-        });
+        if (map.current) {
+          map.current.flyTo({
+            center: [longitude, latitude], // Mapbox uses [lng, lat] format
+            zoom: 14,
+            duration: 1000,
+            essential: true
+          });
+        }
       },
       (error) => {
         console.error("Location Error:", error.code, error.message);
