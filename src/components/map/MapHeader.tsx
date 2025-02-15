@@ -10,7 +10,7 @@ interface MapHeaderProps {
   menuStyle: string;
   isDarkMode: boolean;
   onThemeToggle: () => void;
-  onLocationClick: () => void;
+  onLocationClick: (longitude: number, latitude: number) => void;
   isTracking: boolean;
   onTrackingToggle: () => void;
   map: React.MutableRefObject<mapboxgl.Map | null>;
@@ -22,7 +22,8 @@ export const MapHeader = ({
   onThemeToggle,
   isTracking,
   onTrackingToggle,
-  map
+  map,
+  onLocationClick
 }: MapHeaderProps) => {
   const [isSearching, setIsSearching] = useState(false);
 
@@ -33,6 +34,7 @@ export const MapHeader = ({
         zoom: 14,
         essential: true
       });
+      onLocationClick(lng, lat);
     }
   };
 
