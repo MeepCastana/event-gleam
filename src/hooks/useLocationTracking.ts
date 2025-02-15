@@ -18,6 +18,7 @@ interface UseLocationTrackingProps {
 }
 
 export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrackingProps) => {
+  // Move all hooks to the top level
   const { toast } = useToast();
   const [isTracking, setIsTracking] = useState(false);
   const watchId = useRef<number | null>(null);
@@ -34,30 +35,49 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
       return;
     }
 
-    try {
-      const { error } = await supabase
-        .from('user_locations')
-        .insert({
-          user_id: userId,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          speed: position.coords.speed,
-          heading: position.coords.heading,
-          altitude: position.coords.altitude,
-          source: 'foreground'
-        });
+    const { error } = await supabase
+      .from('user_locations')
+      .insert({
+        user_id: userId,
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        speed: position.coords.speed,
+        heading: position.coords.heading,
+        altitude: position.coords.altitude,
+        source: 'foreground'
+      });
 
-      if (error) {
-        console.error('Error storing location:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to store location data"
-        });
-      }
-    } catch (error) {
-      console.error('Error in storeLocation:', error);
+    if (error) {
+      console.error('Error storing location:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to store location data"
+      });
+    }
+  };
+
+  // Update tracking settings
+  const updateTrackingSettings = async (status: 'active' | 'stopped') => {
+    if (!userId) return;
+
+    const { error } = await supabase
+      .from('tracking_settings')
+      .upsert({
+        user_id: userId,
+        status,
+        high_accuracy: true,
+        background_enabled: true
+      });
+
+    if (error) {
+      console.error('Error updating tracking settings:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update tracking settings"
+      });
     }
   };
 
@@ -83,24 +103,7 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
 
     try {
       // Update tracking settings first
-      const { error: settingsError } = await supabase
-        .from('tracking_settings')
-        .upsert({
-          user_id: userId,
-          status: 'active',
-          high_accuracy: true,
-          background_enabled: true
-        });
-
-      if (settingsError) {
-        console.error('Error updating tracking settings:', settingsError);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to update tracking settings"
-        });
-        return;
-      }
+      await updateTrackingSettings('active');
 
       // Start watching position
       watchId.current = navigator.geolocation.watchPosition(
@@ -189,18 +192,7 @@ export const useLocationTracking = ({ map, mapLoaded, userId }: UseLocationTrack
       watchId.current = null;
     }
 
-    // Update tracking settings in database
-    if (userId) {
-      const { error } = await supabase
-        .from('tracking_settings')
-        .update({ status: 'stopped' })
-        .eq('user_id', userId);
-
-      if (error) {
-        console.error('Error updating tracking settings:', error);
-      }
-    }
-
+    await updateTrackingSettings('stopped');
     setIsTracking(false);
   };
 
