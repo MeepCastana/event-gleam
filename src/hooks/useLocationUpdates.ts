@@ -8,6 +8,15 @@ interface UseLocationUpdatesProps {
   enabled?: boolean;
 }
 
+// Add TypeScript interface for periodic sync registration
+interface PeriodicSyncManager {
+  register: (tag: string, options?: { minInterval: number }) => Promise<void>;
+}
+
+interface ServiceWorkerRegistrationWithPeriodicSync extends ServiceWorkerRegistration {
+  periodicSync?: PeriodicSyncManager;
+}
+
 export const useLocationUpdates = ({ userId, enabled = true }: UseLocationUpdatesProps) => {
   const lastPosition = useRef<GeolocationPosition | null>(null);
   const lastUpdate = useRef<number>(0);
@@ -87,11 +96,11 @@ export const useLocationUpdates = ({ userId, enabled = true }: UseLocationUpdate
     // Register service worker for background updates
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
-        .then((registration) => {
+        .then((registration: ServiceWorkerRegistrationWithPeriodicSync) => {
           console.log('ServiceWorker registration successful');
           
           // Register for periodic sync if supported
-          if ('periodicSync' in registration) {
+          if (registration.periodicSync) {
             registration.periodicSync.register('location-update', {
               minInterval: 60000 // Minimum 1 minute
             }).catch(console.error);
