@@ -70,22 +70,24 @@ export const useMapInitialization = ({
         map.current = new mapboxgl.Map({
           container: mapContainer.current!,
           style: isDarkMap 
-            ? 'mapbox://styles/mapbox/dark-v11'  // Changed to standard Mapbox style that includes POIs
-            : 'mapbox://styles/mapbox/light-v11', // Changed to standard Mapbox style that includes POIs
+            ? 'mapbox://styles/mapbox/navigation-night-v1'  // Changed to navigation style for better POI visibility
+            : 'mapbox://styles/mapbox/navigation-day-v1',   // Changed to navigation style for better POI visibility
           center: [longitude, latitude],
-          zoom: 14
+          zoom: 14,
+          maxZoom: 19  // Allow closer zoom to see more POIs
         });
 
       } catch (locationError) {
         console.warn('Could not get initial location, using default:', locationError);
-        // Fallback to default location
+        // Fallback to default location - Deva coordinates
         map.current = new mapboxgl.Map({
           container: mapContainer.current!,
           style: isDarkMap 
-            ? 'mapbox://styles/mapbox/dark-v11'  // Changed to standard Mapbox style that includes POIs
-            : 'mapbox://styles/mapbox/light-v11', // Changed to standard Mapbox style that includes POIs
-          center: [0, 0],
-          zoom: 2
+            ? 'mapbox://styles/mapbox/navigation-night-v1'
+            : 'mapbox://styles/mapbox/navigation-day-v1',
+          center: [22.9086, 45.8778], // Deva coordinates
+          zoom: 14,
+          maxZoom: 19
         });
       }
 
@@ -104,7 +106,13 @@ export const useMapInitialization = ({
       // Add control in custom position (top-left)
       map.current.addControl(locationControlRef.current, 'top-left');
 
-      // Add custom CSS to position the geolocate control
+      // Add navigation control for easier zooming
+      map.current.addControl(
+        new mapboxgl.NavigationControl(),
+        'top-left'
+      );
+
+      // Add custom CSS to position the controls
       const style = document.createElement('style');
       style.textContent = `
         .mapboxgl-ctrl-top-left {
@@ -136,9 +144,14 @@ export const useMapInitialization = ({
       map.current.on('load', () => {
         console.log('Map loaded, enabling location tracking...');
         
-        // Ensure POI layers are visible and interactive
         if (map.current) {
-          // Add 3D buildings for better context
+          // Ensure all POI layers are visible
+          map.current.setLayoutProperty('poi-label', 'visibility', 'visible');
+          map.current.setLayoutProperty('poi-label', 'text-size', 14);
+          map.current.setLayoutProperty('poi-label', 'text-anchor', 'top');
+          map.current.setLayoutProperty('poi-label', 'text-offset', [0, 1]);
+          
+          // Add 3D buildings
           const layers = map.current.getStyle().layers;
           const labelLayerId = layers.find(
             (layer) => layer.type === 'symbol' && layer.layout && layer.layout['text-field']
@@ -178,9 +191,33 @@ export const useMapInitialization = ({
             labelLayerId
           );
 
-          // Enhance POI visibility
-          map.current.setLayoutProperty('poi-label', 'visibility', 'visible');
-          map.current.setLayoutProperty('poi-label', 'text-size', 14);
+          // Log POIs when clicking on them
+          map.current.on('click', 'poi-label', (e) => {
+            if (e.features && e.features[0]) {
+              const poi = e.features[0];
+              console.log('Clicked POI:', poi.properties);
+              
+              // Show a popup with POI information
+              new mapboxgl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(`
+                  <div style="color: ${isDarkMap ? '#fff' : '#000'}; padding: 8px;">
+                    <h3 style="margin: 0 0 4px 0; font-weight: 600;">${poi.properties.name}</h3>
+                    <p style="margin: 0; opacity: 0.7;">${poi.properties.type}</p>
+                  </div>
+                `)
+                .addTo(map.current!);
+            }
+          });
+
+          // Change cursor when hovering over POIs
+          map.current.on('mouseenter', 'poi-label', () => {
+            if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+          });
+          
+          map.current.on('mouseleave', 'poi-label', () => {
+            if (map.current) map.current.getCanvas().style.cursor = '';
+          });
         }
 
         setMapLoaded(true);
