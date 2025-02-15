@@ -39,9 +39,10 @@ const EventMap = () => {
   });
 
   // Setup location tracking
-  useLocationTracking({
+  const { isTracking, startTracking, stopTracking } = useLocationTracking({
     map: map.current,
-    mapLoaded
+    mapLoaded,
+    userId
   });
 
   const handleDrawerClose = () => {
@@ -67,6 +68,8 @@ const EventMap = () => {
         isDarkMode={isDarkMap}
         onThemeToggle={toggleTheme}
         onLocationClick={centerOnLocation}
+        isTracking={isTracking}
+        onTrackingToggle={isTracking ? stopTracking : startTracking}
       />
       <div ref={mapContainer} className="absolute inset-0" />
       <EventsDrawer 
