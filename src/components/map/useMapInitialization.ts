@@ -381,13 +381,52 @@ export const useMapInitialization = ({
 
   useEffect(() => {
     let cleanup: (() => void) | undefined;
+    let isDestroying = false;
+
     const setupMap = async () => {
       cleanup = await initializeMap();
     };
+
     setupMap();
+
     return () => {
-      cleanup?.();
-      map.current?.remove();
+      isDestroying = true;
+      
+      // First remove any layers or sources
+      if (map.current) {
+        try {
+          const layers = map.current.getStyle().layers || [];
+          layers.forEach(layer => {
+            if (map.current?.getLayer(layer.id)) {
+              map.current.removeLayer(layer.id);
+            }
+          });
+
+          const sources = map.current.getStyle().sources || {};
+          Object.keys(sources).forEach(sourceId => {
+            if (map.current?.getSource(sourceId)) {
+              map.current.removeSource(sourceId);
+            }
+          });
+        } catch (e) {
+          console.warn('Error cleaning up layers/sources:', e);
+        }
+      }
+
+      // Then cleanup other resources
+      if (cleanup && !isDestroying) {
+        cleanup();
+      }
+
+      // Finally remove the map
+      if (map.current) {
+        try {
+          map.current.remove();
+        } catch (e) {
+          console.warn('Error removing map:', e);
+        }
+      }
+      map.current = null;
     };
   }, []);
 };

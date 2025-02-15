@@ -88,11 +88,20 @@ export const useMapMarker = (map: mapboxgl.Map | null, mapLoaded: boolean) => {
   // Clean up on unmount
   useEffect(() => {
     return () => {
-      if (map?.getLayer('search-location')) {
-        map.removeLayer('search-location');
-      }
-      if (map?.getSource('search-location')) {
-        map.removeSource('search-location');
+      if (!map) return;
+      
+      try {
+        // Safely remove layer if it exists
+        if (map.getStyle() && map.getLayer('search-location')) {
+          map.removeLayer('search-location');
+        }
+        
+        // Safely remove source if it exists
+        if (map.getStyle() && map.getSource('search-location')) {
+          map.removeSource('search-location');
+        }
+      } catch (e) {
+        console.warn('Error cleaning up map marker:', e);
       }
     };
   }, [map]);
