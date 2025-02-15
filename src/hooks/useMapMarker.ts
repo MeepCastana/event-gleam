@@ -8,15 +8,16 @@ export const useMapMarker = (map: mapboxgl.Map | null, mapLoaded: boolean) => {
     if (!map || !mapLoaded) return;
 
     try {
-      // Only proceed if coordinates are valid (not 0,0)
+      // Clean up existing search marker
+      if (map.getLayer('search-location')) {
+        map.removeLayer('search-location');
+      }
+      if (map.getSource('search-location')) {
+        map.removeSource('search-location');
+      }
+
+      // Only proceed if coordinates are valid (not 0,0) and explicitly set from search
       if (longitude === 0 && latitude === 0) {
-        // Remove the marker layer and source if they exist
-        if (map.getLayer('search-location')) {
-          map.removeLayer('search-location');
-        }
-        if (map.getSource('search-location')) {
-          map.removeSource('search-location');
-        }
         return;
       }
 
@@ -34,32 +35,26 @@ export const useMapMarker = (map: mapboxgl.Map | null, mapLoaded: boolean) => {
         `);
       }
 
-      if (!map.getSource('search-location')) {
-        map.addSource('search-location', {
-          type: 'geojson',
-          data: {
-            type: 'Point',
-            coordinates: [longitude, latitude]
-          }
-        });
-        map.addLayer({
-          id: 'search-location',
-          source: 'search-location',
-          type: 'symbol',
-          layout: {
-            'icon-image': 'pin-marker',
-            'icon-size': 1,
-            'icon-allow-overlap': true,
-            'icon-anchor': 'bottom'
-          }
-        });
-      } else {
-        const source = map.getSource('search-location') as mapboxgl.GeoJSONSource;
-        source.setData({
+      // Add the search location marker
+      map.addSource('search-location', {
+        type: 'geojson',
+        data: {
           type: 'Point',
           coordinates: [longitude, latitude]
-        });
-      }
+        }
+      });
+      
+      map.addLayer({
+        id: 'search-location',
+        source: 'search-location',
+        type: 'symbol',
+        layout: {
+          'icon-image': 'pin-marker',
+          'icon-size': 1,
+          'icon-allow-overlap': true,
+          'icon-anchor': 'bottom'
+        }
+      });
 
       // Fly to the location with appropriate zoom level
       map.flyTo({
