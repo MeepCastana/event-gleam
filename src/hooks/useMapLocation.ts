@@ -36,82 +36,54 @@ export const useMapLocation = ({ map, locationControlRef }: UseMapLocationProps)
       isLocating.current = false;
     }, 5000);
 
-    // First ensure map is fully loaded
-    const ensureMapLoaded = () => {
-      return new Promise<void>((resolve) => {
+    // First trigger geolocate control to update user location on map
+    if (locationControlRef.current) {
+      locationControlRef.current.trigger();
+    }
+
+    // Then get current position and center map
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        console.log("New location received:", latitude, longitude);
+
+        // Ensure the map is properly loaded before attempting to fly to location
         if (map.current?.loaded()) {
-          resolve();
+          map.current.flyTo({
+            center: [longitude, latitude],
+            zoom: 14,
+            duration: 1000,
+            essential: true
+          });
         } else {
-          map.current?.once('load', () => resolve());
-        }
-      });
-    };
-
-    // Then proceed with location handling
-    const handleLocation = async () => {
-      try {
-        await ensureMapLoaded();
-        
-        // Trigger geolocate control to update user location on map
-        if (locationControlRef.current) {
-          locationControlRef.current.trigger();
-        }
-
-        // Get current position
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            console.log("New location received:", latitude, longitude);
-
-            const flyToOptions: mapboxgl.AnimationOptions & mapboxgl.CameraOptions = {
-              center: [longitude, latitude] as [number, number],
+          // If map is not loaded, wait for it
+          map.current?.once('load', () => {
+            map.current?.flyTo({
+              center: [longitude, latitude],
               zoom: 14,
               duration: 1000,
               essential: true
-            };
+            });
+          });
+        }
 
-            if (map.current) {
-              map.current.flyTo(flyToOptions);
-            }
-
-            isLocating.current = false;
-          },
-          (error) => {
-            console.error("Location Error:", error);
-            if (error.code === 1) {
-              toast({
-                variant: "destructive",
-                title: "Permission Denied",
-                description: "Please enable location services in your browser settings."
-              });
-            } else if (error.code === 2) {
-              toast({
-                variant: "destructive",
-                title: "Location Unavailable",
-                description: "Unable to determine your current position."
-              });
-            } else if (error.code === 3) {
-              toast({
-                variant: "destructive",
-                title: "Timeout",
-                description: "Location request took too long. Please try again."
-              });
-            }
-            isLocating.current = false;
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 5000, // Increased timeout
-            maximumAge: 0
-          }
-        );
-      } catch (error) {
-        console.error("Map operation error:", error);
         isLocating.current = false;
+      },
+      (error) => {
+        console.error("Location Error:", error);
+        toast({
+          variant: "destructive",
+          title: "Location Error",
+          description: "Unable to get your location. Please ensure location services are enabled."
+        });
+        isLocating.current = false;
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 3000,
+        maximumAge: 0
       }
-    };
-
-    handleLocation();
+    );
   }, [map, locationControlRef, toast]);
 
   return { centerOnLocation };
