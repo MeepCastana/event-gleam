@@ -34,11 +34,5 @@ export interface LocationHistoryEntry {
 declare global {
   interface Window {
     deviceHeading?: number;
-    wakeLock?: WakeLockSentinel | null;
   }
-}
-
-interface WakeLockSentinel {
-  readonly released: boolean;
-  release(): Promise<void>;
 }
