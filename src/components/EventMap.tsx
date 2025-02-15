@@ -39,6 +39,15 @@ const EventMap = () => {
       return;
     }
 
+    if (!map.current) {
+      toast({
+        variant: "destructive",
+        title: "Map Error",
+        description: "Map instance not found. Please refresh the page."
+      });
+      return;
+    }
+
     if (!navigator.geolocation) {
       toast({
         variant: "destructive",
@@ -47,6 +56,12 @@ const EventMap = () => {
       });
       return;
     }
+
+    // Show loading toast
+    toast({
+      title: "Getting Location",
+      description: "Please wait while we locate you..."
+    });
 
     navigator.permissions.query({ name: "geolocation" }).then((result) => {
       if (result.state === "denied") {
@@ -71,20 +86,40 @@ const EventMap = () => {
             duration: 1000,
             essential: true
           });
+          
+          // Success toast
+          toast({
+            title: "Location Found",
+            description: "Centering map on your location.",
+          });
         }
       },
       (error) => {
         console.error("Location Error:", error.code, error.message);
+        let errorMessage = "Unable to get your location.";
+        
+        switch(error.code) {
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out. Please try again.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information is unavailable.";
+            break;
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location permission denied. Please check your browser settings.";
+            break;
+        }
+        
         toast({
           variant: "destructive",
           title: "Location Error",
-          description: `Error Code ${error.code}: ${error.message}`
+          description: errorMessage
         });
       },
       {
-        enableHighAccuracy: true, // Forces GPS
-        timeout: 10000, // 10-second timeout
-        maximumAge: 0 // Ensures fresh location
+        enableHighAccuracy: true,
+        timeout: 30000, // Increased timeout to 30 seconds
+        maximumAge: 0
       }
     );
   };
