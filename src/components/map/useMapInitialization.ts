@@ -1,4 +1,3 @@
-
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
@@ -192,20 +191,42 @@ export const useMapInitialization = ({
               'icon-image': [
                 'match',
                 ['get', 'class'],
-                'hospital', 'hospital',
-                'police', 'police',
-                'fire_station', 'fire-station',
-                ['get', 'maki']
+                'hospital', 'hospital-15',
+                'police', 'police-15',
+                'fire_station', 'fire-station-15',
+                [
+                  'match',
+                  ['get', 'type'],
+                  'Bar', 'bar-15',
+                  'Restaurant', 'restaurant-15',
+                  'Hotel', 'lodging-15',
+                  ['match', 
+                    ['get', 'maki'],
+                    'shopping', 'shop-15',
+                    'mall', 'shop-15',
+                    'department_store', 'shop-15',
+                    'clothing-store-15'  // fallback for other shopping types
+                  ]
+                ]
               ],
-              'icon-size': 1.2,
+              'icon-size': 1.5,
+              'icon-allow-overlap': true,
+              'icon-ignore-placement': true,
               'text-field': ['get', 'name'],
-              'text-size': 14,
+              'text-size': 12,
               'text-offset': [0, 1.5],
               'text-anchor': 'top',
-              'icon-allow-overlap': true,
               'text-allow-overlap': false,
               'text-optional': true,
+              'text-max-width': 8,
               'visibility': 'visible'
+            },
+            'paint': {
+              'text-color': isDarkMap ? '#ffffff' : '#000000',
+              'text-halo-color': isDarkMap ? '#000000' : '#ffffff',
+              'text-halo-width': 1.5,
+              'icon-opacity': 1,
+              'icon-color': isDarkMap ? '#ffffff' : '#000000'
             },
             'filter': poiFilter
           });
