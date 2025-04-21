@@ -22,7 +22,7 @@ export const useLocationStorage = () => {
         heading: position.coords.heading,
         altitude: position.coords.altitude,
         source: 'foreground'
-      });
+      } as any);
 
     if (error) {
       console.error('Error storing location:', error);
@@ -44,7 +44,7 @@ export const useLocationStorage = () => {
         status,
         high_accuracy: true,
         background_enabled: true
-      });
+      } as any);
 
     if (error) {
       console.error('Error updating tracking settings:', error);

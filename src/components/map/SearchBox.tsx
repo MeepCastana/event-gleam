@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Search, ArrowLeft } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -47,13 +46,13 @@ export const SearchBox = ({ isDarkMode, onLocationSelect }: SearchBoxProps) => {
       }
 
       try {
-        const { data: config } = await supabase
+        const { data: config, error } = await supabase
           .from('_config')
           .select('value')
           .eq('name', 'MAPBOX_TOKEN')
-          .maybeSingle();
+          .maybeSingle() as { data: { value: string } | null, error: Error | null };
 
-        if (!config?.value) {
+        if (error || !config?.value) {
           throw new Error('Mapbox token not found');
         }
 

@@ -9,13 +9,13 @@ export const useBusinesses = () => {
     queryFn: async (): Promise<Business[]> => {
       const { data, error } = await supabase
         .from('businesses')
-        .select('*');
+        .select('*') as { data: Business[] | null, error: Error | null };
 
       if (error) {
         throw error;
       }
 
-      return data;
+      return data || [];
     }
   });
 };

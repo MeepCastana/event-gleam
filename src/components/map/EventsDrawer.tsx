@@ -53,13 +53,13 @@ export const EventsDrawer = ({
   const fetchLocationDetails = async (coordinates: [number, number]) => {
     try {
       // Get Mapbox token from Supabase config
-      const { data: config } = await supabase
+      const { data: config, error } = await supabase
         .from('_config')
         .select('value')
         .eq('name', 'MAPBOX_TOKEN')
-        .single();
+        .single() as { data: { value: string } | null, error: Error | null };
 
-      if (!config?.value) {
+      if (error || !config?.value) {
         console.error('Mapbox token not found');
         return {};
       }

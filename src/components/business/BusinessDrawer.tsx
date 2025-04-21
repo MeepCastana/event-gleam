@@ -1,4 +1,3 @@
-
 import { Business, BusinessReview, SpecialOffer } from "@/types/business";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -19,10 +18,10 @@ export const BusinessDrawer = ({ business, onClose }: BusinessDrawerProps) => {
       const { data, error } = await supabase
         .from('business_reviews')
         .select('*')
-        .eq('business_id', business.id);
+        .eq('business_id', business.id) as { data: BusinessReview[] | null, error: Error | null };
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!business
   });
@@ -35,10 +34,10 @@ export const BusinessDrawer = ({ business, onClose }: BusinessDrawerProps) => {
         .from('special_offers')
         .select('*')
         .eq('business_id', business.id)
-        .gte('end_date', new Date().toISOString());
+        .gte('end_date', new Date().toISOString()) as { data: SpecialOffer[] | null, error: Error | null };
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!business
   });

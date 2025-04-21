@@ -47,12 +47,15 @@ export const useHeatmap = (
       const { data: locations, error } = await supabase
         .from('user_locations')
         .select('latitude, longitude, user_id')
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) as { 
+          data: UserLocation[] | null, 
+          error: Error | null 
+        };
 
       if (error) throw error;
 
       // Process user locations
-      const userPoints = isVisibleOnHeatmap ? (locations?.map(loc => ({
+      const userPoints = isVisibleOnHeatmap ? ((locations || [])?.map(loc => ({
         latitude: loc.latitude,
         longitude: loc.longitude,
         userId: loc.user_id,
@@ -68,7 +71,10 @@ export const useHeatmap = (
         const { data: testHeatspots, error: testError } = await supabase
           .from('test_heatspots')
           .select('latitude, longitude, weight, name')
-          .eq('type', 'test');
+          .eq('type', 'test') as {
+            data: TestHeatspot[] | null,
+            error: Error | null
+          };
 
         if (testError) {
           console.error('Error fetching test heatspots:', testError);

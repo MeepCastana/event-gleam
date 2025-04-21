@@ -74,7 +74,7 @@ export const useLocationUpdates = ({ userId, enabled = true }: UseLocationUpdate
           heading: position.coords.heading,
           altitude: position.coords.altitude,
           source: 'foreground'
-        });
+        } as any);
 
       if (error) {
         console.error('Error storing location:', error);

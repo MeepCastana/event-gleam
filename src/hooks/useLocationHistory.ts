@@ -7,6 +7,19 @@ interface UseLocationHistoryProps {
   userId: string | null;
 }
 
+type UserLocation = {
+  id: string;
+  user_id: string;
+  latitude: number;
+  longitude: number;
+  created_at: string;
+  accuracy?: number;
+  speed?: number;
+  heading?: number;
+  altitude?: number;
+  source?: string;
+};
+
 export const useLocationHistory = ({ userId }: UseLocationHistoryProps) => {
   const [locations, setLocations] = useState<LocationHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,26 +34,28 @@ export const useLocationHistory = ({ userId }: UseLocationHistoryProps) => {
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(100) as { data: UserLocation[] | null, error: Error | null };
 
       if (error) {
         console.error('Error fetching location history:', error);
         return;
       }
 
-      const historyEntries: LocationHistoryEntry[] = data.map(entry => ({
-        latitude: entry.latitude,
-        longitude: entry.longitude,
-        timestamp: entry.created_at,
-        accuracy: entry.accuracy || undefined,
-        speed: entry.speed || undefined,
-        heading: entry.heading || undefined,
-        user_id: entry.user_id,
-        id: entry.id,
-        created_at: entry.created_at
-      }));
+      if (data) {
+        const historyEntries: LocationHistoryEntry[] = data.map(entry => ({
+          latitude: entry.latitude,
+          longitude: entry.longitude,
+          timestamp: entry.created_at,
+          accuracy: entry.accuracy || undefined,
+          speed: entry.speed || undefined,
+          heading: entry.heading || undefined,
+          user_id: entry.user_id,
+          id: entry.id,
+          created_at: entry.created_at
+        }));
 
-      setLocations(historyEntries);
+        setLocations(historyEntries);
+      }
     } catch (error) {
       console.error('Error in fetchLocations:', error);
     } finally {
