@@ -1,7 +1,11 @@
+
 import { useEffect, MutableRefObject } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from 'react';
+
+// Default Mapbox token - replace with your own or implement a more secure solution
+const DEFAULT_MAPBOX_TOKEN = 'pk.eyJ1IjoibWVlcC1ib3giLCJhIjoiY2xzZ3RlcXB0MDRzMTJqbjA5ampoYXRhNCJ9.QUnVSLx-FAqUzq6qJi8G5g';
 
 interface UseMapInitializationProps {
   mapContainer: MutableRefObject<HTMLDivElement | null>;
@@ -21,36 +25,13 @@ export const useMapInitialization = ({
   updateHeatmap
 }: UseMapInitializationProps) => {
   const { toast } = useToast();
+  const [mapboxToken, setMapboxToken] = useState<string>(DEFAULT_MAPBOX_TOKEN);
+  const [tokenInputVisible, setTokenInputVisible] = useState(false);
 
   const initializeMap = async () => {
     if (!mapContainer.current || map.current) return;
     try {
-      const { data: config, error } = await supabase
-        .from('_config')
-        .select('value')
-        .eq('name', 'MAPBOX_TOKEN')
-        .maybeSingle();
-
-      if (error) throw error;
-      if (!config) {
-        toast({
-          variant: "destructive",
-          title: "Configuration Error",
-          description: "Mapbox token not found in configuration."
-        });
-        return;
-      }
-
-      const mapboxToken = config.value;
-      if (!mapboxToken) {
-        toast({
-          variant: "destructive",
-          title: "Configuration Error",
-          description: "Invalid Mapbox token configuration"
-        });
-        return;
-      }
-
+      // Set the Mapbox token
       mapboxgl.accessToken = mapboxToken;
 
       // First get user's location before initializing map
@@ -357,9 +338,46 @@ export const useMapInitialization = ({
         title: "Error loading map",
         description: "Please check your internet connection and try again"
       });
+      
+      // If the map fails to initialize, let's prompt for a custom token
+      setTokenInputVisible(true);
+      
       return () => {};
     }
   };
+
+  // Add a listener for the custom token input
+  useEffect(() => {
+    const handleCustomToken = (event: CustomEvent) => {
+      const token = event.detail.token;
+      if (token && token.length > 0) {
+        setMapboxToken(token);
+        localStorage.setItem('mapbox_token', token);
+        setTokenInputVisible(false);
+        // Remove any existing map
+        if (map.current) {
+          map.current.remove();
+          map.current = null;
+        }
+        // Try initializing again
+        initializeMap();
+      }
+    };
+
+    window.addEventListener('mapbox-token-submit', handleCustomToken as EventListener);
+    
+    return () => {
+      window.removeEventListener('mapbox-token-submit', handleCustomToken as EventListener);
+    };
+  }, []);
+
+  // Check for a saved token in localStorage
+  useEffect(() => {
+    const savedToken = localStorage.getItem('mapbox_token');
+    if (savedToken) {
+      setMapboxToken(savedToken);
+    }
+  }, []);
 
   useEffect(() => {
     let cleanup: (() => void) | undefined;
@@ -433,7 +451,7 @@ export const useMapInitialization = ({
       }
       map.current = null;
     };
-  }, []);
+  }, [mapboxToken]);
 
-  return useMapInitialization;
+  return { tokenInputVisible };
 };

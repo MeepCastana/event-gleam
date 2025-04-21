@@ -16,6 +16,9 @@ import { BusinessMarker } from './map/BusinessMarker';
 import { BusinessDrawer } from './business/BusinessDrawer';
 import { Business } from '@/types/business';
 import { useMapMarker } from '@/hooks/useMapMarker';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Dialog, DialogContent } from './ui/dialog';
 
 const EventMap = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -30,6 +33,8 @@ const EventMap = () => {
   const [isVisibleOnHeatmap, setIsVisibleOnHeatmap] = useState(true);
   const [showRandomPoints, setShowRandomPoints] = useState(true);
   const autoStartAttempted = useRef(false);
+  const [customToken, setCustomToken] = useState('');
+  const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
 
   const { updateHeatmap } = useHeatmap(
     map, 
@@ -44,9 +49,7 @@ const EventMap = () => {
   const { data: businesses } = useBusinesses();
   const { updateMarkerPosition } = useMapMarker(map.current, mapLoaded);
 
-  useLocationUpdates({ userId, enabled: mapLoaded });
-
-  useMapInitialization({
+  const { tokenInputVisible } = useMapInitialization({
     mapContainer,
     map,
     locationControlRef,
@@ -55,11 +58,31 @@ const EventMap = () => {
     updateHeatmap
   });
 
+  useLocationUpdates({ userId, enabled: mapLoaded });
+
   const { isTracking, startTracking } = useLocationTracking({
     map: map.current,
     mapLoaded,
     userId
   });
+
+  useEffect(() => {
+    if (tokenInputVisible) {
+      setTokenDialogOpen(true);
+    }
+  }, [tokenInputVisible]);
+
+  const handleTokenSubmit = () => {
+    if (customToken.length > 0) {
+      // Dispatch a custom event that our useEffect in the initialization hook will listen for
+      window.dispatchEvent(
+        new CustomEvent('mapbox-token-submit', { 
+          detail: { token: customToken } 
+        })
+      );
+      setTokenDialogOpen(false);
+    }
+  };
 
   const handleVisibilityToggle = () => {
     setIsVisibleOnHeatmap(prev => !prev);
@@ -174,6 +197,32 @@ const EventMap = () => {
         business={selectedBusiness} 
         onClose={() => setSelectedBusiness(null)} 
       />
+
+      {/* Mapbox Token Dialog */}
+      <Dialog open={tokenDialogOpen} onOpenChange={setTokenDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <div className="text-center space-y-4 py-2">
+            <h2 className="text-xl font-semibold">Mapbox Token Required</h2>
+            <p className="text-sm text-muted-foreground">
+              Please enter your Mapbox access token to load the map. You can find this in your Mapbox account dashboard.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Input
+                placeholder="Enter your Mapbox token..."
+                value={customToken}
+                onChange={(e) => setCustomToken(e.target.value)}
+                className="w-full"
+              />
+              <Button onClick={handleTokenSubmit} className="w-full">
+                Load Map
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Your token will be saved in your browser for future use.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
