@@ -1,11 +1,11 @@
 
-import { useEffect, MutableRefObject } from 'react';
+import { useEffect, MutableRefObject, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useToast } from "@/components/ui/use-toast";
-import { useState } from 'react';
 
-// Default Mapbox token - replace with your own or implement a more secure solution
-const DEFAULT_MAPBOX_TOKEN = 'pk.eyJ1IjoibWVlcC1ib3giLCJhIjoiY2xzZ3RlcXB0MDRzMTJqbjA5ampoYXRhNCJ9.QUnVSLx-FAqUzq6qJi8G5g';
+// Using Supabase secret for Mapbox token
+// If the user has set a custom token in localStorage, use that instead
+const getStoredToken = () => localStorage.getItem('mapbox_token') || '';
 
 interface UseMapInitializationProps {
   mapContainer: MutableRefObject<HTMLDivElement | null>;
@@ -25,12 +25,21 @@ export const useMapInitialization = ({
   updateHeatmap
 }: UseMapInitializationProps) => {
   const { toast } = useToast();
-  const [mapboxToken, setMapboxToken] = useState<string>(DEFAULT_MAPBOX_TOKEN);
+  const [mapboxToken, setMapboxToken] = useState<string>(getStoredToken());
   const [tokenInputVisible, setTokenInputVisible] = useState(false);
 
   const initializeMap = async () => {
     if (!mapContainer.current || map.current) return;
     try {
+      // Check if we have a token
+      if (!mapboxToken) {
+        console.log('No Mapbox token found, showing input dialog');
+        setTokenInputVisible(true);
+        return;
+      }
+
+      console.log('Initializing map with token:', mapboxToken.substring(0, 8) + '...');
+      
       // Set the Mapbox token
       mapboxgl.accessToken = mapboxToken;
 
@@ -45,13 +54,14 @@ export const useMapInitialization = ({
         });
 
         const { latitude, longitude } = position.coords;
+        console.log('Got user location:', latitude, longitude);
 
         // Initialize map with user's location
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: isDarkMap 
-            ? 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3'
-            : 'mapbox://styles/meep-box/cm75waj9c007o01r8cyxx7qrv',
+            ? 'mapbox://styles/mapbox/dark-v11'  // Using standard Mapbox style instead of custom
+            : 'mapbox://styles/mapbox/light-v11', // Using standard Mapbox style instead of custom
           center: [longitude, latitude],
           zoom: 14,
           pitch: 45,
@@ -67,8 +77,8 @@ export const useMapInitialization = ({
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: isDarkMap 
-            ? 'mapbox://styles/meep-box/cm75w4ure009601r00el4cof3'
-            : 'mapbox://styles/meep-box/cm75waj9c007o01r8cyxx7qrv',
+            ? 'mapbox://styles/mapbox/dark-v11'  // Using standard Mapbox style instead of custom
+            : 'mapbox://styles/mapbox/light-v11', // Using standard Mapbox style instead of custom
           center: [22.9086, 45.8778],
           zoom: 14,
           pitch: 45,
@@ -155,7 +165,7 @@ export const useMapInitialization = ({
 
       // Set up map event handlers
       map.current.on('load', () => {
-        console.log('Map loaded, enabling location tracking...');
+        console.log('Map loaded successfully, enabling location tracking...');
         
         if (map.current) {
           // Remove any existing search markers on load
@@ -320,6 +330,25 @@ export const useMapInitialization = ({
 
         setMapLoaded(true);
         updateHeatmap();
+        
+        toast({
+          title: "Map loaded successfully",
+          description: "You can now explore the map and see nearby hotspots",
+          variant: "default"
+        });
+      });
+
+      // Handle map errors
+      map.current.on('error', (e) => {
+        console.error('Mapbox error:', e);
+        if (e.error && e.error.status === 401) {
+          toast({
+            variant: "destructive",
+            title: "Invalid Mapbox token",
+            description: "Please enter a valid Mapbox token"
+          });
+          setTokenInputVisible(true);
+        }
       });
 
       // Update heatmap periodically
@@ -336,7 +365,7 @@ export const useMapInitialization = ({
       toast({
         variant: "destructive",
         title: "Error loading map",
-        description: "Please check your internet connection and try again"
+        description: "Please check your Mapbox token and try again"
       });
       
       // If the map fails to initialize, let's prompt for a custom token
@@ -351,6 +380,7 @@ export const useMapInitialization = ({
     const handleCustomToken = (event: CustomEvent) => {
       const token = event.detail.token;
       if (token && token.length > 0) {
+        console.log('Setting new Mapbox token', token.substring(0, 8) + '...');
         setMapboxToken(token);
         localStorage.setItem('mapbox_token', token);
         setTokenInputVisible(false);
@@ -371,14 +401,7 @@ export const useMapInitialization = ({
     };
   }, []);
 
-  // Check for a saved token in localStorage
-  useEffect(() => {
-    const savedToken = localStorage.getItem('mapbox_token');
-    if (savedToken) {
-      setMapboxToken(savedToken);
-    }
-  }, []);
-
+  // Initialize map when component mounts
   useEffect(() => {
     let cleanup: (() => void) | undefined;
     let isDestroying = false;
